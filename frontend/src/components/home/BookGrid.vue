@@ -1,0 +1,87 @@
+<template>
+  <section class="results-catalog">
+    <div class="catalog-header">
+      <div class="catalog-title-group">
+        <h2 class="catalog-title">{{ $t('catalog.featured') }}</h2>
+        <p class="catalog-subtitle">{{ $t('catalog.featuredSub') }}</p>
+      </div>
+      <div class="view-toggles">
+        <button :class="['toggle-btn', { active: viewMode === 'grid' }]" @click="$emit('setViewMode', 'grid')"><span class="material-symbols-outlined">grid_view</span></button>
+        <button :class="['toggle-btn', { active: viewMode === 'list' }]" @click="$emit('setViewMode', 'list')"><span class="material-symbols-outlined">view_list</span></button>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div v-if="loading" class="state-message">
+      <div class="spinner"></div>
+      <p>{{ $t('catalog.loading') }}</p>
+    </div>
+
+    <!-- Empty State -->
+    <div v-else-if="books.length === 0" class="state-message empty">
+      <p>{{ $t('catalog.empty') }}</p>
+    </div>
+
+    <!-- Book Grid -->
+    <div v-else :class="['book-grid', { 'list-view': viewMode === 'list' }]">
+      <article
+        v-for="book in books"
+        :key="book.id + '-' + (book.status || 'db')"
+        class="book-card"
+        @click="$emit('goToDetail', Number(book.id))"
+      >
+        <div class="book-cover-wrapper">
+          <img v-if="book.coverUrl" :src="book.coverUrl" :alt="book.title" class="book-cover-img" @error="onImgError" />
+          <div v-else class="book-cover-fallback">
+            <span class="material-symbols-outlined fallback-icon">menu_book</span>
+            <span class="fallback-text">{{ $t('catalog.noCover') }}</span>
+          </div>
+          <div class="badge-wrapper">
+            <span v-if="book.status" :class="['status-badge', book.status.toLowerCase()]">{{ $t(`catalog.badges.${book.status}`) }}</span>
+          </div>
+        </div>
+        <div class="book-details">
+          <div class="book-metadata">
+            <p class="book-isbn">{{ $t('catalog.isbn') }} {{ book.isbn || 'UNKNOWN' }}</p>
+            <h3 class="book-title-text">{{ book.title }}</h3>
+            <p class="book-author-text">{{ book.author }} • {{ book.year || 'N/A' }} • {{ book.languageCode || 'N/A' }}</p>
+          </div>
+          <div class="book-description">
+            {{ book.description || 'A comprehensive monograph covering fundamental knowledge. This edition includes localized annotations for modern archival systems.' }}
+          </div>
+          <div class="book-location">
+            <p class="location-heading">{{ $t('catalog.location') }}</p>
+            <div class="location-box">
+              <span class="material-symbols-outlined location-icon">location_on</span>
+              <span class="location-value">{{ book.location }}</span>
+            </div>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <div v-if="isOffline && hasSearched && books.length > 0" class="offline-warning">
+      <p class="offline-warning-text">{{ $t('catalog.offlineWarning') }}</p>
+    </div>
+  </section>
+</template>
+
+<script setup lang="ts">
+import type { Book } from '../../composables/useBookSearch'
+import { handleImageError } from '../../utils/imageHelpers'
+
+defineProps<{
+  books: Book[]
+  loading: boolean
+  viewMode: 'grid' | 'list'
+  hasSearched: boolean
+  isOffline: boolean
+}>()
+
+defineEmits<{
+  setViewMode: [mode: 'grid' | 'list']
+  goToDetail: [id: number]
+}>()
+
+const onImgError = (e: Event) => handleImageError(e, '/logo-photo.jpg')
+</script>

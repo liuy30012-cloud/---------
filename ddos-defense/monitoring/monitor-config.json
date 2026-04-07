@@ -1,0 +1,17 @@
+{
+  "access_log": "/var/log/nginx/library-api-access.log",
+  "error_log": "/var/log/nginx/library-api-error.log",
+  "state_file": "/var/lib/library-ddos-monitor/state.json",
+  "ban_file": "/var/lib/library-ddos-monitor/bans.json",
+  "window_seconds": 300,
+  "status_429_threshold": 40,
+  "limit_req_threshold": 10,
+  "ban_duration": 1800,
+  "check_interval": 5,
+  "log_file": "/var/log/ddos-monitor.log",
+  "whitelist": [
+    "127.0.0.1",
+    "::1"
+  ],
+  "auto_ban": false
+}

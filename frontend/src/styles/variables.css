@@ -1,0 +1,125 @@
+:root {
+  --primary: #c7a067;
+  --primary-dim: #8f6738;
+  --primary-container: rgba(199, 160, 103, 0.18);
+  --on-primary-container: #f3d9ad;
+  --on-primary: #140f0c;
+
+  --surface: #090705;
+  --surface-container-lowest: #0c0907;
+  --surface-container-low: #120d0b;
+  --surface-container: #19120f;
+  --surface-container-high: #241a16;
+  --surface-container-highest: #30231d;
+
+  --on-surface: #f3e9d7;
+  --on-surface-variant: #b4a692;
+  --outline: #736352;
+  --outline-variant: #4b3d33;
+
+  --secondary-container: rgba(103, 129, 191, 0.18);
+  --on-secondary-container: #cad6ff;
+
+  --accent: #7f95df;
+  --accent-soft: rgba(127, 149, 223, 0.16);
+  --paper-tint: rgba(250, 240, 225, 0.88);
+  --grain-opacity: 0.12;
+  --home-ink: #1b2821;
+  --home-ink-soft: #324338;
+  --home-bamboo: #5b725a;
+  --home-bamboo-deep: #415146;
+  --home-stone: #8a7863;
+  --home-wood: #6e5b47;
+  --home-lantern: #caa36f;
+  --home-lantern-soft: rgba(202, 163, 111, 0.28);
+  --home-paper: #f4f0e5;
+  --home-paper-soft: rgba(244, 240, 229, 0.78);
+  --home-paper-panel: rgba(250, 247, 239, 0.74);
+  --home-paper-strong: rgba(246, 241, 231, 0.92);
+  --home-paper-deep: #ece6da;
+  --home-paper-veil: rgba(249, 246, 240, 0.88);
+  --home-paper-glass: rgba(252, 249, 243, 0.72);
+  --home-mist: rgba(235, 239, 230, 0.72);
+  --home-mist-deep: rgba(211, 220, 207, 0.38);
+  --home-bamboo-soft: #7f9880;
+  --home-bamboo-mist: rgba(144, 164, 140, 0.2);
+  --home-border: rgba(88, 100, 81, 0.16);
+  --home-border-strong: rgba(88, 100, 81, 0.26);
+  --home-shadow: 0 28px 64px rgba(36, 44, 38, 0.16);
+  --home-shadow-soft: 0 18px 38px rgba(36, 44, 38, 0.1);
+  --home-shadow-lift: 0 24px 54px rgba(47, 58, 48, 0.12);
+  --home-shadow-deep: 0 38px 86px rgba(47, 58, 48, 0.16);
+  --home-highlight: rgba(255, 248, 236, 0.72);
+  --home-gold-wash: rgba(204, 177, 128, 0.22);
+  --home-focus: rgba(106, 138, 104, 0.54);
+  --motion-duration-fast: 0.24s;
+  --motion-duration-medium: 0.46s;
+  --motion-duration-slow: 0.76s;
+  --motion-ease-enter: power2.out;
+  --motion-ease-exit: power2.in;
+  --motion-ease-emphasis: power3.out;
+  --motion-distance-sm: 14px;
+  --motion-distance-md: 26px;
+  --motion-distance-lg: 42px;
+  --motion-stagger-step: 0.08s;
+  --motion-blur-enter: 14px;
+
+  --ink-950: #050403;
+  --ink-900: #090705;
+  --ink-850: #110c09;
+  --ink-800: #18110d;
+  --ink-780: #211712;
+  --moon-glow: rgba(127, 149, 223, 0.22);
+  --brass-glow: rgba(199, 160, 103, 0.28);
+  --warm-panel: rgba(245, 233, 211, 0.92);
+  --warm-panel-soft: rgba(245, 233, 211, 0.82);
+  --dark-panel: rgba(18, 13, 10, 0.84);
+  --dark-panel-strong: rgba(13, 9, 7, 0.92);
+  --card-border: rgba(199, 160, 103, 0.18);
+  --card-border-strong: rgba(199, 160, 103, 0.32);
+  --divider: rgba(199, 160, 103, 0.12);
+
+  --font-headline: 'Source Han Serif SC', 'Noto Serif CJK SC', 'Songti SC', 'STSong', 'SimSun', serif;
+  --font-body: 'PingFang SC', 'Source Han Sans CN', 'Microsoft YaHei', sans-serif;
+  --font-label: 'Manrope', 'PingFang SC', 'Source Han Sans CN', 'Microsoft YaHei', sans-serif;
+
+  --nav-height: 5rem;
+  --page-width: 76rem;
+  --page-width-wide: 88rem;
+  --page-width-home: 90rem;
+  --page-gutter: clamp(1rem, 2vw, 2rem);
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 2.5rem;
+  --space-8: 3rem;
+  --space-9: 4rem;
+  --space-10: 5rem;
+
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-pill: 9999px;
+
+  --shadow-soft: 0 22px 48px rgba(0, 0, 0, 0.34);
+  --shadow-card: 0 32px 70px rgba(0, 0, 0, 0.42);
+  --shadow-floating: 0 40px 90px rgba(0, 0, 0, 0.5);
+}
+
+body {
+  margin: 0;
+  background-color: var(--surface);
+  color: var(--on-surface);
+  font-family: var(--font-body);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}

@@ -1,0 +1,516 @@
+# 📚 图书馆书籍定位系统
+
+> **中国劳动关系学院图书馆智能定位系统** — 集书籍检索定位、借阅管理、AI 辅助、数据分析与沉浸式交互于一体的全栈智慧图书馆平台。
+
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2.4-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
+[![Vue](https://img.shields.io/badge/Vue-3.4-42B883?style=for-the-badge&logo=vuedotjs&logoColor=white)](https://vuejs.org/)
+[![Electron](https://img.shields.io/badge/Electron-41-47848F?style=for-the-badge&logo=electron&logoColor=white)](https://www.electronjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.2-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://www.mysql.com/)
+[![License](https://img.shields.io/badge/License-MIT-EAB308?style=for-the-badge)](LICENSE)
+
+---
+
+## 🎯 项目简介
+
+本系统是一个面向高校图书馆的**全栈智慧管理平台**，采用前后端分离架构，为读者提供书籍精准定位、智能搜索、借阅管理、AI 辅导阅读及数据可视化分析等一站式服务。系统同时提供 **Web 浏览器端**和基于 Electron 的 **Windows 绿色桌面客户端**，并内置了丰富的安全防护与运维监控能力。
+
+### ✨ 核心功能一览
+
+| 模块 | 功能 | 亮点 |
+|------|------|------|
+| 🔍 **智能搜索** | 书名、作者、ISBN 多维度检索 | 实时搜索建议、多条件筛选（语言/状态/分类） |
+| 📍 **精准定位** | 馆内楼层、书架、层位可视化指引 | 基于地理视图的馆内定位地图 |
+| 📖 **借阅管理** | 借书、还书、续借全生命周期管理 | 完整状态机流转、超期自动处理 |
+| 📋 **预约系统** | 在线预约热门书籍 | 排队逻辑、到期自动释放 |
+| 🤖 **AI 智能助手** | 阅读分析、文档润色、多轮对话 | 流式输出、上下文保持、抽屉式 UI |
+| 📊 **数据分析** | 借阅统计、热门排行、趋势可视化 | ECharts 图表、多维度数据看板 |
+| ⚠️ **库存预警** | 低库存预警、采购建议 | 智能阈值、批量导出 |
+| 🔐 **用户系统** | 注册、登录、权限管理、密码安全 | JWT 鉴权、BCrypt 加密、登录失败锁定 |
+| 🔔 **通知系统** | 新书上架、借阅到期提醒 | 实时推送、已读/未读管理 |
+| 📜 **搜索历史** | 历史记录保存与快速重搜 | 一键清空、快捷复搜 |
+| 🐱 **桌面宠物** | 鸡蛋仔虚拟形象互动陪读 | 跳舞/游戏/魔法/生气多状态动画、拖拽移动 |
+| 🕐 **十二地支时钟** | 中国传统时辰展示模块 | 独立地支时钟组件 |
+| 🌍 **多语言** | 中/英文界面一键切换 | Vue I18n 深度集成 |
+| 💻 **跨平台** | Web 端 + Windows 桌面端 | Electron 打包免安装绿色版 + NSIS 安装包 |
+
+---
+
+## 🎨 沉浸式登录界面
+
+登录界面是本系统的**视觉名片**，融合了中国传统水墨美学与现代交互设计，打造了一个极具沉浸感的入口体验：
+
+<details>
+<summary>🖌️ 查看完整交互特性列表（15+ 种微交互）</summary>
+
+#### 视觉层次
+- **宣纸纹理底层** — 仿古宣纸质感背景
+- **水墨晕染画布** — Canvas 动态水墨扩散效果
+- **远中近山水层** — 三层山峦剪影 + 水面倒影
+- **流动云雾层** — 多层缓动雾气动画
+- **翠竹装饰** — SVG 矢量竹枝节点叶片
+
+#### 诗词系统
+- **万首诗词库** — 收录先秦至清代 10,000 首经典古典诗词
+- **飘落诗页** — 随机抽取诗词以竖排书页形式飘落，自适应尺寸排版
+- **墨点溅射** — 不规则形态墨点随机分布
+
+#### 微交互动效
+- **鼠标跟随暖光** — 全局鼠标追踪暖色光晕
+- **粒子尾迹** — 鼠标移动时生成金色粒子轨迹
+- **毛笔笔触画布** — Canvas 实时描绘书法笔触尾迹
+- **墨水涟漪** — 点击任意位置产生墨水飞溅 + 墨点散射
+- **3D 透视倾斜** — 登录卡片随鼠标呈 3D 景深倾斜
+- **呼吸光环** — 登录区域缓慢脉动的光晕环
+- **表单进度环** — 实时计算填写进度的 SVG 圆环指示器
+- **磁性按钮** — 提交按钮随鼠标靠近产生吸附偏移
+- **输入脉冲** — 打字实时触发输入框脉冲波纹
+- **登录成功烟花** — 认证成功后全屏 40 粒子爆裂庆祝动效
+- **错误震动反馈** — 登录失败时卡片物理抖动
+- **印章互动** — 可点击切换的传统印章文字（学海无涯/书山有路/博学笃行…）
+- **瀑布入场动画** — 表单元素交错进入的级联动画
+- **时段问候语** — 根据当前时刻自动切换问候文案与 Emoji
+- **密码强度条** — 注册时实时四级密码强度可视化
+- **浮动图标** — 书籍主题图标水墨色调轻柔漂浮
+
+</details>
+
+---
+
+## 🚀 快速开始
+
+### 前置要求
+
+| 工具 | 最低版本 | 说明 |
+|------|----------|------|
+| Java | 17+ | 后端运行环境 |
+| Node.js | 16+ | 前端构建环境 |
+| Maven | 3.6+ | 后端依赖管理 |
+| MySQL | 8.0+ | 数据库 |
+
+### 启动步骤
+
+#### 1️⃣ 启动后端
+
+```bash
+cd backend
+mvn spring-boot:run
+```
+
+后端将在 `http://localhost:8080` 启动
+
+#### 2️⃣ 启动前端
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+前端开发服务器将在 `http://localhost:5173` 启动
+
+#### 3️⃣ 访问系统（二选一）
+
+**选项 A — Web 浏览器端**
+打开浏览器访问：http://localhost:5173
+
+**选项 B — 桌面客户端（开发环境）**
+在 frontend 目录下新开一个终端运行：
+```bash
+npm run electron:dev
+```
+
+### 🔑 测试账号
+
+| 账号类型 | 学工号 | 密码 | 角色 |
+|----------|--------|------|------|
+| 默认读者 | `2021001` | `Test123456` | `STUDENT` |
+| 默认管理员 | `admin001` | `Admin123456!` | `ADMIN` |
+
+---
+
+## 🏗️ 技术架构
+
+```
+                    ┌─────────────────────────────────────────────┐
+                    │              客户端 (Client)                 │
+                    │  ┌──────────┐          ┌──────────────────┐ │
+                    │  │ 浏览器    │          │ Electron 桌面端   │ │
+                    │  │ Web SPA  │          │ Windows App      │ │
+                    │  └────┬─────┘          └────────┬─────────┘ │
+                    └───────┼─────────────────────────┼───────────┘
+                            │      HTTP / REST        │
+                    ┌───────┴─────────────────────────┴───────────┐
+                    │           安全过滤链 (Filter Chain)           │
+                    │  RateLimit → AntiCrawler → JWT Auth          │
+                    │  → ResponseWatermark → RequestPattern        │
+                    ├─────────────────────────────────────────────┤
+                    │           Spring Boot 后端                    │
+                    │  ┌────────────────────────────────────────┐  │
+                    │  │  Controller 层                         │  │
+                    │  │  Auth│Book│Borrow│Reserve│Stats│...    │  │
+                    │  ├────────────────────────────────────────┤  │
+                    │  │  Service 层                            │  │
+                    │  │  业务逻辑│状态机│调度│分析              │  │
+                    │  ├────────────────────────────────────────┤  │
+                    │  │  Repository 层 (Spring Data JPA)       │  │
+                    │  └────────────────┬───────────────────────┘  │
+                    │                   │                          │
+                    │            ┌──────┴──────┐                   │
+                    │            │   MySQL DB  │                   │
+                    │            └─────────────┘                   │
+                    │                                              │
+                    │  ┌──────────────────────────────────────┐    │
+                    │  │  监控 (Actuator + Prometheus + 日志)   │    │
+                    │  └──────────────────────────────────────┘    │
+                    └─────────────────────────────────────────────┘
+```
+
+### 后端技术栈
+
+| 类别 | 技术 |
+|------|------|
+| 框架 | Spring Boot 3.2.4 |
+| 安全 | Spring Security + JWT (jjwt 0.12.3) |
+| 持久化 | Spring Data JPA + MySQL |
+| 验证 | Jakarta Validation |
+| 加密 | BCrypt |
+| 调度 | ShedLock 分布式任务调度 |
+| 监控 | Spring Actuator + Micrometer + Prometheus |
+| 简化 | Lombok |
+
+### 前端技术栈
+
+| 类别 | 技术 |
+|------|------|
+| 框架 | Vue 3.4 (Composition API + `<script setup>`) |
+| 语言 | TypeScript 5.2 |
+| 桌面端 | Electron 41 + electron-builder |
+| 状态管理 | Pinia |
+| 路由 | Vue Router |
+| HTTP | Axios |
+| 图表 | ECharts 6 |
+| 国际化 | Vue I18n |
+| 构建 | Vite 5 |
+
+---
+
+## 📁 项目结构
+
+```
+图书馆书籍定位系统/
+├── backend/                        # 后端项目 (Spring Boot)
+│   └── src/main/java/com/library/
+│       ├── config/                 # SecurityConfig, PrometheusConfig, ShedLockConfig
+│       ├── controller/             # REST API 控制器
+│       │   ├── AuthController      #   认证 (登录/注册/刷新/登出)
+│       │   ├── BookController      #   书籍搜索与详情
+│       │   ├── BorrowController    #   借阅管理 (借/还/续)
+│       │   ├── ReservationController#  预约管理
+│       │   ├── StatisticsController#   数据分析统计
+│       │   ├── NotificationController# 消息通知
+│       │   ├── SearchHistoryController# 搜索历史
+│       │   ├── CaptchaController   #   验证码服务
+│       │   └── HoneypotController  #   蜜罐陷阱端点
+│       ├── dto/                    # 数据传输对象
+│       ├── exception/              # 全局异常处理
+│       ├── filter/                 # 安全过滤器链
+│       │   ├── JwtAuthenticationFilter  # JWT 令牌验证
+│       │   ├── RateLimitFilter          # 多维度限流
+│       │   ├── AntiCrawlerFilter        # 反爬虫检测
+│       │   └── ResponseWatermarkFilter  # 响应数据水印
+│       ├── model/                  # JPA 实体 (User, Book, BorrowRecord...)
+│       ├── repository/             # Spring Data JPA 仓库
+│       ├── scheduler/              # 定时任务 (超期检查、预约释放)
+│       ├── service/                # 业务服务层
+│       │   ├── UserService         #   用户管理
+│       │   ├── BookService         #   书籍业务
+│       │   ├── BorrowService       #   借阅状态机
+│       │   ├── ReservationService  #   预约排队
+│       │   ├── StatisticsService   #   数据分析引擎
+│       │   ├── NotificationService #   通知推送
+│       │   ├── LoginFailureTracker #   登录失败追踪
+│       │   └── RequestPatternAnalyzer # 行为模式分析
+│       └── util/                   # 工具类 (JWT, 加密等)
+│
+├── frontend/                       # 前端/桌面项目 (Vue 3 + Electron)
+│   ├── electron/                   # Electron 主进程 + 环境配置
+│   └── src/
+│       ├── api/                    # API 接口层
+│       │   ├── bookApi.ts          #   书籍接口
+│       │   ├── borrowApi.ts        #   借阅接口
+│       │   ├── statisticsApi.ts    #   统计接口
+│       │   └── antiCrawler.ts      #   前端反爬策略
+│       ├── components/             # UI 组件库
+│       │   ├── hero/               #   首页英雄区
+│       │   ├── home/               #   首页组件 (BookGrid, SidebarFilters, SuperButton 等)
+│       │   ├── login/              #   登录页水墨组件 (山水/云雾/竹/墨)
+│       │   ├── navigation/         #   顶部导航 + 用户菜单
+│       │   └── panels/             #   通知面板 + 搜索历史面板
+│       ├── data/                   # 数据资源
+│       │   └── poemLibrary.ts      #   10,000 首古典诗词库 (~1.2MB)
+│       ├── dizhi/                  # 十二地支时钟模块
+│       ├── locales/                # 国际化语料 (中/英)
+│       ├── pet/                    # 桌面宠物交互体系
+│       │   ├── DesktopPet.vue      #   宠物主组件
+│       │   ├── composables/        #   可组合逻辑抽取
+│       │   └── data/               #   宠物状态数据
+│       ├── router/                 # Vue Router 路由配置
+│       ├── stores/                 # Pinia 状态管理
+│       └── views/                  # 页面视图
+│           ├── Login.vue           #   沉浸式水墨登录页 (~54KB, 1286行)
+│           ├── Dashboard.vue       #   数据分析仪表盘
+│           ├── BookSearch.vue      #   书籍搜索
+│           ├── BookDetail.vue      #   书籍详情与定位
+│           ├── MyBorrows.vue       #   我的借阅
+│           ├── MyReservations.vue  #   我的预约
+│           ├── InventoryAlerts.vue #   库存预警
+│           └── PurchaseSuggestions.vue # 采购建议
+│
+├── ddos-defense/                   # DDoS 防御独立模块
+│   ├── configs/                    #   Nginx/iptables 防护配置
+│   ├── scripts/                    #   自动化防御脚本
+│   ├── monitoring/                 #   监控告警
+│   └── docs/                       #   防御方案文档
+│
+├── docs/                           # 项目文档集
+│   ├── ARCHITECTURE_ANALYSIS.md    #   架构深度分析
+│   ├── DEVELOPMENT_GUIDE.md        #   开发指南
+│   ├── 快速启动指南.md              #   5 分钟上手
+│   ├── 借阅管理系统详细计划.md      #   借阅模块设计
+│   ├── 数据分析模块详细计划.md      #   分析模块设计
+│   └── ...                         #   更多总结与报告
+│
+└── test-api.bat / test-api.sh      # API 测试脚本
+```
+
+---
+
+## 🔐 安全体系
+
+本系统构建了**多层纵深安全防御**体系：
+
+### 认证与访问控制
+- ✅ **BCrypt 密码加密** — 不可逆哈希存储
+- ✅ **JWT 令牌认证** — 无状态身份验证 + Token 刷新机制
+- ✅ **登录失败锁定** — 5 次失败后锁定 30 分钟
+- ✅ **CORS 跨域安全配置** — 严格域名白名单
+
+### 反爬虫与反滥用
+- ✅ **多维度限流 (RateLimit)** — IP/用户/端点粒度速率限制
+- ✅ **反爬虫检测 (AntiCrawler)** — 请求频率与路径模式异常检测
+- ✅ **行为模式分析 (RequestPatternAnalyzer)** — 检测顺序遍历、定时轮询、广度优先爬取
+- ✅ **设备指纹识别** — 前端 Canvas/WebGL 指纹采集
+- ✅ **渐进式惩罚** — 可疑 IP 逐步加重限流至封禁
+- ✅ **蜜罐陷阱 (Honeypot)** — 隐藏端点诱捕恶意爬虫
+- ✅ **响应水印 (Watermark)** — 数据追溯标记
+
+### 基础设施安全
+- ✅ **DDoS 防御方案** — Nginx 限流 + iptables 规则 + 自动化脚本
+- ✅ **表单验证 & SQL 注入防护** — Jakarta Validation + 参数化查询
+- ✅ **Prometheus 监控** — 实时性能指标采集与告警
+
+---
+
+## 📊 API 接口文档
+
+### 认证接口 `/api/auth`
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| POST | `/api/auth/register` | 用户注册 |
+| POST | `/api/auth/login` | 用户登录 |
+| POST | `/api/auth/refresh` | 刷新令牌 |
+| GET  | `/api/auth/me` | 获取当前用户信息 |
+| POST | `/api/auth/change-password` | 修改密码 |
+| POST | `/api/auth/logout` | 退出登录 |
+
+### 书籍接口 `/api/books`
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/api/books/search` | 搜索书籍 |
+| GET | `/api/books/{id}` | 获取书籍详情 |
+
+### 借阅接口 `/api/borrows`
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| POST | `/api/borrows` | 借阅书籍 |
+| POST | `/api/borrows/{id}/return` | 归还书籍 |
+| POST | `/api/borrows/{id}/renew` | 续借书籍 |
+| GET  | `/api/borrows/my` | 获取我的借阅记录 |
+
+### 预约接口 `/api/reservations`
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| POST | `/api/reservations` | 预约书籍 |
+| DELETE | `/api/reservations/{id}` | 取消预约 |
+| GET  | `/api/reservations/my` | 获取我的预约 |
+
+### 统计接口 `/api/statistics`
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/api/statistics/overview` | 总览数据 |
+| GET | `/api/statistics/trends` | 借阅趋势 |
+| GET | `/api/statistics/rankings` | 热门排行 |
+
+### 通知接口 `/api/notifications`
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/api/notifications` | 获取通知列表 |
+| PUT | `/api/notifications/{id}/read` | 标记已读 |
+| PUT | `/api/notifications/read-all` | 全部标记已读 |
+
+### 搜索历史接口 `/api/search-history`
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET  | `/api/search-history` | 获取搜索历史 |
+| POST | `/api/search-history` | 添加搜索记录 |
+| DELETE | `/api/search-history` | 清空搜索历史 |
+
+---
+
+## 🛠️ 开发与构建
+
+### 后端
+
+```bash
+cd backend
+
+# 编译
+mvn clean compile
+
+# 运行测试
+mvn test
+
+# 打包可执行 JAR
+mvn clean package
+```
+
+### 前端
+
+```bash
+cd frontend
+
+# 安装依赖
+npm install
+
+# ---- Web 开发 ----
+npm run dev          # 启动开发服务器
+npm run build        # 构建生产版本
+npm run preview      # 预览生产构建
+
+# ---- Windows 桌面端打包 ----
+# 生成绿色免安装版 + NSIS 安装包 → dist_electron/
+npm run build:win
+```
+
+---
+
+## 🔧 问题排查
+
+| 问题 | 排查方向 |
+|------|----------|
+| **后端启动失败** | 检查 Java ≥ 17、MySQL 连接配置 (`application.yml`)、端口 8080 是否被占用 |
+| **前后端联调 CORS 报错** | 确认 Spring Boot 已运行且 SecurityConfig 中 CORS 配置正确；检查 Axios `baseURL` |
+| **Electron 打包下载慢** | 配置 npm 镜像源或 `ELECTRON_MIRROR` 环境变量指向国内镜像 |
+| **诗词库加载慢** | `poemLibrary.ts` 约 1.2MB，生产环境已配置 Vite 代码分割 + 动态导入 |
+
+详见 [快速启动指南.md](./docs/快速启动指南.md)
+
+---
+
+## 📖 文档导航
+
+| 文档 | 说明 |
+|------|------|
+| [ARCHITECTURE_ANALYSIS.md](./docs/ARCHITECTURE_ANALYSIS.md) | 全项目架构深度分析及目录依赖说明 |
+| [DEVELOPMENT_GUIDE.md](./docs/DEVELOPMENT_GUIDE.md) | 项目总开发指南与规划 |
+| [快速启动指南.md](./docs/快速启动指南.md) | 5 分钟快速上手 |
+| [借阅管理系统详细计划.md](./docs/借阅管理系统详细计划.md) | 借阅模块完整设计方案 |
+| [数据分析模块详细计划.md](./docs/数据分析模块详细计划.md) | 数据分析引擎设计方案 |
+| [开发完成总结.md](./docs/开发完成总结.md) | 项目核心业务总结 |
+| [DDoS 防御方案](./ddos-defense/README.md) | DDoS 防御体系文档 |
+| [test-api.bat](./test-api.bat) / [test-api.sh](./test-api.sh) | API 接口测试脚本 |
+
+---
+
+## 📝 更新日志
+
+### v1.2.0 (2026-04-05)
+
+#### 🆕 新增功能
+- ✅ 实装**沉浸式水墨登录界面**，包含 15+ 种微交互动效（粒子尾迹、毛笔笔触、磁性按钮、呼吸光环、进度环、登录烟花等）
+- ✅ 集成 **10,000 首古典诗词库**，登录页飘落诗页随机展示先秦至清代名篇
+- ✅ 新增**行为模式反爬虫分析** — 检测顺序遍历、定时轮询、广度优先爬取模式
+- ✅ 新增**设备指纹识别**与**渐进式惩罚**机制
+- ✅ 部署 **DDoS 防御独立模块** — 含 Nginx 限流、iptables 规则、自动化监控脚本
+
+#### 🔧 技术改进
+- ✅ 全面修复前端 16 项代码质量问题（内存泄漏、竞态条件、时区偏差、并发问题）
+- ✅ 全面修复后端 16 项安全与性能问题（JWT token 管理、状态机死锁、全表扫描优化、线程安全）
+- ✅ 登录页动画引擎重构：视频方案 → Canvas 帧级交叉缓存，消除"黑屏频闪"
+- ✅ 前端大组件模块化拆分，提炼 Composables 降低耦合度
+
+### v1.1.0 (2026-04-04)
+
+#### 🆕 新增功能
+- ✅ 上线基于 Electron 的 Windows 桌面独立端安装包 (`dist_electron`)
+- ✅ 新增 AI 智能助手组件，支持上下文保持、多轮对话与写作润色
+- ✅ 扩充桌面宠物功能，实装跳舞、游戏、魔法与生气等丰富的帧级状态交互
+- ✅ 强化应用整体生态体验，加入更精美的动态背景逻辑及缓存呈现
+
+#### 🔧 技术改进
+- ✅ 修复了由于 Vue Router 递归加载造成的系统登录页阻塞或死循环问题
+- ✅ 重构了 AI 等超过千行的前端组件模块化梳理，提炼 Composables 以降低系统耦合度
+- ✅ 优化登录页面的动画，由视频依赖转向健壮的交叉缓存动效实现，消除加载"黑屏频闪"
+- ✅ 成功修复打包依赖环境导致打包不通过的异常
+
+### v1.0.0 (2026-04-03)
+- 🎉 初始版本发布：全平台基本架构确立，实现基础用户态及书籍系统联调
+
+---
+
+## 🤝 贡献指南
+
+欢迎贡献代码！请遵循以下步骤：
+
+1. Fork 本项目
+2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 开启 Pull Request 进行审核
+
+---
+
+## 📄 许可证
+
+本项目采用 MIT 许可证 — 详见 [LICENSE](LICENSE) 文件
+
+---
+
+## 👥 团队
+
+- **开发**: AI Agent 辅助研制
+- **课题**: 中国劳动关系学院
+
+---
+
+## 🙏 致谢
+
+感谢以下开源项目的支持：
+
+- [Spring Boot](https://spring.io/projects/spring-boot) — 后端框架
+- [Vue.js](https://vuejs.org/) — 前端框架
+- [Electron](https://www.electronjs.org/) — 桌面端跨平台
+- [ECharts](https://echarts.apache.org/) — 数据可视化
+- [Pinia](https://pinia.vuejs.org/) — 状态管理
+- [Axios](https://axios-http.com/) — HTTP 客户端
+- [JWT](https://jwt.io/) — 令牌认证
+- [ShedLock](https://github.com/lukas-krecan/ShedLock) — 分布式调度
+- [Micrometer](https://micrometer.io/) + [Prometheus](https://prometheus.io/) — 监控体系

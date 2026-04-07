@@ -1,0 +1,93 @@
+{
+  "nav": {
+    "collection": "馆藏目录",
+    "translations": "本地化译本",
+    "archival": "档案库",
+    "requests": "借阅请求",
+    "lang": "中"
+  },
+  "hero": {
+    "title": "大藏书阁",
+    "subtitle": "访问全球本地化典籍档案的中央储存库。以意图和精度在数以百万计的记录中检索知识。",
+    "searchPlaceholder": "根据书名、作者或 ISBN 索书号检索",
+    "searchBtn": "查询",
+    "trending": "热搜标引:",
+    "tag1": "珍稀手稿",
+    "tag2": "技术文献库",
+    "tag3": "近期编录",
+    "tag4": "古典哲学",
+    "tag5": "数字人文"
+  },
+  "filters": {
+    "status": "馆藏状态",
+    "statusInLibrary": "在馆",
+    "statusCheckedOut": "已借出",
+    "language": "书籍语言 (LANG)",
+    "category": "文献类目",
+    "catLit": "文学",
+    "catTech": "科技",
+    "catArt": "艺术",
+    "source": "获取来源",
+    "sourceAll": "所有来源",
+    "sourceUniv": "高校捐赠",
+    "sourcePrivate": "私人档案",
+    "sourceExchange": "国际交换",
+    "sourceLegacy": "传承馆藏"
+  },
+  "catalog": {
+    "featured": "特色卷宗",
+    "featuredSub": "根据当前全局趋势所展示的档案记录。",
+    "loading": "正在精准定位您的检索意图...",
+    "empty": "暂无匹配书目，请尝试其他关键词",
+    "offlineWarning": "⚠️ 当前未连接后端在线接口，正在以体验模式展示预置数据样例",
+    "noCover": "暂无封面",
+    "isbn": "条形码号",
+    "location": "当前物理定位",
+    "badges": {
+      "Localized": "汉化完成",
+      "Draft": "译入校对",
+      "Cataloged": "常规在册"
+    }
+  },
+  "related": {
+    "title": "相关卷宗游廊",
+    "viewAll": "开启全域文献库"
+  },
+  "notifications": {
+    "title": "系统通知",
+    "markAllRead": "全部已读",
+    "empty": "暂无新通知",
+    "item1Title": "新书上架",
+    "item1Desc": "《人工智能导论》已入库一楼科技室，欢迎借阅。",
+    "item2Title": "借阅到期提醒",
+    "item2Desc": "《设计模式》将于 3 天后到期，请及时归还。",
+    "item3Title": "预约到馆",
+    "item3Desc": "您预约的《百年孤独》已到馆，请尽快前往借阅处领取。",
+    "item4Title": "系统维护通知",
+    "item4Desc": "本周六 22:00 至次日 06:00 系统将进行例行维护，届时部分服务不可用。",
+    "item5Title": "活动公告",
+    "item5Desc": "世界读书日系列活动已开启报名，欢迎参与！",
+    "timeAgo1": "2 小时前",
+    "timeAgo2": "昨天",
+    "timeAgo3": "2 天前",
+    "timeAgo4": "3 天前",
+    "timeAgo5": "1 周前"
+  },
+  "history": {
+    "title": "搜索历史",
+    "clear": "清空记录",
+    "empty": "暂无搜索记录，试试搜索一本书吧！",
+    "results": "条结果"
+  },
+  "footer": {
+    "desc": "一个致力于全球人类智识本地化的数字策展框架体系。专为清澈、权威及永久长存等特征打造。",
+    "resources": "检索与指导资源",
+    "mainBranch": "常设分馆",
+    "archivalStandards": "典藏标准",
+    "isbnDirectory": "ISBN 目录",
+    "localizationApis": "本地化接口",
+    "addressLine1": "中央本地化枢纽",
+    "addressLine2": "第四层 第七区",
+    "addressLine3": "策展服务部"
+  }
+}

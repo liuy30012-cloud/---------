@@ -1,0 +1,109 @@
+import { createRouter, createWebHashHistory } from 'vue-router'
+import { defineComponent, h } from 'vue'
+import { useUserStore } from '../stores/user'
+
+type AppLayout = 'immersive' | 'home' | 'page'
+type AppShell = 'default' | 'wide'
+
+const Login = () => import('../views/Login.vue')
+const MyBorrows = () => import('../views/MyBorrows.vue')
+const MyReservations = () => import('../views/MyReservations.vue')
+const MyAccount = () => import('../views/MyAccount.vue')
+const Dashboard = () => import('../views/Dashboard.vue')
+const InventoryAlerts = () => import('../views/InventoryAlerts.vue')
+const PurchaseSuggestions = () => import('../views/PurchaseSuggestions.vue')
+const BookSearch = () => import('../views/BookSearch.vue')
+const BookDetail = () => import('../views/BookDetail.vue')
+
+const HomeStub = defineComponent({ render: () => h('div') })
+
+const routes = [
+  {
+    path: '/login',
+    name: 'Login',
+    component: Login,
+    meta: { requiresAuth: false, layout: 'immersive' as AppLayout }
+  },
+  {
+    path: '/',
+    name: 'Home',
+    component: HomeStub,
+    meta: { requiresAuth: false, layout: 'home' as AppLayout, shell: 'wide' as AppShell }
+  },
+  {
+    path: '/my-borrows',
+    name: 'MyBorrows',
+    component: MyBorrows,
+    meta: { requiresAuth: true, layout: 'page' as AppLayout, shell: 'default' as AppShell }
+  },
+  {
+    path: '/my-reservations',
+    name: 'MyReservations',
+    component: MyReservations,
+    meta: { requiresAuth: true, layout: 'page' as AppLayout, shell: 'default' as AppShell }
+  },
+  {
+    path: '/my-account',
+    name: 'MyAccount',
+    component: MyAccount,
+    meta: { requiresAuth: true, layout: 'page' as AppLayout, shell: 'default' as AppShell }
+  },
+  {
+    path: '/dashboard',
+    name: 'Dashboard',
+    component: Dashboard,
+    meta: { requiresAuth: true, requiresAdmin: true, layout: 'page' as AppLayout, shell: 'wide' as AppShell }
+  },
+  {
+    path: '/inventory-alerts',
+    name: 'InventoryAlerts',
+    component: InventoryAlerts,
+    meta: { requiresAuth: true, requiresAdmin: true, layout: 'page' as AppLayout, shell: 'wide' as AppShell }
+  },
+  {
+    path: '/purchase-suggestions',
+    name: 'PurchaseSuggestions',
+    component: PurchaseSuggestions,
+    meta: { requiresAuth: true, layout: 'page' as AppLayout, shell: 'wide' as AppShell }
+  },
+  {
+    path: '/books/search',
+    name: 'BookSearch',
+    component: BookSearch,
+    meta: { requiresAuth: false, layout: 'page' as AppLayout, shell: 'default' as AppShell }
+  },
+  {
+    path: '/books/:id',
+    name: 'BookDetail',
+    component: BookDetail,
+    meta: { requiresAuth: false, layout: 'page' as AppLayout, shell: 'default' as AppShell }
+  }
+]
+
+const router = createRouter({
+  history: createWebHashHistory(),
+  routes
+})
+
+router.beforeEach((to, _from, next) => {
+  const userStore = useUserStore()
+
+  if (to.meta.requiresAuth && !userStore.isLoggedIn) {
+    next({ name: 'Login', query: { redirect: to.fullPath } })
+    return
+  }
+
+  if (to.meta.requiresAdmin && !userStore.isAdmin) {
+    next({ name: 'Home' })
+    return
+  }
+
+  if (to.name === 'Login' && userStore.isLoggedIn) {
+    next({ name: 'Home' })
+    return
+  }
+
+  next()
+})
+
+export default router

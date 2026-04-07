@@ -1,0 +1,82 @@
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# Backend (Java/Maven)
+backend/target/
+backend/.mvn/
+backend/mvnw
+backend/mvnw.cmd
+backend/*.log
+backend/*.txt
+
+# Frontend (Node.js/Vue)
+frontend/node_modules/
+frontend/dist/
+frontend/dist_electron/
+frontend/dist_electron_repack*/
+frontend/.vite/
+frontend/.cache/
+
+# Build artifacts
+*.class
+*.jar
+*.war
+*.ear
+*.zip
+
+# Logs
+*.log
+logs/
+*.log.*
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# Environment & Sensitive Configuration
+.env
+.env.local
+.env.*.local
+.env.production
+application-local.yml
+application-prod.yml
+backend/src/main/resources/application-local.yml
+backend/src/main/resources/application-prod.yml
+
+# Security & Certificates
+*.pem
+*.key
+*.crt
+*.p12
+*.jks
+*.pfx
+*.keystore
+
+# Database backups
+*.sql
+*.dump
+*.backup
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+venv/
+env/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3

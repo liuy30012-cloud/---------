@@ -1,0 +1,104 @@
+server:
+  port: ${SERVER_PORT:8080}
+  max-http-header-size: 8KB
+  tomcat:
+    max-http-post-size: 2MB
+    connection-timeout: 20s
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+    session:
+      timeout: 30m
+
+app:
+  scheduling:
+    enabled: ${APP_SCHEDULING_ENABLED:true}
+
+spring:
+  application:
+    name: library-positioning-backend
+  datasource:
+    url: ${DB_URL:jdbc:h2:mem:library-dev;MODE=MySQL;NON_KEYWORDS=YEAR;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE}
+    username: ${DB_USERNAME:sa}
+    password: ${DB_PASSWORD:}
+    driver-class-name: ${DB_DRIVER:org.h2.Driver}
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      connection-test-query: SELECT 1
+  jpa:
+    hibernate:
+      ddl-auto: ${DDL_AUTO:update}
+    show-sql: ${SHOW_SQL:true}
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: ${FORMAT_SQL:true}
+  redis:
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+    password: ${REDIS_PASSWORD:}
+    database: 0
+    timeout: 2000ms
+    lettuce:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 0
+        max-wait: -1ms
+  data:
+    redis:
+      repositories:
+        enabled: false
+
+jwt:
+  secret: ${JWT_SECRET:your-256-bit-secret-key-change-this-in-production-environment-please-use-strong-key}
+  expiration: ${JWT_EXPIRATION:86400000}
+  refresh-expiration: ${JWT_REFRESH_EXPIRATION:604800000}
+
+security:
+  password:
+    min-length: 6
+    max-attempts: 5
+    lock-duration: 1800
+  trusted-proxies:
+    - 127.0.0.1/32
+    - ::1/128
+
+cors:
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:3000}
+
+purchase-requests:
+  auto-priority-threshold: ${PURCHASE_REQUESTS_AUTO_PRIORITY_THRESHOLD:3}
+  auto-planned-threshold: ${PURCHASE_REQUESTS_AUTO_PLANNED_THRESHOLD:8}
+
+anti-crawler:
+  store:
+    type: ${ANTI_CRAWLER_STORE_TYPE:memory}
+  rate-limit:
+    global-rpm: 60
+    search-rpm: 20
+    burst-size: 10
+    ban-threshold: 3
+    ban-duration: 900
+  signature:
+    enabled: ${ANTI_CRAWLER_SIGNATURE_ENABLED:false}
+    secret: ${ANTI_CRAWLER_SECRET:library-anti-crawler-shared-secret-2026}
+    time-window: 60
+  ua-check:
+    enabled: true
+  honeypot:
+    enabled: true
+    dry-run: false
+    delay-ms: 3000
+    ban-duration: 3600
+  challenge:
+    pass-token-ttl: 600
+    bind-user-agent: true
+  watermark:
+    secret: ${WATERMARK_SECRET:watermark-trace-secret-library-2026}

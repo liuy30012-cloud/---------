@@ -1,0 +1,35 @@
+[DEFAULT]
+bantime = 3600
+findtime = 300
+maxretry = 20
+banaction = iptables-multiport
+
+[nginx-limit-req]
+enabled = true
+port = http,https
+filter = nginx-limit-req
+logpath = /var/log/nginx/library-api-error.log
+maxretry = 10
+findtime = 300
+bantime = 3600
+action = iptables-multiport[name=nginx-limit-req, port="http,https", protocol=tcp]
+
+[http-get-dos]
+enabled = true
+port = http,https
+filter = http-get-dos
+logpath = /var/log/nginx/library-api-access.log
+maxretry = 50
+findtime = 300
+bantime = 1800
+action = iptables-multiport[name=http-get-429, port="http,https", protocol=tcp]
+
+[http-post-dos]
+enabled = true
+port = http,https
+filter = http-post-dos
+logpath = /var/log/nginx/library-api-access.log
+maxretry = 30
+findtime = 300
+bantime = 1800
+action = iptables-multiport[name=http-post-429, port="http,https", protocol=tcp]

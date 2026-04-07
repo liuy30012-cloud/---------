@@ -1,0 +1,22 @@
+{
+  "access_log": "/var/log/nginx/library-api-access.log",
+  "state_file": "/var/lib/library-ddos-monitor/intelligent-state.json",
+  "ban_file": "/var/lib/library-ddos-monitor/intelligent-bans.json",
+  "window_seconds": 300,
+  "request_threshold": 300,
+  "path_spread_threshold": 80,
+  "status_429_threshold": 50,
+  "check_interval": 5,
+  "log_file": "/var/log/intelligent-ddos.log",
+  "whitelist": [
+    "127.0.0.1",
+    "::1"
+  ],
+  "auto_ban": false,
+  "ban_duration": 3600,
+  "threat_threshold": 70,
+  "learning_mode": false,
+  "enable_ml": true,
+  "alert_email": "",
+  "alert_webhook": ""
+}

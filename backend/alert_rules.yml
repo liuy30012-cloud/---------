@@ -1,0 +1,36 @@
+groups:
+  - name: library_backend_alerts
+    interval: 30s
+    rules:
+      - alert: ServiceDown
+        expr: up{job="library-backend"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "图书馆后端服务宕机"
+          description: "服务已宕机超过1分钟"
+
+      - alert: HighErrorRate
+        expr: |
+          sum(rate(library_api_calls_total{status=~"5.."}[5m]))
+          /
+          sum(rate(library_api_calls_total[5m])) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "API错误率过高"
+          description: "5xx错误率超过5%"
+
+      - alert: HighMemoryUsage
+        expr: |
+          (jvm_memory_used_bytes{area="heap"}
+          /
+          jvm_memory_max_bytes{area="heap"}) > 0.85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "JVM堆内存使用率过高"
+          description: "堆内存使用率超过85%"

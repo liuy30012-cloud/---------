@@ -1,0 +1,93 @@
+{
+  "nav": {
+    "collection": "Collection",
+    "translations": "Translations",
+    "archival": "Archival",
+    "requests": "Requests",
+    "lang": "Eng"
+  },
+  "hero": {
+    "title": "Bibliotheca",
+    "subtitle": "Access the global repository of localized archival volumes. Search through millions of records with precision and intent.",
+    "searchPlaceholder": "Search by book name, author, or ISBN",
+    "searchBtn": "Search",
+    "trending": "Trending:",
+    "tag1": "Rare Manuscripts",
+    "tag2": "Technical Repositories",
+    "tag3": "Recently Cataloged",
+    "tag4": "Classical Philosophy",
+    "tag5": "Digital Humanities"
+  },
+  "filters": {
+    "status": "STATUS",
+    "statusInLibrary": "In Library",
+    "statusCheckedOut": "Checked Out",
+    "language": "LANGUAGE",
+    "category": "CATEGORY",
+    "catLit": "Literature",
+    "catTech": "Technology",
+    "catArt": "Art",
+    "source": "SOURCE",
+    "sourceAll": "All Sources",
+    "sourceUniv": "University Donations",
+    "sourcePrivate": "Private Archives",
+    "sourceExchange": "International Exchange",
+    "sourceLegacy": "Legacy Collection"
+  },
+  "catalog": {
+    "featured": "Featured Catalog Items",
+    "featuredSub": "Showing archival records based on current trends.",
+    "loading": "Locating archival record...",
+    "empty": "No matching records found. Try another query.",
+    "offlineWarning": "⚠️ Offline mode active. Displaying local sample data.",
+    "noCover": "NO COVER",
+    "isbn": "ISBN",
+    "location": "Current Location",
+    "badges": {
+      "Localized": "Localized",
+      "Draft": "Draft",
+      "Cataloged": "Cataloged"
+    }
+  },
+  "related": {
+    "title": "Related Volumes",
+    "viewAll": "View Full Archive Collection"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Mark all read",
+    "empty": "No new notifications",
+    "item1Title": "New Arrival",
+    "item1Desc": "\"Introduction to Artificial Intelligence\" is now available in 1F Technology Room.",
+    "item2Title": "Due Date Reminder",
+    "item2Desc": "\"Design Patterns\" is due in 3 days. Please return on time.",
+    "item3Title": "Reservation Ready",
+    "item3Desc": "Your reserved book \"One Hundred Years of Solitude\" is now available for pickup.",
+    "item4Title": "System Maintenance",
+    "item4Desc": "Scheduled maintenance this Saturday 22:00–06:00. Services may be unavailable.",
+    "item5Title": "Event Announcement",
+    "item5Desc": "World Book Day event registration is now open. Join us!",
+    "timeAgo1": "2 hours ago",
+    "timeAgo2": "Yesterday",
+    "timeAgo3": "2 days ago",
+    "timeAgo4": "3 days ago",
+    "timeAgo5": "1 week ago"
+  },
+  "history": {
+    "title": "Search History",
+    "clear": "Clear All",
+    "empty": "No search history yet. Try searching for a book!",
+    "results": "results"
+  },
+  "footer": {
+    "desc": "A digital curation framework dedicated to the localization and preservation of global human knowledge. Designed for clarity, authority, and permanence.",
+    "resources": "Resources",
+    "mainBranch": "Main Branch",
+    "archivalStandards": "Archival Standards",
+    "isbnDirectory": "ISBN Directory",
+    "localizationApis": "Localization APIs",
+    "addressLine1": "Central Localization Hub",
+    "addressLine2": "Level 4, Sector 7",
+    "addressLine3": "Curatorial Services"
+  }
+}

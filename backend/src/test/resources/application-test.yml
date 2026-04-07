@@ -1,0 +1,54 @@
+app:
+  scheduling:
+    enabled: false
+
+spring:
+  datasource:
+    url: jdbc:h2:mem:library-test-${random.uuid};MODE=MySQL;NON_KEYWORDS=YEAR;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: false
+  data:
+    redis:
+      repositories:
+        enabled: false
+
+security:
+  trusted-proxies:
+    - 127.0.0.1/32
+    - ::1/128
+
+jwt:
+  secret: test-secret-key-must-be-at-least-32-bytes-long-for-hs256
+  expiration: 86400000
+  refresh-expiration: 604800000
+
+cors:
+  allowed-origins: http://localhost:5173
+
+anti-crawler:
+  store:
+    type: memory
+  rate-limit:
+    global-rpm: 1
+    search-rpm: 1
+    burst-size: 50
+    ban-threshold: 10
+    ban-duration: 60
+  signature:
+    enabled: false
+    secret: test-anti-crawler-secret-key-must-be-at-least-32-bytes
+    time-window: 60
+  honeypot:
+    dry-run: true
+  challenge:
+    pass-token-ttl: 600
+    bind-user-agent: true
