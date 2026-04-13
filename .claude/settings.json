@@ -1,4 +1,11 @@
 {
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/35012/.claude/plugins/cache/claude-plugins-official/superpowers/5.0.7/skills/brainstorming/**)",
+      "Bash(bash \"C:\\\\Users\\\\35012\\\\.claude\\\\plugins\\\\cache\\\\claude-plugins-official\\\\superpowers\\\\5.0.7\\\\skills\\\\brainstorming\\\\scripts\\\\start-server.sh\" --project-dir \"e:/图书馆书籍定位系统\")",
+      "Bash(cat \"e:/图书馆书籍定位系统/.superpowers/brainstorm/\"*/state/server-info)"
+    ]
+  },
   "enabledPlugins": {
     "superpowers@claude-plugins-official": true
   }

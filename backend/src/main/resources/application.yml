@@ -15,6 +15,13 @@ server:
 app:
   scheduling:
     enabled: ${APP_SCHEDULING_ENABLED:true}
+  upload:
+    damage-photos-dir: ${UPLOAD_DAMAGE_DIR:uploads/damage-photos}
+
+spring.servlet.multipart:
+  enabled: true
+  max-file-size: 5MB
+  max-request-size: 20MB
 
 spring:
   application:

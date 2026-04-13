@@ -48,6 +48,14 @@
             >
               加入预约队列
             </button>
+            <button
+              v-if="userStore.isLoggedIn"
+              class="page-action-btn page-action-btn--damage"
+              type="button"
+              @click="showDamageModal = true"
+            >
+              报告问题
+            </button>
           </div>
         </div>
 
@@ -218,6 +226,13 @@
       <button class="page-action-btn page-action-btn--secondary" type="button" @click="goBack">返回</button>
     </div>
 
+    <DamageReportModal
+      v-if="showDamageModal && book"
+      :book-id="book.id"
+      :book-title="book.title"
+      @close="showDamageModal = false"
+      @submitted="onDamageReportSubmitted"
+    />
     <ConfirmDialog
       :open="dialog.open"
       :eyebrow="dialog.eyebrow"
@@ -240,6 +255,7 @@ import { borrowApi, reservationApi } from '../api/borrowApi'
 import ConfirmDialog from '../components/common/ConfirmDialog.vue'
 import FeedbackToast from '../components/common/FeedbackToast.vue'
 import PageHeader from '../components/layout/PageHeader.vue'
+import DamageReportModal from '../components/damage/DamageReportModal.vue'
 import { useUserStore } from '../stores/user'
 import { handleImageError } from '../utils/imageHelpers'
 import { logger } from '../utils/logger'
@@ -252,6 +268,7 @@ const userStore = useUserStore()
 const loading = ref(true)
 const book = ref<BookDetail | null>(null)
 const isSubmitting = ref(false)
+const showDamageModal = ref(false)
 const reviewDraft = reactive({
   rating: 5,
   content: '',
@@ -416,6 +433,10 @@ function goBack() {
 
 function goToBook(bookId: number) {
   router.push({ name: 'BookDetail', params: { id: bookId } }).catch(() => {})
+}
+
+function onDamageReportSubmitted() {
+  showToast('损坏报告已提交，感谢您的反馈。', 'success')
 }
 </script>
 
@@ -759,6 +780,16 @@ function goToBook(bookId: number) {
 
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+.page-action-btn--damage {
+  background: rgba(184, 92, 56, 0.08);
+  border: 1px solid rgba(184, 92, 56, 0.2);
+  color: #8b482f;
+}
+
+.page-action-btn--damage:hover {
+  background: rgba(184, 92, 56, 0.14);
 }
 
 @media (max-width: 1024px) {

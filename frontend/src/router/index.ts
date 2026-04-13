@@ -14,6 +14,7 @@ const InventoryAlerts = () => import('../views/InventoryAlerts.vue')
 const PurchaseSuggestions = () => import('../views/PurchaseSuggestions.vue')
 const BookSearch = () => import('../views/BookSearch.vue')
 const BookDetail = () => import('../views/BookDetail.vue')
+const DamageReports = () => import('../views/DamageReports.vue')
 
 const HomeStub = defineComponent({ render: () => h('div') })
 
@@ -77,6 +78,12 @@ const routes = [
     name: 'BookDetail',
     component: BookDetail,
     meta: { requiresAuth: false, layout: 'page' as AppLayout, shell: 'default' as AppShell }
+  },
+  {
+    path: '/damage-reports',
+    name: 'DamageReports',
+    component: DamageReports,
+    meta: { requiresAuth: true, layout: 'page' as AppLayout, shell: 'wide' as AppShell }
   }
 ]
 

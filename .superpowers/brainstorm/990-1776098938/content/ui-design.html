@@ -1,0 +1,144 @@
+<h2>图书损坏报告 - UI 设计方案</h2>
+<p class="subtitle">三个交互入口 + 管理员处理流程</p>
+
+<div class="section">
+  <h3>入口1：书籍详情页 - "报告问题"按钮</h3>
+  <div class="mockup">
+    <div class="mockup-header">BookDetail.vue - 操作按钮区域</div>
+    <div class="mockup-body" style="background: #1a2e1a; padding: 1.5rem; border-radius: 0 0 8px 8px;">
+      <!-- 模拟书籍详情页的操作区域 -->
+      <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+        <div style="flex: 1; padding: 10px 16px; background: rgba(54,96,74,0.8); border-radius: 8px; color: #c8dbb8; text-align: center; font-size: 14px;">申请借阅</div>
+        <div style="flex: 1; padding: 10px 16px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #a0b89a; text-align: center; font-size: 14px;">加入预约队列</div>
+      </div>
+      <div style="border-top: 1px dashed rgba(255,255,255,0.12); padding-top: 12px;">
+        <div style="padding: 10px 16px; background: rgba(133,69,57,0.25); border: 1px solid rgba(176,103,90,0.4); border-radius: 8px; color: #e8a090; text-align: center; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 6px;">
+          <span>⚠</span> 报告问题
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 2rem;">
+  <h3>入口2：报告问题弹窗（Modal）</h3>
+  <div class="mockup">
+    <div class="mockup-header">DamageReportModal.vue</div>
+    <div class="mockup-body" style="background: #1f2f1f; padding: 1.5rem; border-radius: 0 0 8px 8px;">
+      <div style="max-width: 480px; margin: 0 auto;">
+        <h4 style="color: #c8dbb8; margin-bottom: 16px; font-size: 16px;">报告书籍问题</h4>
+        <p style="color: #8a9e84; font-size: 13px; margin-bottom: 12px;">《数据库系统概论》- 王珊</p>
+
+        <!-- 损坏类型 -->
+        <div style="margin-bottom: 14px;">
+          <label style="color: #a0b89a; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">损坏类型 *</label>
+          <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px;">
+            <span style="padding: 4px 12px; background: rgba(54,96,74,0.6); border: 1px solid rgba(88,129,103,0.5); border-radius: 20px; color: #c8dbb8; font-size: 12px;">封面破损</span>
+            <span style="padding: 4px 12px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 20px; color: #a0b89a; font-size: 12px;">页面缺失</span>
+            <span style="padding: 4px 12px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 20px; color: #a0b89a; font-size: 12px;">水渍</span>
+            <span style="padding: 4px 12px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 20px; color: #a0b89a; font-size: 12px;">涂写</span>
+            <span style="padding: 4px 12px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 20px; color: #a0b89a; font-size: 12px;">装订脱落</span>
+            <span style="padding: 4px 12px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 20px; color: #a0b89a; font-size: 12px;">其他</span>
+          </div>
+        </div>
+
+        <!-- 照片上传 -->
+        <div style="margin-bottom: 14px;">
+          <label style="color: #a0b89a; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">破损照片 *（最多3张）</label>
+          <div style="display: flex; gap: 8px; margin-top: 6px;">
+            <div style="width: 80px; height: 80px; background: rgba(255,255,255,0.05); border: 2px dashed rgba(255,255,255,0.2); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #6a7e64; font-size: 24px;">+</div>
+            <div style="width: 80px; height: 80px; background: rgba(54,96,74,0.3); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #8a9e84; font-size: 11px; position: relative;">
+              已上传照片
+              <span style="position: absolute; top: 2px; right: 2px; background: rgba(133,69,57,0.9); border-radius: 50%; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #fff;">✕</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 描述 -->
+        <div style="margin-bottom: 16px;">
+          <label style="color: #a0b89a; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">问题描述</label>
+          <div style="margin-top: 6px; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; min-height: 60px; color: #6a7e64; font-size: 13px;">请描述损坏情况...</div>
+        </div>
+
+        <!-- 按钮 -->
+        <div style="display: flex; gap: 8px;">
+          <div style="flex: 1; padding: 10px 16px; background: rgba(255,255,255,0.06); border-radius: 8px; color: #a0b89a; text-align: center; font-size: 13px;">取消</div>
+          <div style="flex: 2; padding: 10px 16px; background: rgba(133,69,57,0.7); border-radius: 8px; color: #e8d0c8; text-align: center; font-size: 13px; font-weight: 500;">提交报告</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 2rem;">
+  <h3>入口3：独立页面 - "我的报告" + 管理员仪表盘</h3>
+  <div class="mockup">
+    <div class="mockup-header">DamageReports.vue - 列表视图</div>
+    <div class="mockup-body" style="background: #1a2e1a; padding: 1.5rem; border-radius: 0 0 8px 8px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <div>
+          <h4 style="color: #c8dbb8; font-size: 16px; margin: 0;">损坏报告中心</h4>
+          <p style="color: #6a7e64; font-size: 12px; margin: 4px 0 0 0;">查看和管理所有书籍损坏报告</p>
+        </div>
+        <div style="padding: 8px 16px; background: rgba(133,69,57,0.6); border-radius: 8px; color: #e8c8c0; font-size: 13px;">+ 新建报告</div>
+      </div>
+
+      <!-- 统计卡片 -->
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px;">
+        <div style="padding: 12px; background: rgba(255,255,255,0.04); border-radius: 8px; text-align: center;">
+          <div style="color: #c8dbb8; font-size: 20px; font-weight: 700;">12</div>
+          <div style="color: #6a7e64; font-size: 11px;">待处理</div>
+        </div>
+        <div style="padding: 12px; background: rgba(255,255,255,0.04); border-radius: 8px; text-align: center;">
+          <div style="color: #e8c090; font-size: 20px; font-weight: 700;">5</div>
+          <div style="color: #6a7e64; font-size: 11px;">处理中</div>
+        </div>
+        <div style="padding: 12px; background: rgba(255,255,255,0.04); border-radius: 8px; text-align: center;">
+          <div style="color: #90c8a0; font-size: 20px; font-weight: 700;">28</div>
+          <div style="color: #6a7e64; font-size: 11px;">已修复</div>
+        </div>
+        <div style="padding: 12px; background: rgba(255,255,255,0.04); border-radius: 8px; text-align: center;">
+          <div style="color: #a0b89a; font-size: 20px; font-weight: 700;">3</div>
+          <div style="color: #6a7e64; font-size: 11px;">已驳回</div>
+        </div>
+      </div>
+
+      <!-- 报告卡片 -->
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <div style="display: flex; gap: 12px; padding: 12px; background: rgba(255,255,255,0.04); border-radius: 8px; border-left: 3px solid #c89060;">
+          <div style="width: 48px; height: 64px; background: rgba(255,255,255,0.06); border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #6a7e64; font-size: 10px;">封面</div>
+          <div style="flex: 1;">
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: #c8dbb8; font-size: 13px; font-weight: 500;">数据库系统概论</span>
+              <span style="padding: 2px 8px; background: rgba(200,144,96,0.3); border-radius: 10px; color: #e8c8a0; font-size: 11px;">待处理</span>
+            </div>
+            <div style="color: #6a7e64; font-size: 12px; margin-top: 4px;">封面破损 · 页面缺失</div>
+            <div style="color: #5a6e54; font-size: 11px; margin-top: 4px;">2024-03-15 报告 · 王同学</div>
+          </div>
+        </div>
+        <div style="display: flex; gap: 12px; padding: 12px; background: rgba(255,255,255,0.04); border-radius: 8px; border-left: 3px solid #90c8a0;">
+          <div style="width: 48px; height: 64px; background: rgba(255,255,255,0.06); border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #6a7e64; font-size: 10px;">封面</div>
+          <div style="flex: 1;">
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: #c8dbb8; font-size: 13px; font-weight: 500;">高等数学（上册）</span>
+              <span style="padding: 2px 8px; background: rgba(144,200,160,0.3); border-radius: 10px; color: #a0d8b0; font-size: 11px;">已修复</span>
+            </div>
+            <div style="color: #6a7e64; font-size: 12px; margin-top: 4px;">涂写</div>
+            <div style="color: #5a6e54; font-size: 11px; margin-top: 4px;">2024-03-10 报告 · 李同学 · 已于 03-12 修复</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 2rem; padding: 1rem; background: var(--bg-secondary); border-radius: 8px;">
+  <h3>设计要点</h3>
+  <ul style="line-height: 1.8;">
+    <li><strong>配色：</strong>遵循项目现有的深绿/自然色系，损坏报告使用暖橙色作为警示色</li>
+    <li><strong>组件复用：</strong>复用 PageHeader、PageScaffold、FeedbackToast、ConfirmDialog</li>
+    <li><strong>新增组件：</strong>DamageReportModal（弹窗表单）+ DamageReportCard（卡片）</li>
+    <li><strong>图标：</strong>使用 Material Symbols Outlined（与项目一致）</li>
+    <li><strong>动画：</strong>使用 v-reveal 指令（与项目一致）</li>
+  </ul>
+</div>

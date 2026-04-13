@@ -46,6 +46,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/books/search", "/api/books/advanced-search", "/api/books/categories", "/api/books/languages").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/reviews/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/books/*").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/damage-photos/**").permitAll()
                         .requestMatchers("/api/admin/**", "/api/v2/**", "/api/internal/**", "/api/swagger.json", "/graphql").denyAll()
                         .anyRequest().authenticated()
                 )

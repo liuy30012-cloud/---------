@@ -223,6 +223,58 @@ public class NotificationService {
         ), "system");
     }
 
+    public void sendDamageReportSubmittedNotification(User admin, String bookTitle, String reporterName) {
+        safelySendNotification(() -> createNotification(
+            admin,
+            "DAMAGE_REPORT_SUBMITTED",
+            "report_problem",
+            "新损坏报告",
+            "New damage report",
+            "《" + bookTitle + "》被 " + reporterName + " 报告存在损坏问题。",
+            "\"" + bookTitle + "\" has been reported as damaged by " + reporterName + ".",
+            "/damage-reports"
+        ), "damage report submitted");
+    }
+
+    public void sendDamageReportInProgressNotification(User reporter, String bookTitle, String adminName) {
+        safelySendNotification(() -> createNotification(
+            reporter,
+            "DAMAGE_REPORT_IN_PROGRESS",
+            "progress_activity",
+            "损坏报告处理中",
+            "Damage report in progress",
+            "您报告的《" + bookTitle + "》损坏问题正在由管理员 " + adminName + " 处理。",
+            "Your damage report for \"" + bookTitle + "\" is being handled by " + adminName + ".",
+            "/damage-reports"
+        ), "damage report in progress");
+    }
+
+    public void sendDamageReportResolvedNotification(User reporter, String bookTitle) {
+        safelySendNotification(() -> createNotification(
+            reporter,
+            "DAMAGE_REPORT_RESOLVED",
+            "check_circle",
+            "损坏报告已处理",
+            "Damage report resolved",
+            "您报告的《" + bookTitle + "》损坏问题已修复。",
+            "The damage you reported for \"" + bookTitle + "\" has been repaired.",
+            "/damage-reports"
+        ), "damage report resolved");
+    }
+
+    public void sendDamageReportRejectedNotification(User reporter, String bookTitle) {
+        safelySendNotification(() -> createNotification(
+            reporter,
+            "DAMAGE_REPORT_REJECTED",
+            "cancel",
+            "损坏报告已驳回",
+            "Damage report rejected",
+            "您报告的《" + bookTitle + "》损坏问题未通过审核。",
+            "Your damage report for \"" + bookTitle + "\" has been rejected.",
+            "/damage-reports"
+        ), "damage report rejected");
+    }
+
     private void safelySendNotification(Runnable task, String notificationType) {
         try {
             task.run();
