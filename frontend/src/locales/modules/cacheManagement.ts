@@ -41,7 +41,7 @@ export default {
   en: {
     cacheManagement: {
       title: 'Offline Data Management',
-      description: 'Manage offline cached book data to improve the experience under weak network conditions',
+      description: 'Manage offline cached book data to improve the experience under weak network conditions.',
       stats: {
         cachedBooks: 'Cached Books',
         hotBooks: 'Popular Books',
@@ -55,10 +55,10 @@ export default {
       },
       info: {
         title: 'Offline Features',
-        item1: 'The system automatically caches book information you have viewed',
-        item2: 'Popular books are automatically updated when online',
-        item3: 'Cached book details can be viewed offline',
-        item4: 'Borrowing, reserving, and other operations require a network connection',
+        item1: 'The system automatically caches book information you have viewed.',
+        item2: 'Popular books are automatically updated when online.',
+        item3: 'Cached book details can be viewed offline.',
+        item4: 'Borrowing, reserving, and other operations require a network connection.',
       },
       time: {
         never: 'Never updated',

@@ -24,7 +24,7 @@ export default {
       empty: 'No matching records found. Try another query.',
       offlineWarning: '⚠️ Offline mode active. Displaying local sample data.',
       noCover: 'NO COVER',
-      isbn: 'ISBN',
+      isbn: 'Barcode',
       location: 'Current Location',
       badges: {
         Localized: 'Localized',

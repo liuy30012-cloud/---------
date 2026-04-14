@@ -57,7 +57,7 @@ export default {
       empty: 'No reservation records.',
       location: 'Location to be updated',
       detail: {
-        queueAhead: 'Queue Ahead',
+        queueAhead: 'People Ahead',
         estimatedWait: 'Estimated Wait',
         notifyDate: 'Notified At',
         pickupDeadline: 'Pickup Deadline',

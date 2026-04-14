@@ -134,7 +134,7 @@ export default {
       rating: '{count} reviews',
       favorite: {
         active: 'Favorited',
-        inactive: 'Favorite',
+        inactive: 'Add to Favorites',
       },
       readingStatus: {
         label: 'Mark Reading Status',

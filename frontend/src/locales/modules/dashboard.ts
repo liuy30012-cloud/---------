@@ -30,7 +30,7 @@ export default {
       description: 'View borrowing trends, popular titles, and category distribution on a single operations dashboard.',
       refresh: 'Refresh Data',
       loading: 'Loading...',
-      errorPrefix: 'Load failed: ',
+      errorPrefix: 'Failed to load: ',
       stats: {
         totalBooks: 'Total Collection',
         availableBooks: 'Available',

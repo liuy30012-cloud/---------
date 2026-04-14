@@ -73,7 +73,7 @@ export default {
   en: {
     damageReports: {
       title: 'Damage Report Center',
-      description: 'View and manage book damage reports, track processing progress.',
+      description: 'View and manage book damage reports and track processing progress.',
       refresh: 'Refresh',
       stats: {
         pending: 'Pending',
