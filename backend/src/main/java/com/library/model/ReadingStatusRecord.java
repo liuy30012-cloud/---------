@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "reading_status", uniqueConstraints = {
-        @UniqueConstraint(name = "uk_user_book_reading", columnList = "user_id, book_id")
+        @UniqueConstraint(name = "uk_user_book_reading", columnNames = {"user_id", "book_id"})
 }, indexes = {
         @Index(name = "idx_reading_user_id", columnList = "user_id"),
         @Index(name = "idx_reading_book_id", columnList = "book_id"),
