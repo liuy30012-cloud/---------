@@ -80,3 +80,19 @@ env/
 *.db
 *.sqlite
 *.sqlite3
+
+# AI-generated reports / session artifacts
+*_SUMMARY.md
+*_REPORT.md
+*_CHECKLIST.md
+*_COMPLETE*.md
+*_FIXED.md
+*_PLAN.md
+*_GUIDE.md
+*_STATUS.md
+*_REFACTORING*.md
+FRONTEND_REFACTORING.md
+java_files.txt
+
+# Test output
+output/
