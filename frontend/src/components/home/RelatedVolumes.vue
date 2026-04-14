@@ -2,21 +2,15 @@
   <section v-reveal="{ preset: 'section', once: true }" class="related-volumes-section">
     <div class="related-header">
       <div class="related-title-group">
-        <p class="related-kicker">{{ locale === 'zh' ? '同类热门' : 'Popular Nearby' }}</p>
-        <h3 class="related-title">{{ locale === 'zh' ? '最近读者常借的馆藏' : 'Books readers borrow next' }}</h3>
-        <p class="related-subtitle">
-          {{ locale === 'zh'
-            ? '这里不再展示静态假推荐，默认读取真实热门借阅数据，作为首页的连续发现入口。'
-            : 'No static placeholders here. This rail reads from live popularity data.' }}
-        </p>
+        <p class="related-kicker">{{ t('related.kicker') }}</p>
+        <h3 class="related-title">{{ t('related.title') }}</h3>
+        <p class="related-subtitle">{{ t('related.subtitle') }}</p>
       </div>
     </div>
 
-    <div v-if="loading" class="related-loading">Loading curated shelf...</div>
+    <div v-if="loading" class="related-loading">{{ t('related.loading') }}</div>
 
-    <div v-else-if="books.length === 0" class="related-empty">
-      {{ locale === 'zh' ? '暂时还没有可展示的热门馆藏。' : 'No popular books are available yet.' }}
-    </div>
+    <div v-else-if="books.length === 0" class="related-empty">{{ t('related.empty') }}</div>
 
     <div v-else class="related-scroll-container" ref="scrollContainerEl">
       <div v-for="(book, index) in books" :key="book.bookId" class="related-item-shell">
@@ -35,7 +29,7 @@
         </div>
         <h4 class="related-item-title">{{ book.title }}</h4>
         <p class="related-item-author">{{ book.author }}</p>
-        <span class="related-badge">{{ locale === 'zh' ? `累计借阅 ${book.borrowCount}` : `${book.borrowCount} borrows` }}</span>
+        <span class="related-badge">{{ t('related.borrowCount', { count: book.borrowCount }) }}</span>
         </button>
       </div>
     </div>
@@ -54,7 +48,7 @@ import { useRouter } from 'vue-router'
 import { statisticsApi, type PopularBook } from '../../api/statisticsApi'
 import { logger } from '../../utils/logger'
 
-const { locale } = useI18n()
+const { t } = useI18n()
 const router = useRouter()
 const books = ref<PopularBook[]>([])
 const loading = ref(false)

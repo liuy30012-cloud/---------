@@ -7,7 +7,7 @@
             <img src="/school-badge.png" alt="Logo" />
           </div>
           <div class="brand-identity">
-            <span class="brand-kicker">{{ locale === 'zh' ? '馆藏展陈系统' : 'Archive Exhibition System' }}</span>
+            <span class="brand-kicker">{{ t('nav.systemName') }}</span>
             <span class="brand-logo">中国劳动关系学院</span>
           </div>
         </RouterLink>
@@ -30,7 +30,7 @@
           <button
             class="icon-btn font-bold text-lg"
             type="button"
-            :aria-label="locale === 'zh' ? '切换语言' : 'Switch language'"
+            :aria-label="t('nav.switchLang')"
             @click="toggleLang"
           >
             {{ $t('nav.lang') }}
@@ -41,7 +41,7 @@
               class="icon-btn"
               ref="notifBtnRef"
               type="button"
-              :aria-label="locale === 'zh' ? '打开通知面板' : 'Open notifications'"
+              :aria-label="t('nav.openNotifications')"
               @click="props.notif.toggleNotifPanel(closeHistoryPanel)"
             >
               <span class="material-symbols-outlined">notifications</span>
@@ -54,7 +54,7 @@
                 class="popup-panel notif-panel"
                 role="dialog"
                 aria-modal="false"
-                :aria-label="locale === 'zh' ? '通知面板' : 'Notifications panel'"
+                :aria-label="t('nav.notificationPanel')"
               >
                 <div class="popup-header">
                   <h4 class="popup-title">{{ $t('notifications.title') }}</h4>
@@ -68,7 +68,7 @@
                     :key="n.id"
                     :class="['notif-item', { 'notif-read': n.read }]"
                     type="button"
-                    :aria-label="locale === 'zh' ? `打开通知：${props.notif.getNotifTitle(n)}` : `Open notification: ${props.notif.getNotifTitle(n)}`"
+                    :aria-label="`${t('nav.openNotifTitle')}${props.notif.getNotifTitle(n)}`"
                     @click="openNotification(n)"
                   >
                     <span class="material-symbols-outlined notif-icon">{{ n.icon }}</span>
@@ -89,7 +89,7 @@
               class="icon-btn"
               ref="historyBtnRef"
               type="button"
-              :aria-label="locale === 'zh' ? '打开搜索历史' : 'Open search history'"
+              :aria-label="t('nav.openSearchHistory')"
               @click="props.history.toggleHistoryPanel(closeNotifPanel)"
             >
               <span class="material-symbols-outlined">history</span>
@@ -101,7 +101,7 @@
                 class="popup-panel history-panel"
                 role="dialog"
                 aria-modal="false"
-                :aria-label="locale === 'zh' ? '搜索历史面板' : 'Search history panel'"
+                :aria-label="t('nav.searchHistoryPanel')"
               >
                 <div class="popup-header">
                   <h4 class="popup-title">{{ $t('history.title') }}</h4>
@@ -119,7 +119,7 @@
                     :key="(item.id || item.keyword) + item.timestamp.getTime()"
                     class="history-item"
                     type="button"
-                    :aria-label="locale === 'zh' ? `重新搜索：${item.label || item.keyword}` : `Search again: ${item.label || item.keyword}`"
+                    :aria-label="`${t('nav.searchAgain')}${item.label || item.keyword}`"
                     @click="openHistoryItem(item)"
                   >
                     <span class="material-symbols-outlined history-item-icon">
@@ -144,10 +144,10 @@
             v-if="!userStore.isLoggedIn"
             class="login-btn"
             type="button"
-            :aria-label="locale === 'zh' ? '前往登录或注册' : 'Go to sign in or register'"
+            :aria-label="t('nav.goToSignIn')"
             @click="goToLogin"
           >
-            {{ locale === 'zh' ? '登录/注册' : 'Sign In' }}
+            {{ t('nav.signIn') }}
           </button>
 
           <div v-else class="user-menu">
@@ -155,7 +155,7 @@
               class="user-avatar-btn"
               ref="userBtnRef"
               type="button"
-              :aria-label="locale === 'zh' ? '打开用户菜单' : 'Open user menu'"
+              :aria-label="t('nav.userMenu')"
               @click="toggleUserMenu"
             >
               <img
@@ -174,7 +174,7 @@
                 class="user-dropdown"
                 role="dialog"
                 aria-modal="false"
-                :aria-label="locale === 'zh' ? '用户菜单' : 'User menu'"
+                :aria-label="t('nav.userMenu')"
               >
                 <div class="user-info">
                   <p class="user-name">{{ userStore.user?.username }}</p>
@@ -183,15 +183,15 @@
                 <div class="dropdown-divider"></div>
                 <button class="dropdown-item" type="button" @click="openAccount">
                   <span class="material-symbols-outlined">manage_accounts</span>
-                  <span>{{ locale === 'zh' ? '我的账号' : 'My Account' }}</span>
+                  <span>{{ t('nav.myAccount') }}</span>
                 </button>
                 <button class="dropdown-item" type="button" @click="openBookshelf">
                   <span class="material-symbols-outlined">favorite</span>
-                  <span>{{ locale === 'zh' ? '我的书架' : 'My Bookshelf' }}</span>
+                  <span>{{ t('nav.myBookshelf') }}</span>
                 </button>
                 <button class="dropdown-item" type="button" @click="handleLogout">
                   <span class="material-symbols-outlined">logout</span>
-                  <span>{{ locale === 'zh' ? '退出登录' : 'Sign Out' }}</span>
+                  <span>{{ t('nav.signOut') }}</span>
                 </button>
               </div>
             </Transition>
@@ -215,7 +215,7 @@ const props = defineProps({
   history: { type: Object, required: true },
 })
 
-const { locale } = useI18n()
+const { t, locale } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
@@ -226,20 +226,17 @@ const actionsRef = ref<HTMLElement | null>(null)
 const avatarRef = ref<HTMLElement | null>(null)
 const isScrolled = ref(false)
 
-const navItems = computed(() => {
-  const zh = locale.value === 'zh'
-  return [
-    { name: 'Home', to: '/', label: zh ? '首页' : 'Home' },
-    { name: 'BookSearch', to: '/books/search', label: zh ? '图书检索' : 'Search' },
-    { name: 'MyBorrows', to: '/my-borrows', label: zh ? '我的借阅' : 'Borrows' },
-    { name: 'MyReservations', to: '/my-reservations', label: zh ? '我的预约' : 'Reservations' },
-    { name: 'MyBookshelf', to: '/my-bookshelf', label: zh ? '我的书架' : 'Bookshelf' },
-    { name: 'MyAccount', to: '/my-account', label: zh ? '我的账号' : 'Account' },
-    { name: 'Dashboard', to: '/dashboard', label: zh ? '数据分析' : 'Dashboard' },
-    { name: 'InventoryAlerts', to: '/inventory-alerts', label: zh ? '库存预警' : 'Alerts' },
-    { name: 'PurchaseSuggestions', to: '/purchase-suggestions', label: zh ? '采购建议' : 'Purchases' },
-  ]
-})
+const navItems = computed(() => [
+    { name: 'Home', to: '/', label: t('nav.home') },
+    { name: 'BookSearch', to: '/books/search', label: t('nav.search') },
+    { name: 'MyBorrows', to: '/my-borrows', label: t('nav.borrows') },
+    { name: 'MyReservations', to: '/my-reservations', label: t('nav.reservations') },
+    { name: 'MyBookshelf', to: '/my-bookshelf', label: t('nav.bookshelf') },
+    { name: 'MyAccount', to: '/my-account', label: t('nav.account') },
+    { name: 'Dashboard', to: '/dashboard', label: t('nav.dashboard') },
+    { name: 'InventoryAlerts', to: '/inventory-alerts', label: t('nav.alerts') },
+    { name: 'PurchaseSuggestions', to: '/purchase-suggestions', label: t('nav.purchases') },
+  ])
 
 const adminOnlyPages = new Set(['Dashboard', 'InventoryAlerts'])
 const authOnlyPages = new Set(['MyBorrows', 'MyReservations', 'MyBookshelf', 'MyAccount', 'PurchaseSuggestions'])
@@ -270,6 +267,7 @@ const isActive = (item: { name: string }) => {
 
 const toggleLang = () => {
   locale.value = locale.value === 'en' ? 'zh' : 'en'
+  localStorage.setItem('locale', locale.value)
   if (petEventBus?.value) {
     petEventBus.value.push({ event: 'lang:switch', ts: Date.now() })
   }

@@ -52,7 +52,7 @@
         <div class="hero-rail-card hero-rail-card--clock">
           <div class="hero-rail-heading">
             <span class="hero-rail-label">Shi Chen</span>
-            <span class="hero-rail-caption">{{ locale === 'zh' ? '时序校准' : 'Temporal Index' }}</span>
+            <span class="hero-rail-caption">{{ t('hero.clockLabel') }}</span>
           </div>
           <div class="dizhi-clock-container">
             <DizhiClock :subtle="true" />
@@ -62,7 +62,7 @@
         <div class="hero-rail-card hero-rail-card--compact">
           <div class="hero-rail-heading">
             <span class="hero-rail-label">Library Time</span>
-            <span class="hero-rail-caption">{{ locale === 'zh' ? '开馆状态' : 'Library Hours' }}</span>
+            <span class="hero-rail-caption">{{ t('hero.libraryTimeLabel') }}</span>
           </div>
           <div class="modern-clock-container">
             <ModernClock />
@@ -72,34 +72,30 @@
 
       <div class="hero-content">
         <div ref="copyRef" class="hero-copy">
-          <p class="hero-kicker">{{ locale === 'zh' ? '读者高频检索入口' : 'Reader Search Flow' }}</p>
-          <h1 class="hero-title">{{ locale === 'zh' ? '从一次搜索，直接进入借阅动作。' : 'Search once, move straight to action.' }}</h1>
-          <p class="hero-subtitle">
-            {{ locale === 'zh'
-              ? '首页只负责填写条件并跳转到统一结果页。查询条件、页码与排序都会保留在链接里，适合刷新、分享和连续追书。'
-              : 'The home page only launches the unified results page, keeping filters, sorting, and pagination in the URL.' }}
-          </p>
+          <p class="hero-kicker">{{ t('hero.kicker') }}</p>
+          <h1 class="hero-title">{{ t('hero.title') }}</h1>
+          <p class="hero-subtitle">{{ t('hero.subtitle') }}</p>
         </div>
 
         <div class="hero-metadata">
           <div class="hero-meta-card">
-            <span class="hero-meta-key">{{ locale === 'zh' ? '结果可信度' : 'Trust' }}</span>
-            <span class="hero-meta-value">{{ locale === 'zh' ? '只显示后端真实馆藏' : 'Backend data only' }}</span>
+            <span class="hero-meta-key">{{ t('hero.metaTrust') }}</span>
+            <span class="hero-meta-value">{{ t('hero.metaTrustValue') }}</span>
           </div>
           <div class="hero-meta-card">
-            <span class="hero-meta-key">{{ locale === 'zh' ? '连续体验' : 'Continuity' }}</span>
-            <span class="hero-meta-value">{{ locale === 'zh' ? '链接可回放搜索状态' : 'URL-driven state' }}</span>
+            <span class="hero-meta-key">{{ t('hero.metaContinuity') }}</span>
+            <span class="hero-meta-value">{{ t('hero.metaContinuityValue') }}</span>
           </div>
           <div class="hero-meta-card">
-            <span class="hero-meta-key">{{ locale === 'zh' ? '下一步动作' : 'Next Step' }}</span>
-            <span class="hero-meta-value">{{ locale === 'zh' ? '搜索后直达详情、借阅或预约' : 'Details, borrow, reserve' }}</span>
+            <span class="hero-meta-key">{{ t('hero.metaNextStep') }}</span>
+            <span class="hero-meta-value">{{ t('hero.metaNextStepValue') }}</span>
           </div>
         </div>
 
         <div ref="searchPanelRef" class="hero-search-panel">
           <div class="hero-search-header">
-            <span class="hero-search-title">{{ locale === 'zh' ? '统一结果页入口' : 'Unified search entry' }}</span>
-            <span class="hero-search-note">{{ locale === 'zh' ? '支持关键字、作者、年份、分类与排序' : 'Keyword, author, year, category, sorting' }}</span>
+            <span class="hero-search-title">{{ t('hero.searchTitle') }}</span>
+            <span class="hero-search-note">{{ t('hero.searchNote') }}</span>
           </div>
 
           <div class="search-bar" role="search" aria-label="Search the library collection">
@@ -111,14 +107,14 @@
               aria-label="Search title, author, or ISBN"
               autocomplete="off"
               spellcheck="false"
-              :placeholder="locale === 'zh' ? '输入书名、作者或 ISBN' : 'Search title, author, or ISBN'"
+              :placeholder="t('hero.searchPlaceholder')"
               @keyup.enter="submitSearch"
             />
-            <button class="search-btn" @click="submitSearch">{{ locale === 'zh' ? '进入结果页' : 'Open results' }}</button>
+            <button class="search-btn" @click="submitSearch">{{ t('hero.searchBtn') }}</button>
           </div>
 
           <div class="trending-tags">
-            <span class="trending-label">{{ locale === 'zh' ? '常用入口' : 'Quick picks' }}</span>
+            <span class="trending-label">{{ t('hero.trendingLabel') }}</span>
             <button
               v-for="tag in trendingTags"
               :key="tag.label"
@@ -145,7 +141,7 @@ const emit = defineEmits<{
   (e: 'search', keyword: string): void
 }>()
 
-const { locale } = useI18n()
+const { t, locale } = useI18n()
 const searchQuery = ref('')
 const heroRef = ref<HTMLElement | null>(null)
 const copyRef = ref<HTMLElement | null>(null)
@@ -158,15 +154,12 @@ const mistMidRef = ref<HTMLElement | null>(null)
 const mistFrontRef = ref<HTMLElement | null>(null)
 let cleanupMotion: (() => void) | undefined
 
-const trendingTags = computed(() => {
-  const zh = locale.value === 'zh'
-  return [
-    { label: zh ? '人工智能' : 'AI', query: zh ? '人工智能' : 'Artificial Intelligence' },
-    { label: zh ? '设计模式' : 'Patterns', query: zh ? '设计模式' : 'Design Patterns' },
-    { label: zh ? '数字人文' : 'Digital Humanities', query: zh ? '数字人文' : 'Digital Humanities' },
-    { label: zh ? '古典文学' : 'Classics', query: zh ? '古典文学' : 'Classical Literature' },
-  ]
-})
+const trendingTags = computed(() => [
+  { label: t('hero.tag1Label'), query: t('hero.tag1Query') },
+  { label: t('hero.tag2Label'), query: t('hero.tag2Query') },
+  { label: t('hero.tag3Label'), query: t('hero.tag3Query') },
+  { label: t('hero.tag4Label'), query: t('hero.tag4Query') },
+])
 
 function submitSearch() {
   emit('search', searchQuery.value.trim())
