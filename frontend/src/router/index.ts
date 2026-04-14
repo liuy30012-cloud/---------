@@ -6,6 +6,7 @@ type AppLayout = 'immersive' | 'home' | 'page'
 type AppShell = 'default' | 'wide'
 
 const Login = () => import('../views/Login.vue')
+const ForgotPassword = () => import('../views/ForgotPassword.vue')
 const MyBorrows = () => import('../views/MyBorrows.vue')
 const MyReservations = () => import('../views/MyReservations.vue')
 const MyAccount = () => import('../views/MyAccount.vue')
@@ -15,6 +16,7 @@ const PurchaseSuggestions = () => import('../views/PurchaseSuggestions.vue')
 const BookSearch = () => import('../views/BookSearch.vue')
 const BookDetail = () => import('../views/BookDetail.vue')
 const DamageReports = () => import('../views/DamageReports.vue')
+const NotFound = () => import('../views/NotFound.vue')
 
 const HomeStub = defineComponent({ render: () => h('div') })
 
@@ -23,6 +25,12 @@ const routes = [
     path: '/login',
     name: 'Login',
     component: Login,
+    meta: { requiresAuth: false, layout: 'immersive' as AppLayout }
+  },
+  {
+    path: '/forgot-password',
+    name: 'ForgotPassword',
+    component: ForgotPassword,
     meta: { requiresAuth: false, layout: 'immersive' as AppLayout }
   },
   {
@@ -84,6 +92,12 @@ const routes = [
     name: 'DamageReports',
     component: DamageReports,
     meta: { requiresAuth: true, layout: 'page' as AppLayout, shell: 'wide' as AppShell }
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    component: NotFound,
+    meta: { requiresAuth: false, layout: 'page' as AppLayout, shell: 'default' as AppShell }
   }
 ]
 

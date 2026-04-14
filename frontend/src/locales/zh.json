@@ -89,5 +89,33 @@
     "addressLine1": "中央本地化枢纽",
     "addressLine2": "第四层 第七区",
     "addressLine3": "策展服务部"
+  },
+  "notFound": {
+    "bubble": "喵？这本书好像不在这座图书馆里...",
+    "title": "404",
+    "description": "页面走丢了，让小猫带你回去吧",
+    "goHome": "回到首页",
+    "goBack": "返回上页"
+  },
+  "forgotPassword": {
+    "title": "忘记密码",
+    "desc": "请输入您的学工号，查询账号状态并获取帮助。",
+    "inputPlaceholder": "请输入学工号",
+    "queryBtn": "查询账号",
+    "querying": "查询中...",
+    "backToLogin": "返回登录",
+    "notFound": "未找到该账号",
+    "notFoundDesc": "未找到学工号 {id} 对应的账号，请确认后重试。",
+    "disabled": "账号已停用",
+    "disabledDesc": "该账号已被停用，请联系图书馆管理员恢复账号。",
+    "active": "账号状态正常",
+    "activeDesc": "请联系图书馆管理员重置密码，携带有效证件前往以下地点：",
+    "contactDesk": "咨询台",
+    "contactDeskValue": "图书馆一楼大厅服务台",
+    "contactPhone": "联系电话",
+    "contactPhoneValue": "010-8856-1988",
+    "contactHours": "工作时间",
+    "contactHoursValue": "周一至周五 8:30 - 17:00",
+    "networkError": "网络异常，请检查网络连接后重试。"
   }
 }

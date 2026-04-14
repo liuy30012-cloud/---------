@@ -145,6 +145,33 @@ public class AuthController {
         }
     }
 
+    @PostMapping("/account-status")
+    public ResponseEntity<?> getAccountStatus(@RequestBody Map<String, String> request) {
+        String studentId = request.get("studentId");
+        if (studentId == null || studentId.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of(
+                "success", false,
+                "message", "学工号不能为空。"
+            ));
+        }
+
+        var user = userService.findByStudentId(studentId);
+        if (user == null) {
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "exists", false
+            ));
+        }
+
+        return ResponseEntity.ok(Map.of(
+            "success", true,
+            "exists", true,
+            "active", user.getStatus() == 1,
+            "hasEmail", user.getEmail() != null && !user.getEmail().isBlank(),
+            "hasPhone", user.getPhone() != null && !user.getPhone().isBlank()
+        ));
+    }
+
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletRequest request) {
         String token = extractToken(request);

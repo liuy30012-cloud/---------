@@ -62,6 +62,10 @@ public class UserService {
         return userAccountService.getActiveUserCount();
     }
 
+    public User findByStudentId(String studentId) {
+        return userAccountService.getUserByStudentId(studentId);
+    }
+
     public void clearSecurityStateForTests() {
         userLoginSecurityService.clearStateForTests();
     }

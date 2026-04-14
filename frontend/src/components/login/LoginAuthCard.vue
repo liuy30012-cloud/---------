@@ -160,7 +160,7 @@
               </div>
               <span>记住本机</span>
             </label>
-            <a href="#" class="forgot-link" @click.prevent>忘记密码</a>
+            <a href="#" class="forgot-link" @click.prevent="router.push({ name: 'ForgotPassword' })">忘记密码</a>
           </div>
 
           <Transition name="toast">
@@ -237,6 +237,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import FormInput from '../common/FormInput.vue'
 
 interface SocialButton {
@@ -297,6 +298,7 @@ const emit = defineEmits<{
 
 const loginCardRef = ref<HTMLDivElement | null>(null)
 const submitBtnRef = ref<HTMLButtonElement | null>(null)
+const router = useRouter()
 
 function toggleRememberMe() {
   props.formData.rememberMe = !props.formData.rememberMe
