@@ -79,7 +79,7 @@ export default {
         pickup: 'Pick Up Now',
         extend: 'Extend Deadline',
       },
-      expiryWarning: 'Pickup deadline is approaching! Please pick up or request an extension soon.',
+      expiryWarning: 'Pickup deadline is approaching! Please pick up the book or request an extension soon.',
       dialog: {
         extendTitle: 'Extend Pickup Deadline',
         extendMsg: 'The pickup deadline will be extended by 2 days. Each reservation can only be extended once.',
