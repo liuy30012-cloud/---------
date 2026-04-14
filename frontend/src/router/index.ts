@@ -16,6 +16,7 @@ const PurchaseSuggestions = () => import('../views/PurchaseSuggestions.vue')
 const BookSearch = () => import('../views/BookSearch.vue')
 const BookDetail = () => import('../views/BookDetail.vue')
 const DamageReports = () => import('../views/DamageReports.vue')
+const MyBookshelf = () => import('../views/MyBookshelf.vue')
 const NotFound = () => import('../views/NotFound.vue')
 
 const HomeStub = defineComponent({ render: () => h('div') })
@@ -49,6 +50,12 @@ const routes = [
     path: '/my-reservations',
     name: 'MyReservations',
     component: MyReservations,
+    meta: { requiresAuth: true, layout: 'page' as AppLayout, shell: 'default' as AppShell }
+  },
+  {
+    path: '/my-bookshelf',
+    name: 'MyBookshelf',
+    component: MyBookshelf,
     meta: { requiresAuth: true, layout: 'page' as AppLayout, shell: 'default' as AppShell }
   },
   {

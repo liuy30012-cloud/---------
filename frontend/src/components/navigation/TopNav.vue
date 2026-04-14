@@ -185,6 +185,10 @@
                   <span class="material-symbols-outlined">manage_accounts</span>
                   <span>{{ locale === 'zh' ? '我的账号' : 'My Account' }}</span>
                 </button>
+                <button class="dropdown-item" type="button" @click="openBookshelf">
+                  <span class="material-symbols-outlined">favorite</span>
+                  <span>{{ locale === 'zh' ? '我的书架' : 'My Bookshelf' }}</span>
+                </button>
                 <button class="dropdown-item" type="button" @click="handleLogout">
                   <span class="material-symbols-outlined">logout</span>
                   <span>{{ locale === 'zh' ? '退出登录' : 'Sign Out' }}</span>
@@ -229,6 +233,7 @@ const navItems = computed(() => {
     { name: 'BookSearch', to: '/books/search', label: zh ? '图书检索' : 'Search' },
     { name: 'MyBorrows', to: '/my-borrows', label: zh ? '我的借阅' : 'Borrows' },
     { name: 'MyReservations', to: '/my-reservations', label: zh ? '我的预约' : 'Reservations' },
+    { name: 'MyBookshelf', to: '/my-bookshelf', label: zh ? '我的书架' : 'Bookshelf' },
     { name: 'MyAccount', to: '/my-account', label: zh ? '我的账号' : 'Account' },
     { name: 'Dashboard', to: '/dashboard', label: zh ? '数据分析' : 'Dashboard' },
     { name: 'InventoryAlerts', to: '/inventory-alerts', label: zh ? '库存预警' : 'Alerts' },
@@ -237,7 +242,7 @@ const navItems = computed(() => {
 })
 
 const adminOnlyPages = new Set(['Dashboard', 'InventoryAlerts'])
-const authOnlyPages = new Set(['MyBorrows', 'MyReservations', 'MyAccount', 'PurchaseSuggestions'])
+const authOnlyPages = new Set(['MyBorrows', 'MyReservations', 'MyBookshelf', 'MyAccount', 'PurchaseSuggestions'])
 const visibleNavItems = computed(() => navItems.value.filter((item) => {
   if (adminOnlyPages.has(item.name) && !userStore.isAdmin) {
     return false
@@ -351,6 +356,11 @@ const onAvatarError = (e: Event) => handleImageError(e)
 const openAccount = () => {
   showUserMenu.value = false
   router.push({ name: 'MyAccount' }).catch(() => {})
+}
+
+const openBookshelf = () => {
+  showUserMenu.value = false
+  router.push({ name: 'MyBookshelf' }).catch(() => {})
 }
 
 const handleLogout = async () => {

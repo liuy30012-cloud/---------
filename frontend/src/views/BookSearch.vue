@@ -120,6 +120,16 @@
               <span class="result-badge" :class="book.availableCopies > 0 ? 'result-badge--available' : 'result-badge--busy'">
                 {{ book.availableCopies > 0 ? '可借' : '需预约' }}
               </span>
+              <button
+                v-if="userStore.isLoggedIn"
+                class="fav-heart"
+                :class="{ 'fav-heart--active': favoritedBookIds.has(book.id) }"
+                type="button"
+                :aria-label="favoritedBookIds.has(book.id) ? '取消收藏' : '添加收藏'"
+                @click.stop="toggleFavoriteFromSearch(book.id)"
+              >
+                <span class="material-symbols-outlined">{{ favoritedBookIds.has(book.id) ? 'favorite' : 'favorite_border' }}</span>
+              </button>
             </div>
             <div class="result-copy">
               <h3>{{ book.title }}</h3>
@@ -171,12 +181,15 @@
 import { computed, inject, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { bookApi, type Book, type BookSearchParams } from '../api/bookApi'
+import { favoriteApi } from '../api/favoriteApi'
 import FeedbackToast from '../components/common/FeedbackToast.vue'
 import PageHeader from '../components/layout/PageHeader.vue'
 import { logger } from '../utils/logger'
+import { useUserStore } from '../stores/user'
 
 const route = useRoute()
 const router = useRouter()
+const userStore = useUserStore()
 const history = inject<any>('searchHistoryController', null)
 
 const form = reactive<BookSearchParams>({
@@ -205,6 +218,8 @@ const toast = reactive<{ message: string; type: 'success' | 'error' | 'info' }>(
   message: '',
   type: 'info',
 })
+
+const favoritedBookIds = ref<Set<number>>(new Set())
 
 const querySummary = computed(() => {
   const parts = [form.keyword, form.author, form.category, form.language].filter(Boolean)
@@ -320,6 +335,21 @@ async function fetchResults() {
     pagination.page = response.data.page || 0
     pagination.totalPages = response.data.totalPages || 0
 
+    // 批量查询收藏状态
+    if (userStore.isLoggedIn && books.value.length > 0) {
+      try {
+        const bookIds = books.value.map(b => b.id)
+        const favRes = await favoriteApi.batchCheckFavorites(bookIds)
+        if (favRes.data.success) {
+          favoritedBookIds.value = new Set(favRes.data.data)
+        }
+      } catch {
+        favoritedBookIds.value = new Set()
+      }
+    } else {
+      favoritedBookIds.value = new Set()
+    }
+
     if (history && (form.keyword || form.author || form.year || form.category || form.status || form.language)) {
       const canonicalQuery = buildQuery(pagination.page)
       const targetPath = `/books/search?${new URLSearchParams(canonicalQuery).toString()}`
@@ -357,6 +387,26 @@ async function saveCurrentSearch() {
 
   await history.saveSearch(payload)
   showToast('已保存这组搜索条件。', 'success')
+}
+
+async function toggleFavoriteFromSearch(bookId: number) {
+  if (!userStore.isLoggedIn) {
+    router.push({ name: 'Login', query: { redirect: route.fullPath } }).catch(() => {})
+    return
+  }
+  try {
+    if (favoritedBookIds.value.has(bookId)) {
+      await favoriteApi.removeFavorite(bookId)
+      favoritedBookIds.value.delete(bookId)
+    } else {
+      await favoriteApi.addFavorite(bookId)
+      favoritedBookIds.value.add(bookId)
+    }
+    // 触发响应式更新
+    favoritedBookIds.value = new Set(favoritedBookIds.value)
+  } catch (error: any) {
+    showToast(error.response?.data?.message || '操作失败。', 'error')
+  }
 }
 
 function goToBookDetail(bookId: number) {
@@ -724,5 +774,42 @@ function showToast(message: string, type: 'success' | 'error' | 'info') {
   .pagination {
     flex-wrap: wrap;
   }
+}
+
+.fav-heart {
+  position: absolute;
+  bottom: 0.6rem;
+  left: 0.6rem;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.88);
+  color: rgba(0, 0, 0, 0.45);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  z-index: 2;
+}
+
+.fav-heart .material-symbols-outlined {
+  font-size: 1.1rem;
+}
+
+.fav-heart:hover {
+  background: rgba(255, 255, 255, 1);
+  transform: scale(1.1);
+}
+
+.fav-heart--active {
+  color: #e53e3e;
+  background: rgba(229, 62, 62, 0.1);
+}
+
+.fav-heart--active:hover {
+  background: rgba(229, 62, 62, 0.18);
 }
 </style>

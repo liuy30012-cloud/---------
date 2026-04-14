@@ -67,6 +67,34 @@
             <span class="rating-text">{{ Number(book.averageRating || 0).toFixed(1) }} · {{ book.totalReviews }} 条评价</span>
           </div>
 
+          <div v-if="userStore.isLoggedIn" class="personal-actions">
+            <button
+              class="fav-toggle"
+              :class="{ 'fav-toggle--active': isFavorited }"
+              type="button"
+              @click="toggleFavorite"
+            >
+              <span class="material-symbols-outlined">{{ isFavorited ? 'favorite' : 'favorite_border' }}</span>
+              <span>{{ isFavorited ? '已收藏' : '收藏' }}</span>
+            </button>
+            <div class="reading-status-selector">
+              <select v-model="currentReadingStatus" @change="updateReadingStatus">
+                <option value="">标记阅读状态</option>
+                <option value="WANT_TO_READ">想读</option>
+                <option value="READING">在读</option>
+                <option value="READ">已读</option>
+              </select>
+            </div>
+            <div v-if="currentReadingStatus" class="notes-section">
+              <textarea
+                v-model="readingNotes"
+                rows="2"
+                placeholder="添加阅读备注..."
+                @blur="saveNotes"
+              />
+            </div>
+          </div>
+
           <div class="meta-grid">
             <div class="meta-card">
               <span class="meta-label">作者</span>
@@ -252,6 +280,7 @@ import { onMounted, reactive, ref, watch, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { bookApi, type BookDetail } from '../api/bookApi'
 import { borrowApi, reservationApi } from '../api/borrowApi'
+import { favoriteApi, readingStatusApi, type ReadingStatusEnum } from '../api/favoriteApi'
 import ConfirmDialog from '../components/common/ConfirmDialog.vue'
 import FeedbackToast from '../components/common/FeedbackToast.vue'
 import PageHeader from '../components/layout/PageHeader.vue'
@@ -289,6 +318,10 @@ const toast = reactive<{ message: string; type: 'success' | 'error' | 'info' }>(
   type: 'info',
 })
 
+const isFavorited = ref(false)
+const currentReadingStatus = ref<ReadingStatusEnum | ''>('')
+const readingNotes = ref('')
+
 const borrowButtonText = computed(() => {
   if (!book.value) return '借阅'
   if (book.value.circulationPolicy === 'REFERENCE_ONLY') return '馆内阅览'
@@ -312,6 +345,20 @@ async function loadBookDetail() {
     const bookId = Number(route.params.id)
     const response = await bookApi.getBookDetail(bookId)
     book.value = response.data.success ? response.data.data : null
+
+    if (userStore.isLoggedIn && book.value) {
+      const [favRes, statusRes] = await Promise.allSettled([
+        favoriteApi.checkFavorite(book.value.id),
+        readingStatusApi.getReadingStatus(book.value.id),
+      ])
+      if (favRes.status === 'fulfilled' && favRes.value.data.success) {
+        isFavorited.value = favRes.value.data.data
+      }
+      if (statusRes.status === 'fulfilled' && statusRes.value.data.success && statusRes.value.data.data) {
+        currentReadingStatus.value = statusRes.value.data.data.status
+        readingNotes.value = statusRes.value.data.data.notes || ''
+      }
+    }
   } catch (error) {
     logger.error('Failed to load book detail:', error)
     book.value = null
@@ -437,6 +484,43 @@ function goToBook(bookId: number) {
 
 function onDamageReportSubmitted() {
   showToast('损坏报告已提交，感谢您的反馈。', 'success')
+}
+
+async function toggleFavorite() {
+  if (!book.value || !ensureAuth()) return
+  try {
+    if (isFavorited.value) {
+      await favoriteApi.removeFavorite(book.value.id)
+      isFavorited.value = false
+      showToast('已取消收藏。', 'info')
+    } else {
+      await favoriteApi.addFavorite(book.value.id)
+      isFavorited.value = true
+      showToast('已添加到收藏。', 'success')
+    }
+  } catch (error: any) {
+    showToast(error.response?.data?.message || '操作失败，请稍后重试。', 'error')
+  }
+}
+
+async function updateReadingStatus() {
+  if (!book.value || !ensureAuth()) return
+  if (!currentReadingStatus.value) return
+  try {
+    await readingStatusApi.upsertReadingStatus(book.value.id, currentReadingStatus.value, readingNotes.value || undefined)
+    showToast('阅读状态已更新。', 'success')
+  } catch (error: any) {
+    showToast(error.response?.data?.message || '更新失败。', 'error')
+  }
+}
+
+async function saveNotes() {
+  if (!book.value || !currentReadingStatus.value) return
+  try {
+    await readingStatusApi.upsertReadingStatus(book.value.id, currentReadingStatus.value, readingNotes.value || undefined)
+  } catch {
+    // 备注保存失败静默处理
+  }
 }
 </script>
 
@@ -811,5 +895,89 @@ function onDamageReportSubmitted() {
     flex-direction: column;
     align-items: flex-start;
   }
+}
+
+.personal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(133, 122, 107, 0.1);
+}
+
+.fav-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  border: 1px solid rgba(133, 122, 107, 0.18);
+  background: rgba(255, 255, 255, 0.85);
+  cursor: pointer;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--on-surface-variant);
+  transition: all 0.2s ease;
+}
+
+.fav-toggle:hover {
+  background: rgba(0, 83, 219, 0.06);
+}
+
+.fav-toggle .material-symbols-outlined {
+  font-size: 1.15rem;
+}
+
+.fav-toggle--active {
+  color: #e53e3e;
+  border-color: rgba(229, 62, 62, 0.25);
+  background: rgba(229, 62, 62, 0.06);
+}
+
+.fav-toggle--active .material-symbols-outlined {
+  color: #e53e3e;
+}
+
+.fav-toggle--active:hover {
+  background: rgba(229, 62, 62, 0.12);
+}
+
+.reading-status-selector select {
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(133, 122, 107, 0.18);
+  background: rgba(255, 255, 255, 0.85);
+  font-size: 0.88rem;
+  color: var(--on-surface);
+  cursor: pointer;
+  outline: none;
+}
+
+.reading-status-selector select:focus {
+  border-color: var(--primary);
+}
+
+.notes-section {
+  flex-basis: 100%;
+}
+
+.notes-section textarea {
+  width: 100%;
+  padding: 0.6rem 0.85rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(133, 122, 107, 0.18);
+  background: rgba(255, 255, 255, 0.85);
+  font-size: 0.85rem;
+  color: var(--on-surface);
+  resize: vertical;
+  outline: none;
+  font-family: inherit;
+}
+
+.notes-section textarea:focus {
+  border-color: var(--primary);
 }
 </style>
