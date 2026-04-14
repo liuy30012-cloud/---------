@@ -1,0 +1,38 @@
+export default {
+  zh: {
+    filters: {
+      status: '馆藏状态',
+      statusInLibrary: '在馆',
+      statusCheckedOut: '已借出',
+      language: '书籍语言 (LANG)',
+      category: '文献类目',
+      catLit: '文学',
+      catTech: '科技',
+      catArt: '艺术',
+      source: '获取来源',
+      sourceAll: '所有来源',
+      sourceUniv: '高校捐赠',
+      sourcePrivate: '私人档案',
+      sourceExchange: '国际交换',
+      sourceLegacy: '传承馆藏',
+    },
+  },
+  en: {
+    filters: {
+      status: 'STATUS',
+      statusInLibrary: 'In Library',
+      statusCheckedOut: 'Checked Out',
+      language: 'LANGUAGE',
+      category: 'CATEGORY',
+      catLit: 'Literature',
+      catTech: 'Technology',
+      catArt: 'Art',
+      source: 'SOURCE',
+      sourceAll: 'All Sources',
+      sourceUniv: 'University Donations',
+      sourcePrivate: 'Private Archives',
+      sourceExchange: 'International Exchange',
+      sourceLegacy: 'Legacy Collection',
+    },
+  },
+}
