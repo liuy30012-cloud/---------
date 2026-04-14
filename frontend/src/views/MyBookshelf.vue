@@ -1,9 +1,9 @@
 <template>
   <div class="my-bookshelf page-stack">
     <PageHeader
-      title="我的书架"
+      :title="t('myBookshelf.title')"
       eyebrow="Personal Shelf"
-      description="收藏的图书和阅读状态都在这里。按状态筛选、管理书架，随时找到想读的那本书。"
+      :description="t('myBookshelf.description')"
     >
       <template #actions>
         <div class="tabs">
@@ -23,14 +23,14 @@
 
     <div v-if="loading" class="state-card surface-card">
       <div class="spinner"></div>
-      <p>正在加载书架…</p>
+      <p>{{ t('myBookshelf.loading') }}</p>
     </div>
 
     <div v-else-if="filteredItems.length === 0" class="state-card surface-card">
       <span class="material-symbols-outlined empty-icon">auto_stories</span>
       <p class="state-title">{{ emptyMessage }}</p>
       <button class="page-action-btn page-action-btn--primary" type="button" @click="goToSearch">
-        去发现好书
+        {{ t('myBookshelf.goDiscover') }}
       </button>
     </div>
 
@@ -53,7 +53,7 @@
           <button
             class="shelf-remove"
             type="button"
-            aria-label="取消收藏"
+            :aria-label="t('myBookshelf.ariaLabel.removeFav')"
             @click.stop="confirmRemove(item)"
           >
             <span class="material-symbols-outlined">close</span>
@@ -68,10 +68,10 @@
               :value="item.readingStatus || ''"
               @change="updateStatus(item.bookId, ($event.target as HTMLSelectElement).value)"
             >
-              <option value="">标记状态</option>
-              <option value="WANT_TO_READ">想读</option>
-              <option value="READING">在读</option>
-              <option value="READ">已读</option>
+              <option value="">{{ t('myBookshelf.select.label') }}</option>
+              <option value="WANT_TO_READ">{{ t('myBookshelf.select.wantToRead') }}</option>
+              <option value="READING">{{ t('myBookshelf.select.reading') }}</option>
+              <option value="READ">{{ t('myBookshelf.select.read') }}</option>
             </select>
           </div>
           <p v-if="item.notes" class="shelf-notes">{{ item.notes }}</p>
@@ -81,11 +81,11 @@
 
     <ConfirmDialog
       :open="removeDialog.open"
-      eyebrow="Remove"
-      title="取消收藏"
-      :message="`确定要将「${removeDialog.bookTitle}」从书架移除吗？`"
-      confirm-text="确认移除"
-      cancel-text="再想想"
+      :eyebrow="t('myBookshelf.dialog.eyebrow')"
+      :title="t('myBookshelf.dialog.title')"
+      :message="t('myBookshelf.dialog.message', { title: removeDialog.bookTitle })"
+      :confirm-text="t('myBookshelf.dialog.confirm')"
+      :cancel-text="t('myBookshelf.dialog.cancel')"
       @confirm="doRemove"
       @cancel="removeDialog.open = false"
     />
@@ -97,6 +97,7 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { favoriteApi, type FavoriteInfo } from '../api/favoriteApi'
 import { readingStatusApi, type ReadingStatusEnum, type ReadingStatusInfo } from '../api/favoriteApi'
 import ConfirmDialog from '../components/common/ConfirmDialog.vue'
@@ -105,6 +106,7 @@ import PageHeader from '../components/layout/PageHeader.vue'
 import { handleImageError } from '../utils/imageHelpers'
 
 const router = useRouter()
+const { t } = useI18n()
 
 interface ShelfItem {
   bookId: number
@@ -138,11 +140,11 @@ const removeDialog = reactive({
 })
 
 const tabs = computed(() => [
-  { key: 'all', label: '全部', count: shelfItems.value.length },
-  { key: 'WANT_TO_READ', label: '想读', count: statusCounts.WANT_TO_READ },
-  { key: 'READING', label: '在读', count: statusCounts.READING },
-  { key: 'READ', label: '已读', count: statusCounts.READ },
-  { key: 'fav_only', label: '仅收藏', count: shelfItems.value.filter(i => !i.readingStatus).length },
+  { key: 'all', label: t('myBookshelf.tabs.all'), count: shelfItems.value.length },
+  { key: 'WANT_TO_READ', label: t('myBookshelf.tabs.wantToRead'), count: statusCounts.WANT_TO_READ },
+  { key: 'READING', label: t('myBookshelf.tabs.reading'), count: statusCounts.READING },
+  { key: 'READ', label: t('myBookshelf.tabs.read'), count: statusCounts.READ },
+  { key: 'fav_only', label: t('myBookshelf.tabs.favOnly'), count: shelfItems.value.filter(i => !i.readingStatus).length },
 ])
 
 const filteredItems = computed(() => {
@@ -152,9 +154,9 @@ const filteredItems = computed(() => {
 })
 
 const emptyMessage = computed(() => {
-  if (activeTab.value === 'all') return '书架空空如也，去发现你感兴趣的图书吧。'
-  if (activeTab.value === 'fav_only') return '还没有只收藏但未标记状态的图书。'
-  return `还没有标记为「${statusLabel(activeTab.value)}」的图书。`
+  if (activeTab.value === 'all') return t('myBookshelf.empty.all')
+  if (activeTab.value === 'fav_only') return t('myBookshelf.empty.favOnly')
+  return t('myBookshelf.empty.statusFiltered', { status: statusLabel(activeTab.value) })
 })
 
 onMounted(() => {
@@ -234,14 +236,14 @@ async function updateStatus(bookId: number, status: string) {
   try {
     if (!status) {
       await readingStatusApi.removeReadingStatus(bookId)
-      showToast('已清除阅读状态。', 'info')
+      showToast(t('myBookshelf.toast.statusCleared'), 'info')
     } else {
       await readingStatusApi.upsertReadingStatus(bookId, status as ReadingStatusEnum)
-      showToast('阅读状态已更新。', 'success')
+      showToast(t('myBookshelf.toast.statusUpdated'), 'success')
     }
     await loadShelf()
   } catch (error: any) {
-    showToast(error.response?.data?.message || '更新失败。', 'error')
+    showToast(error.response?.data?.message || t('myBookshelf.toast.updateFailed'), 'error')
   }
 }
 
@@ -255,20 +257,15 @@ async function doRemove() {
   removeDialog.open = false
   try {
     await favoriteApi.removeFavorite(removeDialog.bookId)
-    showToast('已从书架移除。', 'info')
+    showToast(t('myBookshelf.toast.removed'), 'info')
     await loadShelf()
   } catch (error: any) {
-    showToast(error.response?.data?.message || '移除失败。', 'error')
+    showToast(error.response?.data?.message || t('myBookshelf.toast.removeFailed'), 'error')
   }
 }
 
 function statusLabel(status: string): string {
-  const map: Record<string, string> = {
-    WANT_TO_READ: '想读',
-    READING: '在读',
-    READ: '已读',
-  }
-  return map[status] || status
+  return t(`myBookshelf.statusLabel.${status}`) || status
 }
 
 function goToBook(bookId: number) {

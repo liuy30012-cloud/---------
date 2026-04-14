@@ -5,23 +5,23 @@
 
       <div class="forgot-brand">
         <div class="badge-ring">
-          <img src="/school-badge.png" alt="中国劳动关系学院校徽" class="brand-badge" />
+          <img src="/school-badge.png" :alt="t('login.schoolBadgeAlt')" class="brand-badge" />
         </div>
-        <h2 class="brand-name">中国劳动关系学院图书馆</h2>
+        <h2 class="brand-name">{{ t('login.brandName') }}</h2>
       </div>
 
       <div class="forgot-card">
         <button type="button" class="back-btn" @click="goBack">
           <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>
-          返回登录
+          {{ t('forgotPassword.backToLogin') }}
         </button>
 
         <h3 class="forgot-title">
           <span class="material-symbols-outlined title-icon" aria-hidden="true">lock_reset</span>
-          忘记密码
+          {{ t('forgotPassword.title') }}
         </h3>
 
-        <p class="forgot-desc">请输入您的学工号，查询账号状态并获取帮助。</p>
+        <p class="forgot-desc">{{ t('forgotPassword.desc') }}</p>
 
         <form class="forgot-form" @submit.prevent="handleQuery">
           <div class="input-group">
@@ -30,7 +30,7 @@
               v-model="studentId"
               type="text"
               class="forgot-input"
-              placeholder="请输入学工号"
+              :placeholder="t('forgotPassword.inputPlaceholder')"
               inputmode="numeric"
               autocomplete="username"
               :disabled="isLoading"
@@ -40,11 +40,11 @@
           <button type="submit" class="query-btn" :disabled="isLoading || !studentId.trim()">
             <span v-if="!isLoading" class="btn-content">
               <span class="material-symbols-outlined btn-icon" aria-hidden="true">search</span>
-              查询账号
+              {{ t('forgotPassword.queryBtn') }}
             </span>
             <span v-else class="btn-loading">
               <span class="spinner"></span>
-              查询中...
+              {{ t('forgotPassword.querying') }}
             </span>
           </button>
         </form>
@@ -55,8 +55,8 @@
             <div v-if="!result.exists" class="result-card result-error">
               <span class="material-symbols-outlined result-icon" aria-hidden="true">person_off</span>
               <div class="result-body">
-                <p class="result-title">未找到该账号</p>
-                <p class="result-desc">未找到学工号 <strong>{{ queriedId }}</strong> 对应的账号，请确认后重试。</p>
+                <p class="result-title">{{ t('forgotPassword.notFound') }}</p>
+                <p class="result-desc" v-html="t('forgotPassword.notFoundDesc', { id: queriedId })"></p>
               </div>
             </div>
 
@@ -64,8 +64,8 @@
             <div v-else-if="!result.active" class="result-card result-warning">
               <span class="material-symbols-outlined result-icon" aria-hidden="true">block</span>
               <div class="result-body">
-                <p class="result-title">账号已停用</p>
-                <p class="result-desc">该账号已被停用，请联系图书馆管理员恢复账号。</p>
+                <p class="result-title">{{ t('forgotPassword.disabled') }}</p>
+                <p class="result-desc">{{ t('forgotPassword.disabledDesc') }}</p>
               </div>
             </div>
 
@@ -73,30 +73,30 @@
             <div v-else class="result-card result-success">
               <span class="material-symbols-outlined result-icon" aria-hidden="true">account_circle</span>
               <div class="result-body">
-                <p class="result-title">账号状态正常</p>
-                <p class="result-desc">请联系图书馆管理员重置密码，携带有效证件前往以下地点：</p>
+                <p class="result-title">{{ t('forgotPassword.active') }}</p>
+                <p class="result-desc">{{ t('forgotPassword.activeDesc') }}</p>
               </div>
 
               <div class="contact-cards">
                 <div class="contact-item">
                   <span class="material-symbols-outlined contact-icon" aria-hidden="true">location_on</span>
                   <div>
-                    <p class="contact-label">咨询台</p>
-                    <p class="contact-value">图书馆一楼大厅服务台</p>
+                    <p class="contact-label">{{ t('forgotPassword.contactDesk') }}</p>
+                    <p class="contact-value">{{ t('forgotPassword.contactDeskValue') }}</p>
                   </div>
                 </div>
                 <div class="contact-item">
                   <span class="material-symbols-outlined contact-icon" aria-hidden="true">call</span>
                   <div>
-                    <p class="contact-label">联系电话</p>
-                    <p class="contact-value">010-8856-1988</p>
+                    <p class="contact-label">{{ t('forgotPassword.contactPhone') }}</p>
+                    <p class="contact-value">{{ t('forgotPassword.contactPhoneValue') }}</p>
                   </div>
                 </div>
                 <div class="contact-item">
                   <span class="material-symbols-outlined contact-icon" aria-hidden="true">schedule</span>
                   <div>
-                    <p class="contact-label">工作时间</p>
-                    <p class="contact-value">周一至周五 8:30 - 17:00</p>
+                    <p class="contact-label">{{ t('forgotPassword.contactHours') }}</p>
+                    <p class="contact-value">{{ t('forgotPassword.contactHoursValue') }}</p>
                   </div>
                 </div>
               </div>
@@ -112,7 +112,7 @@
         </Transition>
       </div>
 
-      <p class="footer-text">&copy; 2026 中国劳动关系学院图书馆</p>
+      <p class="footer-text">{{ t('login.copyright') }}</p>
     </div>
   </div>
 </template>
@@ -120,6 +120,7 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import baseHttp from '../api/baseHttp'
 
 interface AccountStatus {
@@ -130,6 +131,7 @@ interface AccountStatus {
 }
 
 const router = useRouter()
+const { t } = useI18n()
 const studentId = ref('')
 const queriedId = ref('')
 const isLoading = ref(false)
@@ -158,10 +160,10 @@ async function handleQuery() {
         hasPhone: response.data.hasPhone ?? false,
       }
     } else {
-      errorMessage.value = response.data.message || '查询失败，请稍后重试。'
+      errorMessage.value = response.data.message || t('forgotPassword.queryFailed')
     }
   } catch {
-    errorMessage.value = '网络异常，请检查网络连接后重试。'
+    errorMessage.value = t('forgotPassword.networkError')
   } finally {
     isLoading.value = false
   }

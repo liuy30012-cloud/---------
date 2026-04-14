@@ -2,6 +2,7 @@ export default {
   zh: {
     purchaseSuggestions: {
       title: '采购心愿池',
+      description: '读者可以直接提交想采购的图书、为已有请求投票，并持续查看采购推进情况。管理员在同一页面额外查看算法采购建议。',
       buttons: {
         refresh: '刷新心愿池',
         exportSuggestions: '导出算法建议',
@@ -57,6 +58,7 @@ export default {
       },
       card: {
         proposedBy: '由 {name} 提交',
+        anonymous: '读者',
         updatedAt: '更新于',
         supportCount: '支持票',
         progress: '采购进度',
@@ -125,11 +127,25 @@ export default {
         priority: '优先级',
         reason: '原因',
       },
+      errors: {
+        loadBoardFailed: '加载采购心愿池失败。',
+        loadSuggestionsFailed: '加载算法采购建议失败。',
+        requestProcessed: '采购请求已处理。',
+        submitFailed: '提交采购请求失败。',
+        voteProcessed: '投票已处理。',
+        voteFailed: '投票失败。',
+        statusUpdated: '采购进度已更新。',
+        statusUpdateFailed: '更新采购进度失败。',
+      },
+      export: {
+        fileName: '算法采购建议',
+      },
     },
   },
   en: {
     purchaseSuggestions: {
       title: 'Purchase Wish Pool',
+      description: 'Submit books you\'d like the library to purchase, vote on existing requests, and track purchase progress. Admins can also view algorithm-based purchase suggestions on this page.',
       buttons: {
         refresh: 'Refresh Pool',
         exportSuggestions: 'Export Suggestions',
@@ -185,6 +201,7 @@ export default {
       },
       card: {
         proposedBy: 'Submitted by {name}',
+        anonymous: 'Reader',
         updatedAt: 'Updated',
         supportCount: 'Votes',
         progress: 'Purchase Progress',
@@ -252,6 +269,19 @@ export default {
         reservationCount: 'Reservations',
         priority: 'Priority',
         reason: 'Reason',
+      },
+      errors: {
+        loadBoardFailed: 'Failed to load purchase wish pool.',
+        loadSuggestionsFailed: 'Failed to load algorithm purchase suggestions.',
+        requestProcessed: 'Purchase request processed.',
+        submitFailed: 'Failed to submit purchase request.',
+        voteProcessed: 'Vote processed.',
+        voteFailed: 'Failed to vote.',
+        statusUpdated: 'Purchase progress updated.',
+        statusUpdateFailed: 'Failed to update purchase progress.',
+      },
+      export: {
+        fileName: 'algorithm_purchase_suggestions',
       },
     },
   },

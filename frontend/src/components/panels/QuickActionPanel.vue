@@ -5,92 +5,92 @@
       class="quick-action-btn"
       :class="{ active: isPanelOpen }"
       @click="togglePanel"
-      title="快捷操作面板 (Alt+Q)"
+      :title="t('quickActions.title') + ' (Alt+Q)'"
     >
       <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <circle cx="12" cy="12" r="10"></circle>
         <polyline points="12 6 12 12 16 14"></polyline>
       </svg>
-      <span>快捷</span>
+      <span>{{ t('quickActions.trigger') }}</span>
     </button>
 
     <!-- 快捷操作面板 -->
     <transition name="slide">
       <div v-if="isPanelOpen" class="quick-action-content">
         <div class="panel-header">
-          <h3>快捷操作</h3>
+          <h3>{{ t('quickActions.title') }}</h3>
           <button class="close-btn" @click="togglePanel">×</button>
         </div>
 
         <div class="panel-body">
           <!-- 快速续借 -->
           <div class="action-group">
-            <h4>我的借阅</h4>
+            <h4>{{ t('quickActions.groups.borrows') }}</h4>
             <div class="action-list">
               <button
                 class="action-item"
                 @click="goToMyBorrows"
-                title="查看我的借阅记录 (Alt+B)"
+                :title="t('quickActions.actions.myBorrows') + ' (Alt+B)'"
               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
                   <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
                 </svg>
-                <span>我的借阅</span>
+                <span>{{ t('quickActions.actions.myBorrows') }}</span>
               </button>
               <button
                 class="action-item"
                 @click="showQuickRenew"
-                title="快速续借 (Alt+R)"
+                :title="t('quickActions.actions.quickRenew') + ' (Alt+R)'"
               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
                   <path d="M3 3v5h5"></path>
                 </svg>
-                <span>快速续借</span>
+                <span>{{ t('quickActions.actions.quickRenew') }}</span>
               </button>
             </div>
           </div>
 
           <!-- 预约相关 -->
           <div class="action-group">
-            <h4>预约管理</h4>
+            <h4>{{ t('quickActions.groups.reservations') }}</h4>
             <div class="action-list">
               <button
                 class="action-item"
                 @click="goToMyReservations"
-                title="查看我的预约 (Alt+P)"
+                :title="t('quickActions.actions.myReservations') + ' (Alt+P)'"
               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                   <circle cx="12" cy="7" r="4"></circle>
                 </svg>
-                <span>我的预约</span>
+                <span>{{ t('quickActions.actions.myReservations') }}</span>
               </button>
               <button
                 class="action-item"
                 @click="goToSearch"
-                title="新建搜索 (Alt+S)"
+                :title="t('quickActions.actions.newSearch') + ' (Alt+S)'"
               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <circle cx="11" cy="11" r="8"></circle>
                   <path d="m21 21-4.35-4.35"></path>
                 </svg>
-                <span>新建搜索</span>
+                <span>{{ t('quickActions.actions.newSearch') }}</span>
               </button>
             </div>
           </div>
 
           <!-- 快速搜索历史 -->
           <div class="action-group" v-if="searchHistory.length > 0">
-            <h4>最近搜索</h4>
+            <h4>{{ t('quickActions.groups.recentSearches') }}</h4>
             <div class="search-history">
               <button
                 v-for="(item, index) in searchHistory.slice(0, 5)"
                 :key="index"
                 class="history-item"
                 @click="quickSearch(item)"
-                :title="`快速搜索: ${item}`"
+                :title="`${t('quickActions.actions.newSearch')}: ${item}`"
               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
                   <circle cx="11" cy="11" r="8"></circle>
@@ -103,37 +103,37 @@
 
           <!-- 账户相关 -->
           <div class="action-group">
-            <h4>账户</h4>
+            <h4>{{ t('quickActions.groups.account') }}</h4>
             <div class="action-list">
               <button
                 class="action-item"
                 @click="goToAccount"
-                title="我的账户 (Alt+A)"
+                :title="t('quickActions.actions.myAccount') + ' (Alt+A)'"
               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                   <circle cx="12" cy="7" r="4"></circle>
                 </svg>
-                <span>我的账户</span>
+                <span>{{ t('quickActions.actions.myAccount') }}</span>
               </button>
               <button
                 class="action-item"
                 @click="logout"
-                title="退出登录 (Alt+L)"
+                :title="t('quickActions.actions.logout') + ' (Alt+L)'"
               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                   <polyline points="16 17 21 12 16 7"></polyline>
                   <line x1="21" y1="12" x2="9" y2="12"></line>
                 </svg>
-                <span>退出登录</span>
+                <span>{{ t('quickActions.actions.logout') }}</span>
               </button>
             </div>
           </div>
         </div>
 
         <div class="panel-footer">
-          <small>💡 提示：使用快捷键快速访问功能</small>
+          <small>{{ t('quickActions.footer') }}</small>
         </div>
       </div>
     </transition>
@@ -149,9 +149,11 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { useUserStore } from '@/stores/user';
 import QuickRenewModal from './QuickRenewModal.vue';
 
+const { t } = useI18n();
 const router = useRouter();
 const userStore = useUserStore();
 

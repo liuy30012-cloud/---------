@@ -1,19 +1,19 @@
 <template>
   <div class="inventory-alerts page-stack">
     <PageHeader
-      title="库存预警"
+      :title="t('inventoryAlerts.title')"
       eyebrow="Collection Signals"
-      description="集中查看缺货、低库存与高需求书目，帮助馆员优先处理最值得介入的馆藏问题。"
+      :description="t('inventoryAlerts.description')"
     >
       <template #actions>
         <button class="page-action-btn page-action-btn--primary" @click="loadAlerts">
-          <span>刷新数据</span>
+          <span>{{ t('inventoryAlerts.refresh') }}</span>
         </button>
       </template>
     </PageHeader>
 
     <div v-if="loading" v-reveal="{ preset: 'section', once: true }" class="loading">
-      <p>加载中...</p>
+      <p>{{ t('inventoryAlerts.loading') }}</p>
     </div>
 
     <div v-else-if="errorMessage" v-reveal="{ preset: 'section', once: true }" class="loading">
@@ -23,53 +23,53 @@
     <div v-else class="alerts-content">
       <div class="summary-cards">
         <div v-reveal="{ preset: 'card', delay: 0, once: true }" class="summary-card total">
-          <div class="card-icon">总</div>
+          <div class="card-icon">{{ t('inventoryAlerts.cardIcons.total') }}</div>
           <div class="card-info">
             <div class="card-value">{{ alertSummary?.totalAlerts || 0 }}</div>
-            <div class="card-label">总预警数</div>
+            <div class="card-label">{{ t('inventoryAlerts.summary.totalAlerts') }}</div>
           </div>
         </div>
         <div v-reveal="{ preset: 'card', delay: 0.05, once: true }" class="summary-card critical">
-          <div class="card-icon">严</div>
+          <div class="card-icon">{{ t('inventoryAlerts.cardIcons.critical') }}</div>
           <div class="card-info">
             <div class="card-value">{{ alertSummary?.criticalAlerts || 0 }}</div>
-            <div class="card-label">严重预警</div>
+            <div class="card-label">{{ t('inventoryAlerts.summary.criticalAlerts') }}</div>
           </div>
         </div>
         <div v-reveal="{ preset: 'card', delay: 0.1, once: true }" class="summary-card warning">
-          <div class="card-icon">警</div>
+          <div class="card-icon">{{ t('inventoryAlerts.cardIcons.warning') }}</div>
           <div class="card-info">
             <div class="card-value">{{ alertSummary?.warningAlerts || 0 }}</div>
-            <div class="card-label">一般预警</div>
+            <div class="card-label">{{ t('inventoryAlerts.summary.warningAlerts') }}</div>
           </div>
         </div>
         <div v-reveal="{ preset: 'card', delay: 0.15, once: true }" class="summary-card out-of-stock">
-          <div class="card-icon">缺</div>
+          <div class="card-icon">{{ t('inventoryAlerts.cardIcons.outOfStock') }}</div>
           <div class="card-info">
             <div class="card-value">{{ alertSummary?.outOfStockCount || 0 }}</div>
-            <div class="card-label">缺货书籍</div>
+            <div class="card-label">{{ t('inventoryAlerts.summary.outOfStock') }}</div>
           </div>
         </div>
         <div v-reveal="{ preset: 'card', delay: 0.2, once: true }" class="summary-card low-stock">
-          <div class="card-icon">低</div>
+          <div class="card-icon">{{ t('inventoryAlerts.cardIcons.lowStock') }}</div>
           <div class="card-info">
             <div class="card-value">{{ alertSummary?.lowStockCount || 0 }}</div>
-            <div class="card-label">低库存</div>
+            <div class="card-label">{{ t('inventoryAlerts.summary.lowStock') }}</div>
           </div>
         </div>
         <div v-reveal="{ preset: 'card', delay: 0.25, once: true }" class="summary-card high-demand">
-          <div class="card-icon">热</div>
+          <div class="card-icon">{{ t('inventoryAlerts.cardIcons.highDemand') }}</div>
           <div class="card-info">
             <div class="card-value">{{ alertSummary?.highDemandCount || 0 }}</div>
-            <div class="card-label">高需求</div>
+            <div class="card-label">{{ t('inventoryAlerts.summary.highDemand') }}</div>
           </div>
         </div>
       </div>
 
       <div v-reveal="{ preset: 'section', delay: 0.08, once: true }" class="alerts-list">
         <div v-if="!alertSummary?.alerts || alertSummary.alerts.length === 0" class="no-alerts">
-          <div class="no-alerts-icon">稳</div>
-          <p>暂无库存预警</p>
+          <div class="no-alerts-icon">{{ t('inventoryAlerts.empty.icon') }}</div>
+          <p>{{ t('inventoryAlerts.empty.text') }}</p>
         </div>
 
         <div v-else class="alert-items">
@@ -80,7 +80,7 @@
             :class="['alert-item', alert.alertLevel.toLowerCase()]"
           >
             <div class="alert-badge" :class="alert.alertLevel.toLowerCase()">
-              {{ alert.alertLevel === 'CRITICAL' ? '严重' : '警告' }}
+              {{ t(`inventoryAlerts.alertBadges.${alert.alertLevel}`) }}
             </div>
 
             <div class="alert-book-info">
@@ -90,38 +90,38 @@
                 :alt="alert.title"
                 class="book-cover"
               />
-              <div v-else class="book-cover-placeholder">书</div>
+              <div v-else class="book-cover-placeholder">{{ t('inventoryAlerts.coverPlaceholder') }}</div>
 
               <div class="book-details">
                 <h3 class="book-title">{{ alert.title }}</h3>
-                <p class="book-author">作者: {{ alert.author }}</p>
-                <p class="book-category">分类: {{ alert.category }}</p>
-                <p class="book-isbn">ISBN: {{ alert.isbn }}</p>
+                <p class="book-author">{{ t('inventoryAlerts.bookInfo.author') }} {{ alert.author }}</p>
+                <p class="book-category">{{ t('inventoryAlerts.bookInfo.category') }} {{ alert.category }}</p>
+                <p class="book-isbn">{{ t('inventoryAlerts.bookInfo.isbn') }} {{ alert.isbn }}</p>
               </div>
             </div>
 
             <div class="alert-stats">
               <div class="stat-item">
-                <span class="stat-label">总册数</span>
+                <span class="stat-label">{{ t('inventoryAlerts.alertStats.totalCopies') }}</span>
                 <span class="stat-value">{{ alert.totalCopies }}</span>
               </div>
               <div class="stat-item">
-                <span class="stat-label">可借</span>
+                <span class="stat-label">{{ t('inventoryAlerts.alertStats.available') }}</span>
                 <span class="stat-value available">{{ alert.availableCopies }}</span>
               </div>
               <div class="stat-item">
-                <span class="stat-label">已借</span>
+                <span class="stat-label">{{ t('inventoryAlerts.alertStats.borrowed') }}</span>
                 <span class="stat-value borrowed">{{ alert.borrowedCopies }}</span>
               </div>
               <div class="stat-item">
-                <span class="stat-label">借阅次数</span>
+                <span class="stat-label">{{ t('inventoryAlerts.alertStats.borrowCount') }}</span>
                 <span class="stat-value borrow-count">{{ alert.borrowCount }}</span>
               </div>
             </div>
 
             <div class="alert-message">
               <div class="alert-type-badge" :class="getAlertTypeClass(alert.alertType)">
-                {{ getAlertTypeText(alert.alertType) }}
+                {{ t(`inventoryAlerts.alertType.${alert.alertType}`) }}
               </div>
               <p class="message-text">{{ alert.message }}</p>
             </div>
@@ -134,9 +134,12 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { statisticsApi, type InventoryAlertSummary } from '../api/statisticsApi'
 import PageHeader from '../components/layout/PageHeader.vue'
 import { logger } from '../utils/logger'
+
+const { t } = useI18n()
 
 const loading = ref(true)
 const alertSummary = ref<InventoryAlertSummary | null>(null)
@@ -155,12 +158,12 @@ async function loadAlerts() {
       alertSummary.value = response.data.data
     } else {
       alertSummary.value = null
-      errorMessage.value = response.data.message || 'Failed to load inventory alerts.'
+      errorMessage.value = response.data.message || t('inventoryAlerts.loadError')
     }
   } catch (error) {
-    logger.error('加载预警数据失败:', error)
+    logger.error(t('inventoryAlerts.loadError') + ':', error)
     alertSummary.value = null
-    errorMessage.value = 'Failed to load inventory alerts.'
+    errorMessage.value = t('inventoryAlerts.loadError')
   } finally {
     loading.value = false
   }
@@ -176,15 +179,6 @@ function emptySummary(): InventoryAlertSummary {
     highDemandCount: 0,
     alerts: []
   }
-}
-
-function getAlertTypeText(type: string): string {
-  const typeMap: Record<string, string> = {
-    OUT_OF_STOCK: '缺货',
-    LOW_STOCK: '低库存',
-    HIGH_DEMAND: '高需求'
-  }
-  return typeMap[type] || type
 }
 
 function getAlertTypeClass(type: string): string {

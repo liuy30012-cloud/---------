@@ -5,15 +5,15 @@
         <div class="captcha-header">
           <div>
             <p class="captcha-eyebrow">Security Challenge</p>
-            <h2 id="captcha-title">完成滑块验证后继续访问</h2>
+            <h2 id="captcha-title">{{ t('captcha.title') }}</h2>
           </div>
           <button class="ghost-button" type="button" @click="handleCancel" :disabled="challengeState.loading">
-            取消
+            {{ t('captcha.cancel') }}
           </button>
         </div>
 
         <p id="captcha-copy" class="captcha-copy">
-          当前请求触发了保护规则。请拖动滑块对齐目标位置，验证通过后将自动重试原请求。
+          {{ t('captcha.copy') }}
         </p>
 
         <div v-if="session" class="captcha-stage">
@@ -30,7 +30,7 @@
 
           <div ref="trackRef" class="slider-track">
             <div class="slider-progress" :style="{ width: `${sliderX + session.sliderWidth / 2}px` }" />
-            <div class="slider-label">拖动滑块完成验证</div>
+            <div class="slider-label">{{ t('captcha.sliderLabel') }}</div>
             <button
               class="slider-handle"
               type="button"
@@ -44,7 +44,7 @@
         </div>
 
         <div v-else class="captcha-loading">
-          {{ challengeState.loading ? '正在加载验证码...' : '验证码暂不可用' }}
+          {{ challengeState.loading ? t('captcha.loading') : t('captcha.unavailable') }}
         </div>
 
         <p v-if="challengeState.errorMessage" class="captcha-error" role="alert">
@@ -53,10 +53,10 @@
 
         <div class="captcha-actions">
           <button class="secondary-button" type="button" @click="reloadChallenge" :disabled="challengeState.loading">
-            刷新验证
+            {{ t('captcha.refresh') }}
           </button>
           <button class="primary-button" type="button" @click="submitCaptcha" :disabled="!session || challengeState.loading">
-            {{ challengeState.loading ? '验证中...' : '提交验证' }}
+            {{ challengeState.loading ? t('captcha.verifying') : t('captcha.submit') }}
           </button>
         </div>
       </div>
@@ -66,6 +66,7 @@
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import baseHttp from '../../api/baseHttp'
 import { setCaptchaPassToken } from '../../api/antiCrawler'
 import {
@@ -104,6 +105,7 @@ interface DragPoint {
   t: number
 }
 
+const { t } = useI18n()
 const challengeState = useSecurityChallengeState()
 const session = ref<CaptchaSessionResponse | null>(null)
 const sliderX = ref(0)
@@ -150,7 +152,7 @@ async function loadChallenge(clearError: boolean = true) {
     const { data } = await baseHttp.get<CaptchaSessionResponse>('/api/captcha/generate')
     session.value = data
   } catch {
-    cancelCaptchaChallenge('验证码加载失败')
+    cancelCaptchaChallenge(t('captcha.errors.loadFailed'))
     return
   } finally {
     setCaptchaChallengeLoading(false)
@@ -237,7 +239,7 @@ async function submitCaptcha() {
 
     const { data } = await baseHttp.post<CaptchaVerifyResponse>('/api/captcha/verify', payload)
     if (!data.success || !data.passToken) {
-      const message = data.message || '验证失败，请重试'
+      const message = data.message || t('captcha.errors.verifyFailed')
       await loadChallenge(false)
       setCaptchaChallengeError(message)
       return
@@ -247,14 +249,14 @@ async function submitCaptcha() {
     resolveCaptchaChallenge(data.passToken)
   } catch {
     await loadChallenge(false)
-    setCaptchaChallengeError('验证失败，请稍后重试')
+    setCaptchaChallengeError(t('captcha.errors.verifyFailedLater'))
   } finally {
     setCaptchaChallengeLoading(false)
   }
 }
 
 function handleCancel() {
-  cancelCaptchaChallenge('验证码挑战已取消')
+  cancelCaptchaChallenge(t('captcha.errors.cancelled'))
 }
 
 function clamp(value: number, min: number, max: number): number {

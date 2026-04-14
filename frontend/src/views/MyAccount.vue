@@ -1,9 +1,9 @@
 <template>
   <div class="my-account page-stack">
     <PageHeader
-      title="我的账号"
+      :title="t('myAccount.title')"
       eyebrow="Account"
-      description="把个人资料、借阅画像、密码修改和提醒偏好统一收口到一个账户页里，适合高频读者长期使用。"
+      :description="t('myAccount.description')"
     />
 
     <section class="profile-grid">
@@ -17,92 +17,92 @@
         </div>
         <div class="profile-meta">
           <div>
-            <span>邮箱</span>
-            <strong>{{ userStore.user?.email || '未填写' }}</strong>
+            <span>{{ t('myAccount.profile.email') }}</span>
+            <strong>{{ userStore.user?.email || t('myAccount.profile.notFilled') }}</strong>
           </div>
           <div>
-            <span>手机</span>
-            <strong>{{ userStore.user?.phone || '未填写' }}</strong>
+            <span>{{ t('myAccount.profile.phone') }}</span>
+            <strong>{{ userStore.user?.phone || t('myAccount.profile.notFilled') }}</strong>
           </div>
           <div>
-            <span>角色</span>
+            <span>{{ t('myAccount.profile.role') }}</span>
             <strong>{{ userStore.user?.role || 'STUDENT' }}</strong>
           </div>
         </div>
       </article>
 
       <article v-reveal="{ preset: 'card', delay: 0.1, once: true }" class="surface-card profile-card">
-        <h2>借阅画像</h2>
+        <h2>{{ t('myAccount.borrowProfile.title') }}</h2>
         <div v-if="profile" class="profile-stats">
           <div class="stat-box">
-            <span>累计借阅</span>
+            <span>{{ t('myAccount.borrowProfile.totalBorrows') }}</span>
             <strong>{{ profile.totalBorrows }}</strong>
           </div>
           <div class="stat-box">
-            <span>当前在借</span>
+            <span>{{ t('myAccount.borrowProfile.currentBorrows') }}</span>
             <strong>{{ profile.currentBorrows }}</strong>
           </div>
           <div class="stat-box">
-            <span>偏好分类</span>
-            <strong>{{ profile.favoriteCategory || '待形成' }}</strong>
+            <span>{{ t('myAccount.borrowProfile.favoriteCategory') }}</span>
+            <strong>{{ profile.favoriteCategory || t('myAccount.borrowProfile.pending') }}</strong>
           </div>
           <div class="stat-box">
-            <span>平均借阅天数</span>
+            <span>{{ t('myAccount.borrowProfile.averageBorrowDays') }}</span>
             <strong>{{ profile.averageBorrowDays?.toFixed(1) || '0.0' }}</strong>
           </div>
         </div>
-        <p v-else class="muted-copy">用户画像暂未加载成功。</p>
+        <p v-else class="muted-copy">{{ t('myAccount.borrowProfile.loadFailed') }}</p>
       </article>
     </section>
 
     <section class="account-grid">
       <article v-reveal="{ preset: 'section', delay: 0.06, once: true }" class="surface-card">
-        <h2>修改密码</h2>
+        <h2>{{ t('myAccount.password.title') }}</h2>
         <div class="form-stack">
           <label>
-            <span>当前密码</span>
+            <span>{{ t('myAccount.password.oldPassword') }}</span>
             <input v-model="passwordForm.oldPassword" type="password" />
           </label>
           <label>
-            <span>新密码</span>
+            <span>{{ t('myAccount.password.newPassword') }}</span>
             <input v-model="passwordForm.newPassword" type="password" />
           </label>
           <label>
-            <span>确认新密码</span>
+            <span>{{ t('myAccount.password.confirmPassword') }}</span>
             <input v-model="passwordForm.confirmPassword" type="password" />
           </label>
           <button class="page-action-btn page-action-btn--primary" type="button" :disabled="isSubmitting" @click="changePassword">
-            更新密码
+            {{ t('myAccount.password.update') }}
           </button>
         </div>
       </article>
 
       <article v-reveal="{ preset: 'section', delay: 0.14, once: true }" class="surface-card">
-        <h2>提醒偏好</h2>
+        <h2>{{ t('myAccount.preferences.title') }}</h2>
         <div class="preference-list">
           <label class="preference-item">
             <div>
-              <strong>借阅审批与取书</strong>
-              <p>包括自动审批通过、人工审批结果和取书确认。</p>
+              <strong>{{ t('myAccount.preferences.borrowUpdates') }}</strong>
+              <p>{{ t('myAccount.preferences.borrowUpdatesDesc') }}</p>
             </div>
             <input v-model="preferences.borrowUpdates" type="checkbox" />
           </label>
           <label class="preference-item">
             <div>
-              <strong>预约到馆与时限</strong>
-              <p>包括预约可取、取书截止和预约过期提醒。</p>
+              <strong>{{ t('myAccount.preferences.reservationUpdates') }}</strong>
+              <p>{{ t('myAccount.preferences.reservationUpdatesDesc') }}</p>
             </div>
             <input v-model="preferences.reservationUpdates" type="checkbox" />
           </label>
           <label class="preference-item">
             <div>
-              <strong>到期与逾期提醒</strong>
-              <p>提前提醒到期时间，避免高频读者忘记归还。</p>
+              <strong>{{ t('myAccount.preferences.dueReminders') }}</strong>
+              <p>{{ t('myAccount.preferences.dueRemindersDesc') }}</p>
             </div>
             <input v-model="preferences.dueReminders" type="checkbox" />
           </label>
           <button class="page-action-btn page-action-btn--secondary" type="button" @click="savePreferences">
-            保存本机偏好
+            {{ t('myAccount.preferences.save') }}
           </button>
         </div>
       </article>
@@ -110,20 +110,20 @@
 
     <section class="account-grid">
       <article v-reveal="{ preset: 'section', delay: 0.22, once: true }" class="surface-card">
-        <h2>数据导出</h2>
-        <p class="muted-copy">导出你的借阅历史、评价记录等数据,支持Excel和JSON格式。</p>
+        <h2>{{ t('myAccount.export.title') }}</h2>
+        <p class="muted-copy">{{ t('myAccount.export.description') }}</p>
         <div class="export-actions">
           <button class="page-action-btn page-action-btn--secondary" type="button" :disabled="isExporting" @click="exportBorrowHistory('excel')">
-            导出借阅历史 (Excel)
+            {{ t('myAccount.export.borrowHistoryExcel') }}
           </button>
           <button class="page-action-btn page-action-btn--secondary" type="button" :disabled="isExporting" @click="exportBorrowHistory('json')">
-            导出借阅历史 (JSON)
+            {{ t('myAccount.export.borrowHistoryJson') }}
           </button>
           <button class="page-action-btn page-action-btn--secondary" type="button" :disabled="isExporting" @click="exportBookReviews">
-            导出我的评价
+            {{ t('myAccount.export.reviews') }}
           </button>
           <button class="page-action-btn page-action-btn--primary" type="button" :disabled="isExporting" @click="exportAllData">
-            打包下载全部数据
+            {{ t('myAccount.export.allData') }}
           </button>
         </div>
       </article>
@@ -135,6 +135,7 @@
 
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import FeedbackToast from '../components/common/FeedbackToast.vue'
 import PageHeader from '../components/layout/PageHeader.vue'
 import { statisticsApi, type UserProfile } from '../api/statisticsApi'
@@ -142,6 +143,7 @@ import { exportApi } from '../api/exportApi'
 import { useUserStore } from '../stores/user'
 import { logger } from '../utils/logger'
 
+const { t } = useI18n()
 const userStore = useUserStore()
 const profile = ref<UserProfile | null>(null)
 const isSubmitting = ref(false)
@@ -175,11 +177,11 @@ async function loadProfile() {
 
 async function changePassword() {
   if (!passwordForm.oldPassword || !passwordForm.newPassword) {
-    showToast('请完整填写密码字段。', 'error')
+    showToast(t('myAccount.toast.passwordIncomplete'), 'error')
     return
   }
   if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-    showToast('两次输入的新密码不一致。', 'error')
+    showToast(t('myAccount.toast.passwordMismatch'), 'error')
     return
   }
 
@@ -201,7 +203,7 @@ async function changePassword() {
 
 function savePreferences() {
   window.localStorage.setItem('reader-account-preferences', JSON.stringify(preferences))
-  showToast('提醒偏好已保存在当前设备。', 'success')
+  showToast(t('myAccount.toast.preferencesSaved'), 'success')
 }
 
 function loadPreferences() {
@@ -224,10 +226,10 @@ async function exportBorrowHistory(format: 'excel' | 'json') {
   try {
     const response = await exportApi.exportBorrowHistory(format)
     downloadFile(response.data, `借阅历史_${getTimestamp()}.${format === 'json' ? 'json' : 'xlsx'}`)
-    showToast('导出成功。', 'success')
+    showToast(t('myAccount.toast.exportSuccess'), 'success')
   } catch (error) {
     logger.error('Failed to export borrow history:', error)
-    showToast('导出失败,请稍后重试。', 'error')
+    showToast(t('myAccount.toast.exportFailed'), 'error')
   } finally {
     isExporting.value = false
   }
@@ -238,10 +240,10 @@ async function exportBookReviews() {
   try {
     const response = await exportApi.exportBookReviews()
     downloadFile(response.data, `我的评价_${getTimestamp()}.xlsx`)
-    showToast('导出成功。', 'success')
+    showToast(t('myAccount.toast.exportSuccess'), 'success')
   } catch (error) {
     logger.error('Failed to export book reviews:', error)
-    showToast('导出失败,请稍后重试。', 'error')
+    showToast(t('myAccount.toast.exportFailed'), 'error')
   } finally {
     isExporting.value = false
   }
@@ -252,10 +254,10 @@ async function exportAllData() {
   try {
     const response = await exportApi.exportAllData()
     downloadFile(response.data, `我的数据_${getTimestamp()}.xlsx`)
-    showToast('导出成功。', 'success')
+    showToast(t('myAccount.toast.exportSuccess'), 'success')
   } catch (error) {
     logger.error('Failed to export all data:', error)
-    showToast('导出失败,请稍后重试。', 'error')
+    showToast(t('myAccount.toast.exportFailed'), 'error')
   } finally {
     isExporting.value = false
   }

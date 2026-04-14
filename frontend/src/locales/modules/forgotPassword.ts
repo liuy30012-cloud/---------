@@ -20,6 +20,7 @@ export default {
       contactHours: '工作时间',
       contactHoursValue: '周一至周五 8:30 - 17:00',
       networkError: '网络异常，请检查网络连接后重试。',
+      queryFailed: '查询失败，请稍后重试。',
     },
   },
   en: {
@@ -43,6 +44,7 @@ export default {
       contactHours: 'Working Hours',
       contactHoursValue: 'Mon–Fri 8:30 – 17:00',
       networkError: 'Network error. Please check your connection and try again.',
+      queryFailed: 'Query failed. Please try again later.',
     },
   },
 }

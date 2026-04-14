@@ -1,15 +1,15 @@
 <template>
   <div class="purchase-hub page-stack">
     <PageHeader
-      title="采购心愿池"
+      :title="t('purchaseSuggestions.title')"
       eyebrow="Reader-Powered Acquisitions"
-      description="读者可以直接提交想采购的图书、为已有请求投票，并持续查看采购推进情况。管理员在同一页面额外查看算法采购建议。"
+      :description="t('purchaseSuggestions.description')"
     >
       <template #actions>
         <div class="page-actions">
           <button class="page-action-btn page-action-btn--secondary" @click="loadBoard">
             <span class="material-symbols-outlined">refresh</span>
-            <span>刷新心愿池</span>
+            <span>{{ t('purchaseSuggestions.buttons.refresh') }}</span>
           </button>
           <button
             v-if="isAdmin && suggestionSummary?.suggestions?.length"
@@ -17,7 +17,7 @@
             @click="exportSuggestions"
           >
             <span class="material-symbols-outlined">download</span>
-            <span>导出算法建议</span>
+            <span>{{ t('purchaseSuggestions.buttons.exportSuggestions') }}</span>
           </button>
           <button
             v-if="isAdmin"
@@ -25,14 +25,14 @@
             @click="loadAdminData"
           >
             <span class="material-symbols-outlined">tune</span>
-            <span>刷新管理员视图</span>
+            <span>{{ t('purchaseSuggestions.buttons.refreshAdmin') }}</span>
           </button>
         </div>
       </template>
     </PageHeader>
 
     <div v-if="boardLoading && !board" class="surface-card loading-card">
-      <p>正在加载采购心愿池...</p>
+      <p>{{ t('purchaseSuggestions.loading') }}</p>
     </div>
 
     <div v-else-if="boardError && !board" class="surface-card loading-card">
@@ -43,43 +43,43 @@
       <section class="hero-grid">
         <div class="wishlist-summary surface-card">
           <div class="section-heading">
-            <p class="section-kicker">全体读者共创</p>
-            <h2>当前心愿池热度概览</h2>
+            <p class="section-kicker">{{ t('purchaseSuggestions.summary.kicker') }}</p>
+            <h2>{{ t('purchaseSuggestions.summary.title') }}</h2>
           </div>
           <div class="summary-grid">
             <article class="summary-tile">
-              <span class="summary-label">总请求数</span>
+              <span class="summary-label">{{ t('purchaseSuggestions.summary.totalRequests') }}</span>
               <strong class="summary-value">{{ board?.totalRequests ?? 0 }}</strong>
             </article>
             <article class="summary-tile summary-tile--priority">
-              <span class="summary-label">热门优先</span>
+              <span class="summary-label">{{ t('purchaseSuggestions.summary.priorityPool') }}</span>
               <strong class="summary-value">{{ board?.priorityPoolCount ?? 0 }}</strong>
             </article>
             <article class="summary-tile summary-tile--planned">
-              <span class="summary-label">已纳入计划</span>
+              <span class="summary-label">{{ t('purchaseSuggestions.summary.planned') }}</span>
               <strong class="summary-value">{{ (board?.plannedCount ?? 0) + (board?.purchasingCount ?? 0) }}</strong>
             </article>
             <article class="summary-tile summary-tile--arrived">
-              <span class="summary-label">已到馆</span>
+              <span class="summary-label">{{ t('purchaseSuggestions.summary.arrived') }}</span>
               <strong class="summary-value">{{ board?.arrivedCount ?? 0 }}</strong>
             </article>
             <article class="summary-tile summary-tile--support">
-              <span class="summary-label">累计支持票</span>
+              <span class="summary-label">{{ t('purchaseSuggestions.summary.totalSupport') }}</span>
               <strong class="summary-value">{{ board?.totalSupportCount ?? 0 }}</strong>
             </article>
           </div>
         </div>
 
         <div class="process-card surface-card">
-          <div class="section-heading">
-            <p class="section-kicker">流程说明</p>
-            <h2>投票如何影响采购优先级</h2>
+          <div class=”section-heading”>
+            <p class=”section-kicker”>{{ t('purchaseSuggestions.process.kicker') }}</p>
+            <h2>{{ t('purchaseSuggestions.process.title') }}</h2>
           </div>
-          <ol class="process-list">
-            <li>提交请求后进入“待评估”，系统自动记入发起人的首票支持。</li>
-            <li>支持票达到 3 票，自动进入“热门优先”。</li>
-            <li>支持票达到 8 票，自动进入“已纳入计划”。</li>
-            <li>后续“采购中 / 已到馆 / 已拒绝”由管理员确认，不做伪自动推进。</li>
+          <ol class=”process-list”>
+            <li>{{ t('purchaseSuggestions.process.step1') }}</li>
+            <li>{{ t('purchaseSuggestions.process.step2') }}</li>
+            <li>{{ t('purchaseSuggestions.process.step3') }}</li>
+            <li>{{ t('purchaseSuggestions.process.step4') }}</li>
           </ol>
         </div>
       </section>
@@ -87,47 +87,47 @@
       <section class="request-grid">
         <div class="request-form-card surface-card">
           <div class="section-heading">
-            <p class="section-kicker">提交新请求</p>
-            <h2>告诉图书馆你希望补进哪本书</h2>
+            <p class="section-kicker">{{ t('purchaseSuggestions.form.kicker') }}</p>
+            <h2>{{ t('purchaseSuggestions.form.title') }}</h2>
           </div>
           <form class="request-form" @submit.prevent="submitRequest">
             <label class="field">
-              <span class="field-label">书名</span>
-              <input v-model.trim="requestForm.title" type="text" maxlength="200" placeholder="例如：设计数据密集型应用" />
+              <span class="field-label">{{ t('purchaseSuggestions.form.bookTitle') }}</span>
+              <input v-model.trim="requestForm.title" type="text" maxlength="200" :placeholder="t('purchaseSuggestions.form.bookTitlePlaceholder')" />
             </label>
             <label class="field">
-              <span class="field-label">作者</span>
-              <input v-model.trim="requestForm.author" type="text" maxlength="100" placeholder="例如：Martin Kleppmann" />
+              <span class="field-label">{{ t('purchaseSuggestions.form.author') }}</span>
+              <input v-model.trim="requestForm.author" type="text" maxlength="100" :placeholder="t('purchaseSuggestions.form.authorPlaceholder')" />
             </label>
             <label class="field">
-              <span class="field-label">ISBN</span>
-              <input v-model.trim="requestForm.isbn" type="text" maxlength="32" placeholder="可选，用于更准确去重" />
+              <span class="field-label">{{ t('purchaseSuggestions.form.isbn') }}</span>
+              <input v-model.trim="requestForm.isbn" type="text" maxlength="32" :placeholder="t('purchaseSuggestions.form.isbnPlaceholder')" />
             </label>
             <label class="field">
-              <span class="field-label">申请理由</span>
+              <span class="field-label">{{ t('purchaseSuggestions.form.reason') }}</span>
               <textarea
                 v-model.trim="requestForm.reason"
                 rows="4"
                 maxlength="500"
-                placeholder="可选，例如课程需要、科研方向、社团共读等"
+                :placeholder="t('purchaseSuggestions.form.reasonPlaceholder')"
               />
             </label>
             <button class="submit-btn" type="submit" :disabled="submitting">
               <span class="material-symbols-outlined">library_add</span>
-              <span>{{ submitting ? '提交中...' : '提交采购请求' }}</span>
+              <span>{{ submitting ? t('purchaseSuggestions.form.submitting') : t('purchaseSuggestions.form.submit') }}</span>
             </button>
           </form>
         </div>
 
         <div class="request-tips-card surface-card">
           <div class="section-heading">
-            <p class="section-kicker">提交前提示</p>
-            <h2>系统会自动帮你做三件事</h2>
+            <p class="section-kicker">{{ t('purchaseSuggestions.tips.kicker') }}</p>
+            <h2>{{ t('purchaseSuggestions.tips.title') }}</h2>
           </div>
           <ul class="tips-list">
-            <li>如果馆藏中已经有这本书，会提示你直接前往馆藏详情或预约，不再重复建池。</li>
-            <li>如果心愿池里已经存在同一本书，会提示你去原请求中投票，不会自动加票。</li>
-            <li>投票只支持一人一票，系统会自动刷新热门状态和采购进度条。</li>
+            <li>{{ t('purchaseSuggestions.tips.tip1') }}</li>
+            <li>{{ t('purchaseSuggestions.tips.tip2') }}</li>
+            <li>{{ t('purchaseSuggestions.tips.tip3') }}</li>
           </ul>
         </div>
       </section>
@@ -140,16 +140,16 @@
       <section class="request-list-card surface-card">
         <div class="section-heading section-heading--row">
           <div>
-            <p class="section-kicker">采购请求列表</p>
-            <h2>按当前优先阶段排序</h2>
+            <p class="section-kicker">{{ t('purchaseSuggestions.list.kicker') }}</p>
+            <h2>{{ t('purchaseSuggestions.list.title') }}</h2>
           </div>
-          <p class="section-note">已到馆和已拒绝默认排在列表尾部。</p>
+          <p class="section-note">{{ t('purchaseSuggestions.list.note') }}</p>
         </div>
 
         <div v-if="!board?.requests?.length" class="empty-state">
           <span class="material-symbols-outlined">menu_book</span>
-          <p>还没有读者提交采购请求。</p>
-          <p class="empty-state__desc">第一本想买的书可以由你发起。</p>
+          <p>{{ t('purchaseSuggestions.empty.title') }}</p>
+          <p class="empty-state__desc">{{ t('purchaseSuggestions.empty.description') }}</p>
         </div>
 
         <div v-else class="request-list">
@@ -163,8 +163,8 @@
               <div>
                 <div class="request-card__meta">
                   <span :class="['status-pill', `status-pill--${statusTone(request.status)}`]">{{ request.statusLabel }}</span>
-                  <span class="meta-text">由 {{ request.proposerName || '读者' }} 提交</span>
-                  <span class="meta-text">更新于 {{ formatTimestamp(request.updatedAt) }}</span>
+                  <span class="meta-text">{{ t('purchaseSuggestions.card.proposedBy', { name: request.proposerName || t('purchaseSuggestions.card.anonymous') }) }}</span>
+                  <span class="meta-text">{{ t('purchaseSuggestions.card.updatedAt') }} {{ formatTimestamp(request.updatedAt) }}</span>
                 </div>
                 <h3 class="request-card__title">{{ request.title }}</h3>
                 <p class="request-card__subtitle">
@@ -174,13 +174,13 @@
               </div>
               <div class="support-badge">
                 <span class="support-badge__value">{{ request.supportCount }}</span>
-                <span class="support-badge__label">支持票</span>
+                <span class="support-badge__label">{{ t('purchaseSuggestions.card.supportCount') }}</span>
               </div>
             </div>
 
             <div class="progress-panel">
               <div class="progress-panel__copy">
-                <span class="progress-label">采购进度</span>
+                <span class="progress-label">{{ t('purchaseSuggestions.card.progress') }}</span>
                 <strong>{{ request.progressLabel }}</strong>
               </div>
               <div class="progress-track" aria-hidden="true">
@@ -189,7 +189,7 @@
               <span class="progress-percent">{{ request.progressPercent }}%</span>
             </div>
 
-            <p class="request-reason">{{ request.reason || '提交者暂未填写具体理由。' }}</p>
+            <p class="request-reason">{{ request.reason || t('purchaseSuggestions.card.noReason') }}</p>
 
             <div v-if="request.statusNote" class="status-note">
               <span class="material-symbols-outlined">campaign</span>
@@ -205,13 +205,13 @@
                 <span class="material-symbols-outlined">how_to_vote</span>
                 <span>{{ voteButtonText(request) }}</span>
               </button>
-              <span class="footer-note">创建于 {{ formatFullDate(request.createdAt) }}</span>
+              <span class="footer-note">{{ t('purchaseSuggestions.card.createdAt') }} {{ formatFullDate(request.createdAt) }}</span>
             </div>
 
             <div v-if="isAdmin" class="admin-control">
               <div class="admin-control__fields">
                 <label class="field">
-                  <span class="field-label">状态</span>
+                  <span class="field-label">{{ t('purchaseSuggestions.admin.status') }}</span>
                   <select v-model="statusDrafts[request.id].status">
                     <option v-for="option in statusOptions" :key="option.value" :value="option.value">
                       {{ option.label }}
@@ -219,12 +219,12 @@
                   </select>
                 </label>
                 <label class="field">
-                  <span class="field-label">备注</span>
+                  <span class="field-label">{{ t('purchaseSuggestions.admin.note') }}</span>
                   <input
                     v-model.trim="statusDrafts[request.id].note"
                     type="text"
                     maxlength="200"
-                    placeholder="例如：已提交采购单 / 本月暂缓"
+                    :placeholder="t('purchaseSuggestions.admin.notePlaceholder')"
                   />
                 </label>
               </div>
@@ -234,7 +234,7 @@
                 @click="saveStatus(request.id)"
               >
                 <span class="material-symbols-outlined">save</span>
-                <span>{{ isSavingStatus(request.id) ? '保存中...' : '保存进度' }}</span>
+                <span>{{ isSavingStatus(request.id) ? t('purchaseSuggestions.admin.saving') : t('purchaseSuggestions.admin.save') }}</span>
               </button>
             </div>
           </article>
@@ -244,15 +244,15 @@
       <section v-if="isAdmin" class="admin-section surface-card">
         <div class="section-heading section-heading--row">
           <div>
-            <p class="section-kicker">管理员视图</p>
-            <h2>算法采购建议</h2>
+            <p class="section-kicker">{{ t('purchaseSuggestions.adminSection.kicker') }}</p>
+            <h2>{{ t('purchaseSuggestions.adminSection.title') }}</h2>
           </div>
-          <p class="section-note">该区域保留原有算法推荐，不与读者请求混排。</p>
+          <p class="section-note">{{ t('purchaseSuggestions.adminSection.note') }}</p>
         </div>
 
         <div v-if="suggestionsLoading && !suggestionSummary" class="empty-state empty-state--compact">
           <span class="material-symbols-outlined">hourglass_top</span>
-          <p>正在加载算法采购建议...</p>
+          <p>{{ t('purchaseSuggestions.adminSection.loading') }}</p>
         </div>
 
         <div v-else-if="suggestionsError" class="empty-state empty-state--compact">
@@ -263,30 +263,30 @@
         <template v-else-if="suggestionSummary">
           <div class="admin-summary-grid">
             <article class="admin-summary-card">
-              <span class="summary-label">建议总数</span>
+              <span class="summary-label">{{ t('purchaseSuggestions.adminSection.totalSuggestions') }}</span>
               <strong class="summary-value">{{ suggestionSummary.totalSuggestions }}</strong>
             </article>
             <article class="admin-summary-card admin-summary-card--high">
-              <span class="summary-label">高优先级</span>
+              <span class="summary-label">{{ t('purchaseSuggestions.adminSection.highPriority') }}</span>
               <strong class="summary-value">{{ suggestionSummary.highPriority }}</strong>
             </article>
             <article class="admin-summary-card admin-summary-card--medium">
-              <span class="summary-label">中优先级</span>
+              <span class="summary-label">{{ t('purchaseSuggestions.adminSection.mediumPriority') }}</span>
               <strong class="summary-value">{{ suggestionSummary.mediumPriority }}</strong>
             </article>
             <article class="admin-summary-card admin-summary-card--copies">
-              <span class="summary-label">建议增购副本</span>
+              <span class="summary-label">{{ t('purchaseSuggestions.adminSection.additionalCopies') }}</span>
               <strong class="summary-value">{{ suggestionSummary.totalAdditionalCopies }}</strong>
             </article>
             <article class="admin-summary-card admin-summary-card--budget">
-              <span class="summary-label">预计预算</span>
+              <span class="summary-label">{{ t('purchaseSuggestions.adminSection.estimatedBudget') }}</span>
               <strong class="summary-value">¥{{ suggestionSummary.estimatedBudget.toFixed(0) }}</strong>
             </article>
           </div>
 
           <div v-if="!suggestionSummary.suggestions.length" class="empty-state empty-state--compact">
             <span class="material-symbols-outlined">inventory_2</span>
-            <p>当前没有需要优先补充的算法采购建议。</p>
+            <p>{{ t('purchaseSuggestions.adminSection.noSuggestions') }}</p>
           </div>
 
           <div v-else class="suggestion-list">
@@ -307,17 +307,17 @@
                 </div>
                 <div class="support-badge support-badge--admin">
                   <span class="support-badge__value">{{ suggestion.score }}</span>
-                  <span class="support-badge__label">评分</span>
+                  <span class="support-badge__label">{{ t('purchaseSuggestions.adminSection.score') }}</span>
                 </div>
               </div>
 
               <div class="suggestion-metrics">
-                <div class="metric-item"><span class="metric-label">当前副本</span><strong>{{ suggestion.currentCopies }}</strong></div>
-                <div class="metric-item"><span class="metric-label">建议副本</span><strong>{{ suggestion.suggestedCopies }}</strong></div>
-                <div class="metric-item"><span class="metric-label">待增购</span><strong>+{{ suggestion.additionalCopies }}</strong></div>
-                <div class="metric-item"><span class="metric-label">预约人数</span><strong>{{ suggestion.reservationCount }}</strong></div>
-                <div class="metric-item"><span class="metric-label">借阅次数</span><strong>{{ suggestion.borrowCount }}</strong></div>
-                <div class="metric-item"><span class="metric-label">平均等待</span><strong>{{ suggestion.averageWaitTime }} 天</strong></div>
+                <div class="metric-item"><span class="metric-label">{{ t('purchaseSuggestions.adminSection.currentCopies') }}</span><strong>{{ suggestion.currentCopies }}</strong></div>
+                <div class="metric-item"><span class="metric-label">{{ t('purchaseSuggestions.adminSection.suggestedCopies') }}</span><strong>{{ suggestion.suggestedCopies }}</strong></div>
+                <div class="metric-item"><span class="metric-label">{{ t('purchaseSuggestions.adminSection.pendingPurchase') }}</span><strong>+{{ suggestion.additionalCopies }}</strong></div>
+                <div class="metric-item"><span class="metric-label">{{ t('purchaseSuggestions.adminSection.reservationCount') }}</span><strong>{{ suggestion.reservationCount }}</strong></div>
+                <div class="metric-item"><span class="metric-label">{{ t('purchaseSuggestions.adminSection.borrowCount') }}</span><strong>{{ suggestion.borrowCount }}</strong></div>
+                <div class="metric-item"><span class="metric-label">{{ t('purchaseSuggestions.adminSection.averageWait') }}</span><strong>{{ t('purchaseSuggestions.adminSection.averageWaitDays', { days: suggestion.averageWaitTime }) }}</strong></div>
               </div>
 
               <p class="suggestion-reason">{{ suggestion.reason }}</p>
@@ -332,6 +332,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import {
   purchaseRequestApi,
   type CreatePurchaseRequestPayload,
@@ -348,6 +349,7 @@ import { logger } from '../utils/logger'
 
 type FeedbackTone = 'success' | 'info' | 'warning' | 'error'
 
+const { t } = useI18n()
 const router = useRouter()
 const userStore = useUserStore()
 
@@ -375,14 +377,14 @@ const requestForm = reactive<CreatePurchaseRequestPayload>({
 
 const isAdmin = computed(() => userStore.isAdmin)
 
-const statusOptions: Array<{ value: PurchaseRequestStatus; label: string }> = [
-  { value: 'PENDING_REVIEW', label: '待评估' },
-  { value: 'PRIORITY_POOL', label: '热门优先' },
-  { value: 'PLANNED', label: '已纳入计划' },
-  { value: 'PURCHASING', label: '采购中' },
-  { value: 'ARRIVED', label: '已到馆' },
-  { value: 'REJECTED', label: '已拒绝' },
-]
+const statusOptions = computed<Array<{ value: PurchaseRequestStatus; label: string }>>(() => [
+  { value: 'PENDING_REVIEW', label: t('purchaseSuggestions.statusOptions.PENDING_REVIEW') },
+  { value: 'PRIORITY_POOL', label: t('purchaseSuggestions.statusOptions.PRIORITY_POOL') },
+  { value: 'PLANNED', label: t('purchaseSuggestions.statusOptions.PLANNED') },
+  { value: 'PURCHASING', label: t('purchaseSuggestions.statusOptions.PURCHASING') },
+  { value: 'ARRIVED', label: t('purchaseSuggestions.statusOptions.ARRIVED') },
+  { value: 'REJECTED', label: t('purchaseSuggestions.statusOptions.REJECTED') },
+])
 
 let highlightTimer: number | null = null
 
@@ -412,12 +414,12 @@ async function loadBoard() {
       syncStatusDrafts()
     } else {
       board.value = null
-      boardError.value = response.data.message || '加载采购心愿池失败。'
+      boardError.value = response.data.message || t('purchaseSuggestions.errors.loadBoardFailed')
     }
   } catch (error: any) {
     board.value = null
-    boardError.value = sanitizeApiMessage(error.response?.data?.message, '加载采购心愿池失败。')
-    logger.error('加载采购心愿池失败:', error)
+    boardError.value = sanitizeApiMessage(error.response?.data?.message, t('purchaseSuggestions.errors.loadBoardFailed'))
+    logger.error(t('purchaseSuggestions.errors.loadBoardFailed'), error)
   } finally {
     boardLoading.value = false
   }
@@ -437,12 +439,12 @@ async function loadSuggestions() {
       suggestionSummary.value = response.data.data
     } else {
       suggestionSummary.value = null
-      suggestionsError.value = response.data.message || '加载算法采购建议失败。'
+      suggestionsError.value = response.data.message || t('purchaseSuggestions.errors.loadSuggestionsFailed')
     }
   } catch (error: any) {
     suggestionSummary.value = null
-    suggestionsError.value = sanitizeApiMessage(error.response?.data?.message, '加载算法采购建议失败。')
-    logger.error('加载算法采购建议失败:', error)
+    suggestionsError.value = sanitizeApiMessage(error.response?.data?.message, t('purchaseSuggestions.errors.loadSuggestionsFailed'))
+    logger.error(t('purchaseSuggestions.errors.loadSuggestionsFailed'), error)
   } finally {
     suggestionsLoading.value = false
   }
@@ -462,7 +464,7 @@ async function submitRequest() {
     })
 
     const result = response.data.data
-    const message = sanitizeApiMessage(response.data.message, '采购请求已处理。')
+    const message = sanitizeApiMessage(response.data.message, t('purchaseSuggestions.errors.requestProcessed'))
 
     if (result.created) {
       feedback.value = { tone: 'success', message }
@@ -487,8 +489,8 @@ async function submitRequest() {
 
     feedback.value = { tone: 'warning', message }
   } catch (error: any) {
-    feedback.value = { tone: 'error', message: sanitizeApiMessage(error.response?.data?.message, '提交采购请求失败。') }
-    logger.error('提交采购请求失败:', error)
+    feedback.value = { tone: 'error', message: sanitizeApiMessage(error.response?.data?.message, t('purchaseSuggestions.errors.submitFailed')) }
+    logger.error(t('purchaseSuggestions.errors.submitFailed'), error)
   } finally {
     submitting.value = false
   }
@@ -501,13 +503,13 @@ async function voteForRequest(requestId: number) {
     const response = await purchaseRequestApi.voteRequest(requestId)
     feedback.value = {
       tone: response.data.data.alreadyVoted ? 'info' : 'success',
-      message: sanitizeApiMessage(response.data.message, '投票已处理。'),
+      message: sanitizeApiMessage(response.data.message, t('purchaseSuggestions.errors.voteProcessed')),
     }
     await loadBoard()
     await focusRequest(requestId)
   } catch (error: any) {
-    feedback.value = { tone: 'error', message: sanitizeApiMessage(error.response?.data?.message, '投票失败。') }
-    logger.error('投票失败:', error)
+    feedback.value = { tone: 'error', message: sanitizeApiMessage(error.response?.data?.message, t('purchaseSuggestions.errors.voteFailed')) }
+    logger.error(t('purchaseSuggestions.errors.voteFailed'), error)
   } finally {
     markPending(votingIds, requestId, false)
   }
@@ -525,12 +527,12 @@ async function saveStatus(requestId: number) {
       statusNote: draft.note,
     }
     const response = await purchaseRequestApi.updateStatus(requestId, payload)
-    feedback.value = { tone: 'success', message: sanitizeApiMessage(response.data.message, '采购进度已更新。') }
+    feedback.value = { tone: 'success', message: sanitizeApiMessage(response.data.message, t('purchaseSuggestions.errors.statusUpdated')) }
     await loadBoard()
     await focusRequest(requestId)
   } catch (error: any) {
-    feedback.value = { tone: 'error', message: sanitizeApiMessage(error.response?.data?.message, '更新采购进度失败。') }
-    logger.error('更新采购进度失败:', error)
+    feedback.value = { tone: 'error', message: sanitizeApiMessage(error.response?.data?.message, t('purchaseSuggestions.errors.statusUpdateFailed')) }
+    logger.error(t('purchaseSuggestions.errors.statusUpdateFailed'), error)
   } finally {
     markPending(savingStatusIds, requestId, false)
   }
@@ -583,14 +585,14 @@ function isSavingStatus(requestId: number) {
 }
 
 function voteButtonText(request: PurchaseRequestItem) {
-  if (request.votedByCurrentUser) return '已支持'
+  if (request.votedByCurrentUser) return t('purchaseSuggestions.voteButton.voted')
   if (!request.canVote) {
-    if (request.status === 'PURCHASING') return '采购处理中'
-    if (request.status === 'ARRIVED') return '已到馆'
-    if (request.status === 'REJECTED') return '已结束'
-    return '暂不可投票'
+    if (request.status === 'PURCHASING') return t('purchaseSuggestions.voteButton.purchasing')
+    if (request.status === 'ARRIVED') return t('purchaseSuggestions.voteButton.arrived')
+    if (request.status === 'REJECTED') return t('purchaseSuggestions.voteButton.ended')
+    return t('purchaseSuggestions.voteButton.unavailable')
   }
-  return isVoting(request.id) ? '提交中...' : '支持采购'
+  return isVoting(request.id) ? t('purchaseSuggestions.voteButton.submitting') : t('purchaseSuggestions.voteButton.support')
 }
 
 function statusTone(status: PurchaseRequestStatus | string) {
@@ -614,9 +616,9 @@ function statusTone(status: PurchaseRequestStatus | string) {
 }
 
 function priorityText(priority: string) {
-  if (priority === 'HIGH') return '高优先级'
-  if (priority === 'MEDIUM') return '中优先级'
-  if (priority === 'LOW') return '低优先级'
+  if (priority === 'HIGH') return t('purchaseSuggestions.priorityText.high')
+  if (priority === 'MEDIUM') return t('purchaseSuggestions.priorityText.medium')
+  if (priority === 'LOW') return t('purchaseSuggestions.priorityText.low')
   return priority
 }
 
@@ -653,7 +655,19 @@ function exportSuggestions() {
     return content
   }
 
-  const headers = ['书名', '作者', 'ISBN', '分类', '当前副本', '建议副本', '待增购', '借阅次数', '预约人数', '优先级', '原因']
+  const headers = [
+    t('purchaseSuggestions.csvHeaders.title'),
+    t('purchaseSuggestions.csvHeaders.author'),
+    t('purchaseSuggestions.csvHeaders.isbn'),
+    t('purchaseSuggestions.csvHeaders.category'),
+    t('purchaseSuggestions.csvHeaders.currentCopies'),
+    t('purchaseSuggestions.csvHeaders.suggestedCopies'),
+    t('purchaseSuggestions.csvHeaders.additionalCopies'),
+    t('purchaseSuggestions.csvHeaders.borrowCount'),
+    t('purchaseSuggestions.csvHeaders.reservationCount'),
+    t('purchaseSuggestions.csvHeaders.priority'),
+    t('purchaseSuggestions.csvHeaders.reason'),
+  ]
   const rows = suggestionSummary.value.suggestions.map((item) => [
     escapeCSV(item.title),
     escapeCSV(item.author),
@@ -672,7 +686,7 @@ function exportSuggestions() {
   const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' })
   const link = document.createElement('a')
   link.href = URL.createObjectURL(blob)
-  link.download = `算法采购建议_${new Date().toISOString().slice(0, 10)}.csv`
+  link.download = `${t('purchaseSuggestions.export.fileName')}_${new Date().toISOString().slice(0, 10)}.csv`
   link.click()
   URL.revokeObjectURL(link.href)
 }

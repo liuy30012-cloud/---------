@@ -2,7 +2,7 @@
   <div class="modal-overlay" @click="$emit('close')">
     <div class="report-modal" @click.stop>
       <div class="modal-header">
-        <h2>报告书籍问题</h2>
+        <h2>{{ t('damageReports.modal.title') }}</h2>
         <button class="close-btn" @click="$emit('close')">✕</button>
       </div>
 
@@ -11,27 +11,27 @@
 
         <!-- 损坏类型 -->
         <div class="form-group">
-          <label class="form-label">损坏类型 *</label>
+          <label class="form-label">{{ t('damageReports.modal.damageType') }}</label>
           <div class="type-tags">
             <button
-              v-for="t in damageTypeOptions"
-              :key="t.value"
+              v-for="typeKey in damageTypeKeys"
+              :key="typeKey"
               class="type-tag"
-              :class="{ active: selectedTypes.includes(t.value) }"
-              @click="toggleType(t.value)"
+              :class="{ active: selectedTypes.includes(typeKey) }"
+              @click="toggleType(typeKey)"
               type="button"
             >
-              {{ t.label }}
+              {{ t(`damageReports.damageType.${typeKey}`) }}
             </button>
           </div>
         </div>
 
         <!-- 照片上传 -->
         <div class="form-group">
-          <label class="form-label">破损照片 *（最多3张）</label>
+          <label class="form-label">{{ t('damageReports.modal.photos') }}</label>
           <div class="photo-grid">
             <div v-for="(file, idx) in photoPreviews" :key="idx" class="photo-item">
-              <img :src="file.preview" alt="破损照片" />
+              <img :src="file.preview" :alt="t('damageReports.modal.photoAlt')" />
               <button class="photo-remove" @click="removePhoto(idx)" type="button">✕</button>
             </div>
             <label v-if="photoFiles.length < 3" class="photo-add">
@@ -44,11 +44,11 @@
 
         <!-- 描述 -->
         <div class="form-group">
-          <label class="form-label">问题描述</label>
+          <label class="form-label">{{ t('damageReports.modal.description') }}</label>
           <textarea
             v-model="description"
             class="form-textarea"
-            placeholder="请描述损坏情况..."
+            :placeholder="t('damageReports.modal.descriptionPlaceholder')"
             maxlength="500"
             rows="3"
           ></textarea>
@@ -56,14 +56,14 @@
 
         <!-- 提交按钮 -->
         <div class="form-actions">
-          <button class="btn-cancel" @click="$emit('close')" type="button">取消</button>
+          <button class="btn-cancel" @click="$emit('close')" type="button">{{ t('damageReports.modal.cancel') }}</button>
           <button
             class="btn-submit"
             :disabled="submitting || selectedTypes.length === 0 || photoFiles.length === 0"
             @click="submitReport"
             type="button"
           >
-            {{ submitting ? '提交中...' : '提交报告' }}
+            {{ submitting ? t('damageReports.modal.submitting') : t('damageReports.modal.submit') }}
           </button>
         </div>
 
@@ -75,8 +75,11 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { damageReportApi } from '../../api/damageReportApi'
 import { API_CONFIG } from '../../config'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   bookId: number
@@ -88,13 +91,13 @@ const emit = defineEmits<{
   submitted: []
 }>()
 
-const damageTypeOptions = [
-  { value: 'COVER_TORN', label: '封面破损' },
-  { value: 'PAGE_MISSING', label: '页面缺失' },
-  { value: 'WATER_DAMAGE', label: '水渍' },
-  { value: 'GRAFFITI', label: '涂写' },
-  { value: 'BINDING_BROKEN', label: '装订脱落' },
-  { value: 'OTHER', label: '其他' },
+const damageTypeKeys = [
+  'COVER_TORN',
+  'PAGE_MISSING',
+  'WATER_DAMAGE',
+  'GRAFFITI',
+  'BINDING_BROKEN',
+  'OTHER',
 ]
 
 const selectedTypes = ref<string[]>([])
@@ -123,13 +126,13 @@ function onPhotoChange(event: Event) {
   const remaining = 3 - photoFiles.value.length
 
   if (newFiles.length > remaining) {
-    photoError.value = `最多上传3张照片，还可添加${remaining}张`
+    photoError.value = t('damageReports.modal.errorMaxPhotos', { remaining })
     return
   }
 
   for (const file of newFiles) {
     if (file.size > 5 * 1024 * 1024) {
-      photoError.value = '单张照片不能超过 5MB'
+      photoError.value = t('damageReports.modal.errorPhotoSize')
       return
     }
     photoFiles.value.push(file)
@@ -166,10 +169,10 @@ async function submitReport() {
       emit('submitted')
       emit('close')
     } else {
-      errorMessage.value = res.data.message || '提交失败，请重试'
+      errorMessage.value = res.data.message || t('damageReports.modal.errorSubmit')
     }
   } catch (err: any) {
-    errorMessage.value = err?.response?.data?.message || '网络错误，请重试'
+    errorMessage.value = err?.response?.data?.message || t('damageReports.modal.errorNetwork')
   } finally {
     submitting.value = false
   }

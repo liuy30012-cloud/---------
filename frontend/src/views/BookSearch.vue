@@ -1,17 +1,17 @@
 <template>
   <div class="book-search page-stack">
     <PageHeader
-      title="馆藏检索"
+      :title="t('bookSearch.title')"
       eyebrow="ARCHIVE SEARCH"
-      description="查询条件、排序和页码都写入链接里。刷新、分享和返回都能保持同一组读者搜索状态。"
+      :description="t('bookSearch.description')"
     >
       <template #actions>
         <div class="page-actions">
           <button class="page-action-btn page-action-btn--secondary" type="button" @click="resetFilters">
-            重置条件
+            {{ t('bookSearch.resetFilters') }}
           </button>
           <button class="page-action-btn page-action-btn--primary" type="button" @click="saveCurrentSearch" :disabled="loading">
-            保存这组搜索
+            {{ t('bookSearch.saveSearch') }}
           </button>
         </div>
       </template>
@@ -20,50 +20,50 @@
     <div class="search-layout">
       <aside v-reveal="{ preset: 'sidebar', once: true }" class="search-sidebar surface-card">
         <div class="search-group">
-          <label>关键字</label>
-          <input v-model="form.keyword" type="text" placeholder="书名、作者或 ISBN" @keyup.enter="submitSearch" />
+          <label>{{ t('bookSearch.sidebar.keyword') }}</label>
+          <input v-model="form.keyword" type="text" :placeholder="t('bookSearch.sidebar.keywordPlaceholder')" @keyup.enter="submitSearch" />
         </div>
         <div class="search-group">
-          <label>作者</label>
-          <input v-model="form.author" type="text" placeholder="作者姓名" @keyup.enter="submitSearch" />
+          <label>{{ t('bookSearch.sidebar.author') }}</label>
+          <input v-model="form.author" type="text" :placeholder="t('bookSearch.sidebar.authorPlaceholder')" @keyup.enter="submitSearch" />
         </div>
         <div class="search-group">
-          <label>出版年份</label>
-          <input v-model="form.year" type="text" placeholder="例如 2024" @keyup.enter="submitSearch" />
+          <label>{{ t('bookSearch.sidebar.year') }}</label>
+          <input v-model="form.year" type="text" :placeholder="t('bookSearch.sidebar.yearPlaceholder')" @keyup.enter="submitSearch" />
         </div>
         <div class="search-group">
-          <label>分类</label>
+          <label>{{ t('bookSearch.sidebar.category') }}</label>
           <select v-model="form.category">
-            <option value="">全部分类</option>
+            <option value="">{{ t('bookSearch.sidebar.allCategories') }}</option>
             <option v-for="category in categories" :key="category" :value="category">{{ category }}</option>
           </select>
         </div>
         <div class="search-group">
-          <label>语言</label>
+          <label>{{ t('bookSearch.sidebar.language') }}</label>
           <select v-model="form.language">
-            <option value="">全部语言</option>
+            <option value="">{{ t('bookSearch.sidebar.allLanguages') }}</option>
             <option v-for="language in languages" :key="language" :value="language">{{ language }}</option>
           </select>
         </div>
         <div class="search-group">
-          <label>馆藏状态</label>
+          <label>{{ t('bookSearch.sidebar.status') }}</label>
           <select v-model="form.status">
-            <option value="">全部状态</option>
-            <option value="AVAILABLE">可立即借阅</option>
-            <option value="CHECKED_OUT">当前已借出</option>
+            <option value="">{{ t('bookSearch.sidebar.allStatus') }}</option>
+            <option value="AVAILABLE">{{ t('bookSearch.sidebar.availableNow') }}</option>
+            <option value="CHECKED_OUT">{{ t('bookSearch.sidebar.checkedOut') }}</option>
           </select>
         </div>
         <div class="search-group">
-          <label>排序</label>
+          <label>{{ t('bookSearch.sidebar.sort') }}</label>
           <select v-model="form.sort">
-            <option value="relevance">综合优先</option>
-            <option value="popular">借阅热度</option>
-            <option value="availability">可借副本</option>
-            <option value="year_desc">年份从新到旧</option>
-            <option value="title_asc">书名 A-Z</option>
+            <option value="relevance">{{ t('bookSearch.sortOptions.relevance') }}</option>
+            <option value="popular">{{ t('bookSearch.sortOptions.popular') }}</option>
+            <option value="availability">{{ t('bookSearch.sortOptions.availability') }}</option>
+            <option value="year_desc">{{ t('bookSearch.sortOptions.yearDesc') }}</option>
+            <option value="title_asc">{{ t('bookSearch.sortOptions.titleAsc') }}</option>
           </select>
         </div>
-        <button class="sidebar-submit" type="button" @click="submitSearch">更新结果</button>
+        <button class="sidebar-submit" type="button" @click="submitSearch">{{ t('bookSearch.sidebar.updateResults') }}</button>
       </aside>
 
       <section class="search-results">
@@ -74,15 +74,15 @@
 
         <div v-reveal="{ preset: 'section', delay: 0.06, once: true }" class="results-toolbar surface-card">
           <div>
-            <p class="toolbar-label">当前查询</p>
+            <p class="toolbar-label">{{ t('bookSearch.toolbar.currentQuery') }}</p>
             <h2 class="toolbar-title">{{ querySummary }}</h2>
             <p class="toolbar-meta">
-              共 {{ totalResults }} 条结果 · 第 {{ pagination.page + 1 }} / {{ Math.max(pagination.totalPages, 1) }} 页
+              {{ t('bookSearch.toolbar.results', { total: totalResults, page: pagination.page + 1, totalPages: Math.max(pagination.totalPages, 1) }) }}
             </p>
           </div>
           <div class="toolbar-actions">
             <label>
-              每页
+              {{ t('bookSearch.toolbar.perPage') }}
               <select v-model.number="form.size" @change="submitSearch">
                 <option :value="12">12</option>
                 <option :value="24">24</option>
@@ -94,12 +94,12 @@
 
         <div v-if="loading" :key="`loading-${resultMotionKey}`" v-reveal="{ preset: 'section', once: true }" class="state-card surface-card">
           <div class="spinner"></div>
-          <p>正在读取真实馆藏结果…</p>
+          <p>{{ t('bookSearch.loading') }}</p>
         </div>
 
         <div v-else-if="books.length === 0" :key="`empty-${resultMotionKey}`" v-reveal="{ preset: 'section', once: true }" class="state-card surface-card">
-          <p class="state-title">没有找到匹配结果</p>
-          <p class="state-copy">调整关键字或筛选条件后重试。这里不会回退为假数据。</p>
+          <p class="state-title">{{ t('bookSearch.emptyTitle') }}</p>
+          <p class="state-copy">{{ t('bookSearch.emptyCopy') }}</p>
         </div>
 
         <div v-else :key="`results-${resultMotionKey}`" class="result-grid">
@@ -109,7 +109,7 @@
             v-reveal="{ preset: 'card', delay: index * 0.05, once: true }"
             class="result-card"
             type="button"
-            :aria-label="`查看图书详情：${book.title}`"
+            :aria-label="t('bookSearch.favorite.viewDetail', { title: book.title })"
             @click="goToBookDetail(book.id)"
           >
             <div class="result-cover">
@@ -118,14 +118,14 @@
                 <span class="material-symbols-outlined">menu_book</span>
               </div>
               <span class="result-badge" :class="book.availableCopies > 0 ? 'result-badge--available' : 'result-badge--busy'">
-                {{ book.availableCopies > 0 ? '可借' : '需预约' }}
+                {{ book.availableCopies > 0 ? t('bookSearch.badge.available') : t('bookSearch.badge.reserve') }}
               </span>
               <button
                 v-if="userStore.isLoggedIn"
                 class="fav-heart"
                 :class="{ 'fav-heart--active': favoritedBookIds.has(book.id) }"
                 type="button"
-                :aria-label="favoritedBookIds.has(book.id) ? '取消收藏' : '添加收藏'"
+                :aria-label="favoritedBookIds.has(book.id) ? t('bookSearch.favorite.remove') : t('bookSearch.favorite.add')"
                 @click.stop="toggleFavoriteFromSearch(book.id)"
               >
                 <span class="material-symbols-outlined">{{ favoritedBookIds.has(book.id) ? 'favorite' : 'favorite_border' }}</span>
@@ -134,13 +134,13 @@
             <div class="result-copy">
               <h3>{{ book.title }}</h3>
               <p class="result-author">{{ book.author }}</p>
-              <p class="result-meta">{{ book.category }} · {{ book.languageCode }} · {{ book.year || '年份未知' }}</p>
+              <p class="result-meta">{{ book.category }} · {{ book.languageCode }} · {{ book.year || t('bookSearch.yearUnknown') }}</p>
               <div class="location-pill">
                 <span class="material-symbols-outlined">location_on</span>
                 <span>{{ book.location }}</span>
               </div>
               <div class="result-footer">
-                <span>{{ book.availableCopies }}/{{ book.totalCopies }} 可借</span>
+                <span>{{ t('bookSearch.borrowable', { available: book.availableCopies, total: book.totalCopies }) }}</span>
                 <span>{{ circulationLabel(book.circulationPolicy) }}</span>
               </div>
             </div>
@@ -149,7 +149,7 @@
 
         <div v-if="pagination.totalPages > 1" v-reveal="{ preset: 'section', delay: 0.08, once: true }" class="pagination surface-card">
           <button class="pagination-btn" type="button" :disabled="pagination.page <= 0" @click="goToPage(pagination.page - 1)">
-            上一页
+            {{ t('bookSearch.pagination.prev') }}
           </button>
           <button
             v-for="pageNumber in visiblePages"
@@ -167,7 +167,7 @@
             :disabled="pagination.page >= pagination.totalPages - 1"
             @click="goToPage(pagination.page + 1)"
           >
-            下一页
+            {{ t('bookSearch.pagination.next') }}
           </button>
         </div>
       </section>
@@ -180,12 +180,15 @@
 <script setup lang="ts">
 import { computed, inject, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { bookApi, type Book, type BookSearchParams } from '../api/bookApi'
 import { favoriteApi } from '../api/favoriteApi'
 import FeedbackToast from '../components/common/FeedbackToast.vue'
 import PageHeader from '../components/layout/PageHeader.vue'
 import { logger } from '../utils/logger'
 import { useUserStore } from '../stores/user'
+
+const { t } = useI18n()
 
 const route = useRoute()
 const router = useRouter()
@@ -223,7 +226,7 @@ const favoritedBookIds = ref<Set<number>>(new Set())
 
 const querySummary = computed(() => {
   const parts = [form.keyword, form.author, form.category, form.language].filter(Boolean)
-  return parts.length > 0 ? parts.join(' · ') : '全部馆藏'
+  return parts.length > 0 ? parts.join(' · ') : t('bookSearch.toolbar.allCollection')
 })
 
 const resultMotionKey = computed(() => route.fullPath)
@@ -365,7 +368,7 @@ async function fetchResults() {
     books.value = []
     totalResults.value = 0
     pagination.totalPages = 0
-    errorMessage.value = error.response?.data?.message || '搜索服务暂时不可用，当前不会展示任何假数据。'
+    errorMessage.value = error.response?.data?.message || t('bookSearch.toast.serviceUnavailable')
   } finally {
     loading.value = false
   }
@@ -373,7 +376,7 @@ async function fetchResults() {
 
 async function saveCurrentSearch() {
   if (!history) {
-    showToast('当前会话没有历史控制器。', 'error')
+    showToast(t('bookSearch.toast.noHistoryController'), 'error')
     return
   }
 
@@ -386,7 +389,7 @@ async function saveCurrentSearch() {
   }
 
   await history.saveSearch(payload)
-  showToast('已保存这组搜索条件。', 'success')
+  showToast(t('bookSearch.toast.searchSaved'), 'success')
 }
 
 async function toggleFavoriteFromSearch(bookId: number) {
@@ -405,7 +408,7 @@ async function toggleFavoriteFromSearch(bookId: number) {
     // 触发响应式更新
     favoritedBookIds.value = new Set(favoritedBookIds.value)
   } catch (error: any) {
-    showToast(error.response?.data?.message || '操作失败。', 'error')
+    showToast(error.response?.data?.message || t('bookSearch.toast.operationFailed'), 'error')
   }
 }
 
@@ -414,9 +417,9 @@ function goToBookDetail(bookId: number) {
 }
 
 function circulationLabel(policy: string) {
-  if (policy === 'REFERENCE_ONLY') return '馆内阅览'
-  if (policy === 'MANUAL') return '需人工审批'
-  return '自动审批'
+  if (policy === 'REFERENCE_ONLY') return t('bookSearch.circulation.referenceOnly')
+  if (policy === 'MANUAL') return t('bookSearch.circulation.manualApproval')
+  return t('bookSearch.circulation.autoApproval')
 }
 
 function showToast(message: string, type: 'success' | 'error' | 'info') {

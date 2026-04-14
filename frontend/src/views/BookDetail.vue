@@ -2,19 +2,19 @@
   <div class="book-detail page-stack">
     <div v-if="loading" v-reveal="{ preset: 'section', once: true }" class="loading surface-card">
       <div class="spinner"></div>
-      <p>正在加载图书详情…</p>
+      <p>{{ t('bookDetail.loading') }}</p>
     </div>
 
     <template v-else-if="book">
       <PageHeader
         :title="book.title"
         eyebrow="Book Profile"
-        description="从真实评分、最新评论、馆藏定位到借阅/预约动作，都在同一个读者详情页里完成。"
+        :description="t('bookDetail.description')"
       >
         <template #actions>
           <div class="page-actions">
             <button class="page-action-btn page-action-btn--secondary" type="button" @click="goBack">
-              返回结果页
+              {{ t('bookDetail.backToResults') }}
             </button>
           </div>
         </template>
@@ -28,7 +28,7 @@
           </div>
 
           <div class="status-ribbon" :class="book.availableCopies > 0 ? 'status-ribbon--available' : 'status-ribbon--busy'">
-            {{ book.availableCopies > 0 ? '可立即处理' : '当前需排队' }}
+            {{ book.availableCopies > 0 ? t('bookDetail.statusRibbon.available') : t('bookDetail.statusRibbon.busy') }}
           </div>
 
           <div class="action-stack">
@@ -46,7 +46,7 @@
               :disabled="isSubmitting || !book.availabilityContext.canReserve"
               @click="requestReservation"
             >
-              加入预约队列
+              {{ t('bookDetail.joinQueue') }}
             </button>
             <button
               v-if="userStore.isLoggedIn"
@@ -54,7 +54,7 @@
               type="button"
               @click="showDamageModal = true"
             >
-              报告问题
+              {{ t('bookDetail.reportDamage') }}
             </button>
           </div>
         </div>
@@ -64,7 +64,7 @@
             <div class="stars">
               <span v-for="i in 5" :key="i" class="star" :class="{ filled: i <= Math.round(book.averageRating || 0) }">★</span>
             </div>
-            <span class="rating-text">{{ Number(book.averageRating || 0).toFixed(1) }} · {{ book.totalReviews }} 条评价</span>
+            <span class="rating-text">{{ Number(book.averageRating || 0).toFixed(1) }} · {{ t('bookDetail.rating', { count: book.totalReviews }) }}</span>
           </div>
 
           <div v-if="userStore.isLoggedIn" class="personal-actions">
@@ -75,21 +75,21 @@
               @click="toggleFavorite"
             >
               <span class="material-symbols-outlined">{{ isFavorited ? 'favorite' : 'favorite_border' }}</span>
-              <span>{{ isFavorited ? '已收藏' : '收藏' }}</span>
+              <span>{{ isFavorited ? t('bookDetail.favorite.active') : t('bookDetail.favorite.inactive') }}</span>
             </button>
             <div class="reading-status-selector">
               <select v-model="currentReadingStatus" @change="updateReadingStatus">
-                <option value="">标记阅读状态</option>
-                <option value="WANT_TO_READ">想读</option>
-                <option value="READING">在读</option>
-                <option value="READ">已读</option>
+                <option value="">{{ t('bookDetail.readingStatus.label') }}</option>
+                <option value="WANT_TO_READ">{{ t('bookDetail.readingStatus.wantToRead') }}</option>
+                <option value="READING">{{ t('bookDetail.readingStatus.reading') }}</option>
+                <option value="READ">{{ t('bookDetail.readingStatus.read') }}</option>
               </select>
             </div>
             <div v-if="currentReadingStatus" class="notes-section">
               <textarea
                 v-model="readingNotes"
                 rows="2"
-                placeholder="添加阅读备注..."
+                :placeholder="t('bookDetail.notes.placeholder')"
                 @blur="saveNotes"
               />
             </div>
@@ -97,59 +97,59 @@
 
           <div class="meta-grid">
             <div class="meta-card">
-              <span class="meta-label">作者</span>
+              <span class="meta-label">{{ t('bookDetail.meta.author') }}</span>
               <span class="meta-value">{{ book.author }}</span>
             </div>
             <div class="meta-card">
-              <span class="meta-label">ISBN</span>
+              <span class="meta-label">{{ t('bookDetail.meta.isbn') }}</span>
               <span class="meta-value">{{ book.isbn }}</span>
             </div>
             <div class="meta-card">
-              <span class="meta-label">分类</span>
+              <span class="meta-label">{{ t('bookDetail.meta.category') }}</span>
               <span class="meta-value">{{ book.category }}</span>
             </div>
             <div class="meta-card">
-              <span class="meta-label">流通策略</span>
+              <span class="meta-label">{{ t('bookDetail.meta.circulationPolicy') }}</span>
               <span class="meta-value">{{ circulationLabel(book.circulationPolicy) }}</span>
             </div>
             <div class="meta-card">
-              <span class="meta-label">语言</span>
+              <span class="meta-label">{{ t('bookDetail.meta.language') }}</span>
               <span class="meta-value">{{ book.languageCode }}</span>
             </div>
             <div class="meta-card">
-              <span class="meta-label">年份</span>
-              <span class="meta-value">{{ book.year || '未知' }}</span>
+              <span class="meta-label">{{ t('bookDetail.meta.year') }}</span>
+              <span class="meta-value">{{ book.year || t('bookDetail.meta.unknown') }}</span>
             </div>
           </div>
 
           <div class="status-cards">
             <div class="status-card">
-              <span class="status-card-label">可借副本</span>
+              <span class="status-card-label">{{ t('bookDetail.statusCards.availableCopies') }}</span>
               <strong>{{ book.availableCopies }}/{{ book.totalCopies }}</strong>
               <p>{{ book.availabilityContext.summary }}</p>
             </div>
             <div class="status-card">
-              <span class="status-card-label">预约队列</span>
+              <span class="status-card-label">{{ t('bookDetail.statusCards.queue') }}</span>
               <strong>{{ book.queueContext.waitingCount }}</strong>
               <p>{{ book.queueContext.summary }}</p>
             </div>
             <div class="status-card">
-              <span class="status-card-label">累计借阅</span>
+              <span class="status-card-label">{{ t('bookDetail.statusCards.totalBorrows') }}</span>
               <strong>{{ book.borrowHistorySummary.totalBorrows }}</strong>
-              <p>当前在借 {{ book.borrowHistorySummary.activeBorrowCount }} 册</p>
+              <p>{{ t('bookDetail.statusCards.activeBorrow', { count: book.borrowHistorySummary.activeBorrowCount }) }}</p>
             </div>
           </div>
 
           <div class="description-section">
-            <h3>内容简介</h3>
-            <p>{{ book.description || '暂无简介。' }}</p>
+            <h3>{{ t('bookDetail.descriptionSection.title') }}</h3>
+            <p>{{ book.description || t('bookDetail.descriptionSection.empty') }}</p>
           </div>
         </div>
       </section>
 
       <section class="detail-grid">
         <article v-reveal="{ preset: 'card', delay: 0.04, once: true }" class="surface-card">
-          <h2 class="section-title">定位与取书</h2>
+          <h2 class="section-title">{{ t('bookDetail.location.title') }}</h2>
           <div class="breadcrumb-list">
             <span v-for="crumb in book.locationContext.breadcrumbs" :key="crumb" class="breadcrumb-chip">{{ crumb }}</span>
           </div>
@@ -163,16 +163,16 @@
         </article>
 
         <article v-reveal="{ preset: 'card', delay: 0.12, once: true }" class="surface-card">
-          <h2 class="section-title">流通摘要</h2>
+          <h2 class="section-title">{{ t('bookDetail.circulationSummary.title') }}</h2>
           <div class="summary-metric">
-            <span>最近一次借出</span>
+            <span>{{ t('bookDetail.circulationSummary.lastBorrowed') }}</span>
             <strong>{{ formatDate(book.borrowHistorySummary.lastBorrowedAt) }}</strong>
           </div>
           <div class="timeline-list">
             <div v-for="item in book.borrowHistorySummary.recentActivity" :key="item.id" class="timeline-item">
               <div>
                 <p class="timeline-title">{{ statusLabel(item.status) }}</p>
-                <p class="timeline-meta">借出 {{ formatDate(item.borrowDate) }} · 到期 {{ formatDate(item.dueDate) }}</p>
+                <p class="timeline-meta">{{ t('bookDetail.circulationSummary.borrowDue', { borrowDate: formatDate(item.borrowDate), dueDate: formatDate(item.dueDate) }) }}</p>
               </div>
               <span class="timeline-status">{{ item.status }}</span>
             </div>
@@ -181,10 +181,10 @@
       </section>
 
       <section v-reveal="{ preset: 'section', delay: 0.08, once: true }" class="surface-card">
-        <h2 class="section-title">最新评论</h2>
+        <h2 class="section-title">{{ t('bookDetail.reviews.title') }}</h2>
         <div v-if="userStore.isLoggedIn" class="review-form">
           <div class="review-form-head">
-            <span>我来评分</span>
+            <span>{{ t('bookDetail.reviews.myRating') }}</span>
             <div class="star-input">
               <button
                 v-for="i in 5"
@@ -198,14 +198,14 @@
               </button>
             </div>
           </div>
-          <textarea v-model="reviewDraft.content" rows="4" placeholder="分享你对这本书的真实感受" />
+          <textarea v-model="reviewDraft.content" rows="4" :placeholder="t('bookDetail.reviews.placeholder')" />
           <div class="review-actions">
             <button class="page-action-btn page-action-btn--primary" type="button" :disabled="isSubmitting" @click="submitReview">
-              提交评价
+              {{ t('bookDetail.reviews.submit') }}
             </button>
           </div>
         </div>
-        <div v-else class="review-guest-note">登录后可提交评价并参与评分。</div>
+        <div v-else class="review-guest-note">{{ t('bookDetail.reviews.guestNote') }}</div>
 
         <div v-if="book.latestReviews.length > 0" class="review-list">
           <article v-for="review in book.latestReviews" :key="review.id" class="review-item">
@@ -218,14 +218,14 @@
               </div>
               <span>{{ formatDate(review.createdAt) }}</span>
             </div>
-            <p>{{ review.content || '这位读者只留下了评分。' }}</p>
+            <p>{{ review.content || t('bookDetail.reviews.ratingOnly') }}</p>
           </article>
         </div>
-        <div v-else class="empty-copy">还没有读者评价，欢迎留下第一条真实反馈。</div>
+        <div v-else class="empty-copy">{{ t('bookDetail.reviews.empty') }}</div>
       </section>
 
       <section v-reveal="{ preset: 'section', delay: 0.14, once: true }" class="surface-card">
-        <h2 class="section-title">相关馆藏</h2>
+        <h2 class="section-title">{{ t('bookDetail.related.title') }}</h2>
         <div v-if="book.relatedBooks.length > 0" class="related-grid">
           <button
             v-for="(related, index) in book.relatedBooks"
@@ -233,7 +233,7 @@
             v-reveal="{ preset: 'card', delay: index * 0.05, once: true }"
             class="related-card"
             type="button"
-            :aria-label="`查看相关图书：${related.title}`"
+            :aria-label="t('bookDetail.related.ariaLabel', { title: related.title })"
             @click="goToBook(related.id)"
           >
             <img v-if="related.coverUrl" :src="related.coverUrl" :alt="related.title" @error="onImgError" />
@@ -245,13 +245,13 @@
             <span>{{ related.location }}</span>
           </button>
         </div>
-        <div v-else class="empty-copy">当前没有同类推荐。</div>
+        <div v-else class="empty-copy">{{ t('bookDetail.related.empty') }}</div>
       </section>
     </template>
 
     <div v-else v-reveal="{ preset: 'section', once: true }" class="error-state surface-card">
-      <p>图书详情加载失败。</p>
-      <button class="page-action-btn page-action-btn--secondary" type="button" @click="goBack">返回</button>
+      <p>{{ t('bookDetail.error.title') }}</p>
+      <button class="page-action-btn page-action-btn--secondary" type="button" @click="goBack">{{ t('bookDetail.error.back') }}</button>
     </div>
 
     <DamageReportModal
@@ -278,6 +278,7 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref, watch, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { bookApi, type BookDetail } from '../api/bookApi'
 import { borrowApi, reservationApi } from '../api/borrowApi'
 import { favoriteApi, readingStatusApi, type ReadingStatusEnum } from '../api/favoriteApi'
@@ -293,6 +294,7 @@ import { formatLocalDate as formatDate } from '../utils/timeHelpers'
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
+const { t } = useI18n()
 
 const loading = ref(true)
 const book = ref<BookDetail | null>(null)
@@ -308,8 +310,8 @@ const dialog = reactive({
   eyebrow: '',
   title: '',
   message: '',
-  confirmText: '确认',
-  cancelText: '取消',
+  confirmText: '',
+  cancelText: '',
   action: '' as 'borrow' | 'reserve' | '',
 })
 
@@ -323,10 +325,10 @@ const currentReadingStatus = ref<ReadingStatusEnum | ''>('')
 const readingNotes = ref('')
 
 const borrowButtonText = computed(() => {
-  if (!book.value) return '借阅'
-  if (book.value.circulationPolicy === 'REFERENCE_ONLY') return '馆内阅览'
-  if (book.value.circulationPolicy === 'MANUAL') return '申请借阅（人工审批）'
-  return '申请借阅（自动审批）'
+  if (!book.value) return t('bookDetail.borrowButton.default')
+  if (book.value.circulationPolicy === 'REFERENCE_ONLY') return t('bookDetail.borrowButton.referenceOnly')
+  if (book.value.circulationPolicy === 'MANUAL') return t('bookDetail.borrowButton.manualApproval')
+  return t('bookDetail.borrowButton.autoApproval')
 })
 
 const onImgError = (event: Event) => handleImageError(event, '/logo-photo.jpg')
@@ -378,12 +380,12 @@ function requestBorrow() {
   dialog.open = true
   dialog.action = 'borrow'
   dialog.eyebrow = 'Borrow'
-  dialog.title = '确认借阅请求'
+  dialog.title = t('bookDetail.dialog.borrowTitle')
   dialog.message = book.value.circulationPolicy === 'MANUAL'
-    ? '这本书会进入人工审批队列。提交后你可以在“我的借阅”里看到审批人和下一步动作。'
-    : '这本书会走自动审批流程，通过后直接进入待取书状态。'
-  dialog.confirmText = '提交借阅'
-  dialog.cancelText = '再想想'
+    ? t('bookDetail.dialog.borrowManualMsg')
+    : t('bookDetail.dialog.borrowAutoMsg')
+  dialog.confirmText = t('bookDetail.dialog.submitBorrow')
+  dialog.cancelText = t('bookDetail.dialog.thinkAgain')
 }
 
 function requestReservation() {
@@ -391,10 +393,10 @@ function requestReservation() {
   dialog.open = true
   dialog.action = 'reserve'
   dialog.eyebrow = 'Reserve'
-  dialog.title = '加入预约队列'
-  dialog.message = '提交后你会在“我的预约”里看到排队人数、预计等待时间和到馆提醒。'
-  dialog.confirmText = '确认预约'
-  dialog.cancelText = '取消'
+  dialog.title = t('bookDetail.dialog.reserveTitle')
+  dialog.message = t('bookDetail.dialog.reserveMsg')
+  dialog.confirmText = t('bookDetail.dialog.confirmReserve')
+  dialog.cancelText = t('bookDetail.dialog.cancel')
 }
 
 function closeDialog() {
@@ -408,15 +410,15 @@ async function runDialogAction() {
   try {
     if (dialog.action === 'borrow') {
       const response = await borrowApi.applyBorrow({ bookId: book.value.id, notes: '' })
-      showToast(response.data.message || '借阅请求已提交。', 'success')
+      showToast(response.data.message || t('bookDetail.toast.borrowSubmitted'), 'success')
     } else {
       const response = await reservationApi.reserveBook({ bookId: book.value.id })
-      showToast(response.data.message || '预约已提交。', 'success')
+      showToast(response.data.message || t('bookDetail.toast.reserveSubmitted'), 'success')
     }
     closeDialog()
     await loadBookDetail()
   } catch (error: any) {
-    showToast(error.response?.data?.message || '操作失败，请稍后重试。', 'error')
+    showToast(error.response?.data?.message || t('bookDetail.toast.operationFailed'), 'error')
   } finally {
     isSubmitting.value = false
   }
@@ -425,7 +427,7 @@ async function runDialogAction() {
 async function submitReview() {
   if (!book.value || !ensureAuth()) return
   if (!reviewDraft.content.trim()) {
-    showToast('请先输入评价内容。', 'error')
+    showToast(t('bookDetail.toast.reviewEmpty'), 'error')
     return
   }
 
@@ -438,11 +440,11 @@ async function submitReview() {
     })
     reviewDraft.rating = 5
     reviewDraft.content = ''
-    showToast('评价已提交。', 'success')
+    showToast(t('bookDetail.toast.reviewSubmitted'), 'success')
     await loadBookDetail()
   } catch (error: any) {
     logger.error('Failed to submit review:', error)
-    showToast(error.response?.data?.message || '评价提交失败。', 'error')
+    showToast(error.response?.data?.message || t('bookDetail.toast.reviewFailed'), 'error')
   } finally {
     isSubmitting.value = false
   }
@@ -457,21 +459,15 @@ function showToast(message: string, type: 'success' | 'error' | 'info') {
 }
 
 function circulationLabel(policy: string) {
-  if (policy === 'REFERENCE_ONLY') return '馆内阅览'
-  if (policy === 'MANUAL') return '人工审批'
-  return '自动审批'
+  if (policy === 'REFERENCE_ONLY') return t('bookDetail.circulation.referenceOnly')
+  if (policy === 'MANUAL') return t('bookDetail.circulation.manual')
+  return t('bookDetail.circulation.auto')
 }
 
 function statusLabel(status: string) {
-  const map: Record<string, string> = {
-    PENDING: '待审批',
-    APPROVED: '待取书',
-    BORROWED: '借阅中',
-    RETURNED: '已归还',
-    OVERDUE: '已逾期',
-    REJECTED: '未通过',
-  }
-  return map[status] || status
+  const key = `bookDetail.statusLabel.${status}` as const
+  const translated = t(key)
+  return translated !== key ? translated : status
 }
 
 function goBack() {
@@ -483,7 +479,7 @@ function goToBook(bookId: number) {
 }
 
 function onDamageReportSubmitted() {
-  showToast('损坏报告已提交，感谢您的反馈。', 'success')
+  showToast(t('bookDetail.toast.damageReported'), 'success')
 }
 
 async function toggleFavorite() {
@@ -492,14 +488,14 @@ async function toggleFavorite() {
     if (isFavorited.value) {
       await favoriteApi.removeFavorite(book.value.id)
       isFavorited.value = false
-      showToast('已取消收藏。', 'info')
+      showToast(t('bookDetail.toast.favoriteRemoved'), 'info')
     } else {
       await favoriteApi.addFavorite(book.value.id)
       isFavorited.value = true
-      showToast('已添加到收藏。', 'success')
+      showToast(t('bookDetail.toast.favoriteAdded'), 'success')
     }
   } catch (error: any) {
-    showToast(error.response?.data?.message || '操作失败，请稍后重试。', 'error')
+    showToast(error.response?.data?.message || t('bookDetail.toast.operationFailed'), 'error')
   }
 }
 
@@ -508,9 +504,9 @@ async function updateReadingStatus() {
   if (!currentReadingStatus.value) return
   try {
     await readingStatusApi.upsertReadingStatus(book.value.id, currentReadingStatus.value, readingNotes.value || undefined)
-    showToast('阅读状态已更新。', 'success')
+    showToast(t('bookDetail.toast.readingStatusUpdated'), 'success')
   } catch (error: any) {
-    showToast(error.response?.data?.message || '更新失败。', 'error')
+    showToast(error.response?.data?.message || t('bookDetail.toast.readingStatusUpdateFailed'), 'error')
   }
 }
 

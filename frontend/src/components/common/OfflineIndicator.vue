@@ -6,8 +6,8 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M18.364 5.636a9 9 0 010 12.728m0 0l-2.829-2.829m2.829 2.829L21 21M15.536 8.464a5 5 0 010 7.072m0 0l-2.829-2.829m-4.243 2.829a4.978 4.978 0 01-1.414-2.83m-1.414 5.658a9 9 0 01-2.167-9.238m7.824 2.167a1 1 0 111.414 1.414m-1.414-1.414L3 3" />
         </svg>
-        <span class="offline-text">离线模式</span>
-        <span class="offline-hint">部分功能受限</span>
+        <span class="offline-text">{{ t('offlineIndicator.offlineMode') }}</span>
+        <span class="offline-hint">{{ t('offlineIndicator.limitedFeatures') }}</span>
       </div>
     </div>
   </Transition>
@@ -20,18 +20,20 @@
             <circle cx="12" cy="12" r="10" stroke-width="2"/>
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01" />
           </svg>
-          <h3>需要网络连接</h3>
+          <h3>{{ t('offlineIndicator.networkRequired') }}</h3>
         </div>
-        <p class="notice-message">此操作需要网络连接才能完成。请检查您的网络设置后重试。</p>
-        <button class="notice-button" @click="showOfflineNotice = false">知道了</button>
+        <p class="notice-message">{{ t('offlineIndicator.noticeMessage') }}</p>
+        <button class="notice-button" @click="showOfflineNotice = false">{{ t('offlineIndicator.dismiss') }}</button>
       </div>
     </div>
   </Transition>
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { useNetworkStatus } from '@/composables/useNetworkStatus';
 
+const { t } = useI18n();
 const { isOnline, showOfflineNotice } = useNetworkStatus();
 </script>
 

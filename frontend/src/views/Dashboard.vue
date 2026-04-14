@@ -1,19 +1,19 @@
 <template>
   <div class="dashboard page-stack">
     <PageHeader
-      title="运营总览"
-      eyebrow="Operations Overview"
-      description="在同一块运营面板里查看借阅走势、热门馆藏与分类分布。"
+      :title="t('dashboard.title')"
+      :eyebrow="t('dashboard.eyebrow')"
+      :description="t('dashboard.description')"
     >
       <template #actions>
         <button class="page-action-btn page-action-btn--primary" @click="loadData">
-          <span>刷新数据</span>
+          <span>{{ t('dashboard.refresh') }}</span>
         </button>
       </template>
     </PageHeader>
 
     <div v-if="loading" v-reveal="{ preset: 'section', once: true }" class="loading">
-      <p>加载中...</p>
+      <p>{{ t('dashboard.loading') }}</p>
     </div>
 
     <div v-else-if="errorMessage" v-reveal="{ preset: 'section', once: true }" class="error-state">
@@ -26,42 +26,42 @@
           <div class="stat-icon">B</div>
           <div class="stat-info">
             <div class="stat-value">{{ dashboardData?.inventory.totalBooks || 0 }}</div>
-            <div class="stat-label">馆藏总量</div>
+            <div class="stat-label">{{ t('dashboard.stats.totalBooks') }}</div>
           </div>
         </div>
         <div v-reveal="{ preset: 'card', delay: 0.05, once: true }" class="stat-card">
           <div class="stat-icon">A</div>
           <div class="stat-info">
             <div class="stat-value">{{ dashboardData?.inventory.availableBooks || 0 }}</div>
-            <div class="stat-label">当前可借</div>
+            <div class="stat-label">{{ t('dashboard.stats.availableBooks') }}</div>
           </div>
         </div>
         <div v-reveal="{ preset: 'card', delay: 0.1, once: true }" class="stat-card">
           <div class="stat-icon">O</div>
           <div class="stat-info">
             <div class="stat-value">{{ dashboardData?.inventory.borrowedBooks || 0 }}</div>
-            <div class="stat-label">已借数量</div>
+            <div class="stat-label">{{ t('dashboard.stats.borrowedBooks') }}</div>
           </div>
         </div>
         <div v-reveal="{ preset: 'card', delay: 0.15, once: true }" class="stat-card">
           <div class="stat-icon">!</div>
           <div class="stat-info">
             <div class="stat-value">{{ dashboardData?.inventory.overdueBooks || 0 }}</div>
-            <div class="stat-label">逾期册数</div>
+            <div class="stat-label">{{ t('dashboard.stats.overdueBooks') }}</div>
           </div>
         </div>
         <div v-reveal="{ preset: 'card', delay: 0.2, once: true }" class="stat-card">
           <div class="stat-icon">R</div>
           <div class="stat-info">
             <div class="stat-value">{{ dashboardData?.inventory.reservedBooks || 0 }}</div>
-            <div class="stat-label">预约排队</div>
+            <div class="stat-label">{{ t('dashboard.stats.reservedBooks') }}</div>
           </div>
         </div>
         <div v-reveal="{ preset: 'card', delay: 0.25, once: true }" class="stat-card">
           <div class="stat-icon">%</div>
           <div class="stat-info">
             <div class="stat-value">{{ dashboardData?.inventory.utilizationRate || 0 }}%</div>
-            <div class="stat-label">利用率</div>
+            <div class="stat-label">{{ t('dashboard.stats.utilizationRate') }}</div>
           </div>
         </div>
       </div>
@@ -69,28 +69,28 @@
       <div class="charts-grid">
         <div v-reveal="{ preset: 'section', delay: 0.06, once: true }" class="chart-card">
           <div class="chart-header">
-            <h3>近 30 天借阅走势</h3>
+            <h3>{{ t('dashboard.charts.borrowTrend') }}</h3>
           </div>
           <div ref="borrowTrendChart" class="chart-container"></div>
         </div>
 
         <div v-reveal="{ preset: 'section', delay: 0.12, once: true }" class="chart-card">
           <div class="chart-header">
-            <h3>热门馆藏</h3>
+            <h3>{{ t('dashboard.charts.popularBooks') }}</h3>
           </div>
           <div ref="popularBooksChart" class="chart-container"></div>
         </div>
 
         <div v-reveal="{ preset: 'section', delay: 0.18, once: true }" class="chart-card">
           <div class="chart-header">
-            <h3>分类总量</h3>
+            <h3>{{ t('dashboard.charts.categoryTotal') }}</h3>
           </div>
           <div ref="categoryChart" class="chart-container"></div>
         </div>
 
         <div v-reveal="{ preset: 'section', delay: 0.24, once: true }" class="chart-card">
           <div class="chart-header">
-            <h3>分类借阅率</h3>
+            <h3>{{ t('dashboard.charts.categoryRate') }}</h3>
           </div>
           <div ref="categoryRateChart" class="chart-container"></div>
         </div>
@@ -101,8 +101,11 @@
 
 <script setup lang="ts">
 import { onMounted, onUnmounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import PageHeader from '../components/layout/PageHeader.vue'
 import { useDashboardCharts } from '../composables/useDashboardCharts'
+
+const { t } = useI18n()
 
 const {
   loading,

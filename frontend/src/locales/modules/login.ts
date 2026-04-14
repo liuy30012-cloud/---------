@@ -2,6 +2,7 @@ export default {
   zh: {
     login: {
       brandName: '中国劳动关系学院图书馆',
+      brandSubtitle: 'China University of Labor Relations Library',
       tabLogin: '登录',
       tabRegister: '注册',
       studentId: '学工号',
@@ -22,6 +23,7 @@ export default {
       showPassword: '显示密码',
       hidePassword: '隐藏密码',
       switchLang: '切换语言',
+      tabSwitcherAria: '登录与注册切换',
       copyright: '© 2026 中国劳动关系学院图书馆',
       schoolBadgeAlt: '中国劳动关系学院校徽',
       passwordStrength: {
@@ -35,6 +37,7 @@ export default {
   en: {
     login: {
       brandName: 'China University of Labor Relations Library',
+      brandSubtitle: 'University Library',
       tabLogin: 'Sign In',
       tabRegister: 'Register',
       studentId: 'Student/Staff ID',
@@ -55,6 +58,7 @@ export default {
       showPassword: 'Show password',
       hidePassword: 'Hide password',
       switchLang: 'Switch language',
+      tabSwitcherAria: 'Switch between Sign In and Register',
       copyright: '© 2026 China University of Labor Relations Library',
       schoolBadgeAlt: 'China University of Labor Relations Badge',
       passwordStrength: {

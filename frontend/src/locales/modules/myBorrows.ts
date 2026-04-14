@@ -2,6 +2,7 @@ export default {
   zh: {
     myBorrows: {
       title: '我的借阅',
+      description: '待审批、待取书、借阅中、逾期和历史记录都放在同一页，读者可以直接看到为什么卡住、下一步做什么。',
       tabs: {
         current: '当前借阅',
         history: '历史记录',
@@ -72,6 +73,7 @@ export default {
   en: {
     myBorrows: {
       title: 'My Borrows',
+      description: 'Pending approvals, pickups, active borrows, overdue items, and history are all on one page so you can see what\'s blocking you and what to do next.',
       tabs: {
         current: 'Current Borrows',
         history: 'History',

@@ -2,6 +2,7 @@ export default {
   zh: {
     myReservations: {
       title: '我的预约',
+      description: '排队人数、预计等待时间、到馆通知与取书时限都对读者透明展示，不再只剩一个模糊状态。',
       empty: '当前没有预约记录。',
       location: '馆藏位置待补充',
       detail: {
@@ -52,6 +53,7 @@ export default {
   en: {
     myReservations: {
       title: 'My Reservations',
+      description: 'Queue size, estimated wait, availability notifications, and pickup deadlines are fully transparent to readers.',
       empty: 'No reservation records.',
       location: 'Location to be updated',
       detail: {

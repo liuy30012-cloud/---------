@@ -1,20 +1,20 @@
 <template>
   <div class="my-borrows page-stack">
     <PageHeader
-      title="我的借阅"
+      :title="t('myBorrows.title')"
       eyebrow="Reading Ledger"
-      description="待审批、待取书、借阅中、逾期和历史记录都放在同一页，读者可以直接看到为什么卡住、下一步做什么。"
+      :description="t('myBorrows.description')"
     >
       <template #actions>
         <div class="tabs">
-          <button :class="{ active: activeTab === 'current' }" type="button" @click="activeTab = 'current'">当前借阅</button>
-          <button :class="{ active: activeTab === 'history' }" type="button" @click="activeTab = 'history'">历史记录</button>
+          <button :class="{ active: activeTab === 'current' }" type="button" @click="activeTab = 'current'">{{ t('myBorrows.tabs.current') }}</button>
+          <button :class="{ active: activeTab === 'history' }" type="button" @click="activeTab = 'history'">{{ t('myBorrows.tabs.history') }}</button>
         </div>
       </template>
     </PageHeader>
 
     <section v-if="activeTab === 'current'" class="borrow-list">
-      <div v-if="currentBorrows.length === 0" class="empty-state">当前没有进行中的借阅记录。</div>
+      <div v-if="currentBorrows.length === 0" class="empty-state">{{ t('myBorrows.empty.current') }}</div>
       <div v-else class="borrow-cards">
         <article
           v-for="(borrow, index) in currentBorrows"
@@ -25,34 +25,34 @@
           <div class="borrow-card-head">
             <div>
               <h3>{{ borrow.bookTitle }}</h3>
-              <p class="sub-copy">{{ borrow.location || '馆藏位置待补充' }}</p>
+              <p class="sub-copy">{{ borrow.location || t('myBorrows.empty.location') }}</p>
             </div>
             <span class="status-chip" :class="`status-chip--${borrow.status.toLowerCase()}`">{{ statusText(borrow.status) }}</span>
           </div>
 
           <div class="detail-grid">
             <div class="detail-item">
-              <span>下一步</span>
+              <span>{{ t('myBorrows.detail.nextStep') }}</span>
               <strong>{{ nextActionText(borrow.nextAction) }}</strong>
             </div>
             <div class="detail-item">
-              <span>状态说明</span>
-              <strong>{{ borrow.statusHint || '等待状态更新' }}</strong>
+              <span>{{ t('myBorrows.detail.statusHint') }}</span>
+              <strong>{{ borrow.statusHint || t('myBorrows.detail.waitingUpdate') }}</strong>
             </div>
             <div class="detail-item">
-              <span>审批时间</span>
+              <span>{{ t('myBorrows.detail.approvedAt') }}</span>
               <strong>{{ formatDate(borrow.approvedAt) }}</strong>
             </div>
             <div class="detail-item">
-              <span>取书时限</span>
+              <span>{{ t('myBorrows.detail.pickupDeadline') }}</span>
               <strong>{{ formatDate(borrow.pickupDeadline) }}</strong>
             </div>
             <div class="detail-item">
-              <span>到期时间</span>
+              <span>{{ t('myBorrows.detail.dueDate') }}</span>
               <strong :class="{ overdue: isOverdue(borrow.dueDate) }">{{ formatDate(borrow.dueDate) }}</strong>
             </div>
             <div class="detail-item">
-              <span>拒绝原因</span>
+              <span>{{ t('myBorrows.detail.rejectReason') }}</span>
               <strong>{{ borrow.rejectReason || '-' }}</strong>
             </div>
           </div>
@@ -65,7 +65,7 @@
               :disabled="isSubmitting"
               @click="confirmAction('pickup', borrow)"
             >
-              确认取书
+              {{ t('myBorrows.buttons.confirmPickup') }}
             </button>
             <button
               v-if="borrow.nextAction === 'RETURN_OR_RENEW'"
@@ -74,7 +74,7 @@
               :disabled="isSubmitting || !canRenew(borrow)"
               @click="confirmAction('renew', borrow)"
             >
-              续借
+              {{ t('myBorrows.buttons.renew') }}
             </button>
             <button
               v-if="borrow.nextAction === 'RETURN_NOW' || borrow.nextAction === 'RETURN_OR_RENEW'"
@@ -83,7 +83,7 @@
               :disabled="isSubmitting"
               @click="confirmAction('return', borrow)"
             >
-              归还图书
+              {{ t('myBorrows.buttons.returnBook') }}
             </button>
           </div>
         </article>
@@ -91,16 +91,16 @@
     </section>
 
     <section v-else v-reveal="{ preset: 'section', once: true }" class="surface-card history-table">
-      <div v-if="borrowHistory.length === 0" class="empty-state empty-state--plain">还没有历史借阅记录。</div>
+      <div v-if="borrowHistory.length === 0" class="empty-state empty-state--plain">{{ t('myBorrows.empty.history') }}</div>
       <table v-else>
         <thead>
           <tr>
-            <th>图书</th>
-            <th>借出</th>
-            <th>到期</th>
-            <th>归还</th>
-            <th>状态</th>
-            <th>费用</th>
+            <th>{{ t('myBorrows.historyTable.book') }}</th>
+            <th>{{ t('myBorrows.historyTable.borrowDate') }}</th>
+            <th>{{ t('myBorrows.historyTable.dueDate') }}</th>
+            <th>{{ t('myBorrows.historyTable.returnDate') }}</th>
+            <th>{{ t('myBorrows.historyTable.status') }}</th>
+            <th>{{ t('myBorrows.historyTable.fee') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -132,11 +132,14 @@
 
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { borrowApi, type BorrowRecord } from '../api/borrowApi'
 import ConfirmDialog from '../components/common/ConfirmDialog.vue'
 import FeedbackToast from '../components/common/FeedbackToast.vue'
 import PageHeader from '../components/layout/PageHeader.vue'
 import { logger } from '../utils/logger'
+
+const { t } = useI18n()
 
 const activeTab = ref<'current' | 'history'>('current')
 const currentBorrows = ref<BorrowRecord[]>([])
@@ -150,8 +153,8 @@ const dialog = reactive({
   eyebrow: '',
   title: '',
   message: '',
-  confirmText: '确认',
-  cancelText: '取消',
+  confirmText: '',
+  cancelText: '',
 })
 
 const toast = reactive<{ message: string; type: 'success' | 'error' | 'info' }>({
@@ -188,14 +191,14 @@ function confirmAction(action: 'pickup' | 'renew' | 'return', record: BorrowReco
   dialog.action = action
   dialog.record = record
   dialog.eyebrow = action.toUpperCase()
-  dialog.title = action === 'pickup' ? '确认取书' : action === 'renew' ? '确认续借' : '确认归还'
+  dialog.title = action === 'pickup' ? t('myBorrows.dialog.confirmPickup') : action === 'renew' ? t('myBorrows.dialog.confirmRenew') : t('myBorrows.dialog.confirmReturn')
   dialog.message = action === 'pickup'
-    ? '确认后，这本书会进入正式借阅状态，并开始计算到期时间。'
+    ? t('myBorrows.dialog.pickupMsg')
     : action === 'renew'
-      ? '续借会直接更新到期时间。如果后面有人排队，这里会阻止续借。'
-      : '归还后，系统会释放副本并继续推动预约队列。'
-  dialog.confirmText = action === 'pickup' ? '开始借阅' : action === 'renew' ? '确认续借' : '确认归还'
-  dialog.cancelText = '取消'
+      ? t('myBorrows.dialog.renewMsg')
+      : t('myBorrows.dialog.returnMsg')
+  dialog.confirmText = action === 'pickup' ? t('myBorrows.dialog.startBorrow') : action === 'renew' ? t('myBorrows.dialog.confirmRenewText') : t('myBorrows.dialog.confirmReturnText')
+  dialog.cancelText = t('myBorrows.dialog.cancel')
 }
 
 function closeDialog() {
@@ -210,18 +213,18 @@ async function runAction() {
   try {
     if (dialog.action === 'pickup') {
       const response = await borrowApi.pickupBorrow(dialog.record.id)
-      showToast(response.data.message || '已确认取书。', 'success')
+      showToast(response.data.message || t('myBorrows.toast.pickupConfirmed'), 'success')
     } else if (dialog.action === 'renew') {
       const response = await borrowApi.renewBorrow(dialog.record.id)
-      showToast(response.data.message || '已完成续借。', 'success')
+      showToast(response.data.message || t('myBorrows.toast.renewed'), 'success')
     } else {
       const response = await borrowApi.returnBook(dialog.record.id)
-      showToast(response.data.message || '已归还图书。', 'success')
+      showToast(response.data.message || t('myBorrows.toast.returned'), 'success')
     }
     closeDialog()
     await Promise.all([loadCurrentBorrows(), loadBorrowHistory()])
   } catch (error: any) {
-    showToast(error.response?.data?.message || '操作失败。', 'error')
+    showToast(error.response?.data?.message || t('myBorrows.toast.operationFailed'), 'error')
   } finally {
     isSubmitting.value = false
   }
@@ -245,27 +248,11 @@ function formatDate(dateStr?: string | null) {
 }
 
 function statusText(status: string) {
-  const map: Record<string, string> = {
-    PENDING: '待审批',
-    APPROVED: '待取书',
-    BORROWED: '借阅中',
-    RETURNED: '已归还',
-    OVERDUE: '已逾期',
-    REJECTED: '未通过',
-  }
-  return map[status] || status
+  return t(`myBorrows.status.${status}`) || status
 }
 
 function nextActionText(action?: string) {
-  const map: Record<string, string> = {
-    WAIT_APPROVAL: '等待管理员审核',
-    PICKUP: '到馆取书',
-    RETURN_OR_RENEW: '可续借或归还',
-    RETURN_NOW: '尽快归还',
-    CONTACT_LIBRARY: '联系馆员',
-    BROWSE_MORE: '可以继续借阅其它图书',
-  }
-  return map[action || ''] || '-'
+  return t(`myBorrows.nextAction.${action || ''}`) || '-'
 }
 
 function showToast(message: string, type: 'success' | 'error' | 'info') {

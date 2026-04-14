@@ -16,10 +16,10 @@
 
     <div class="login-brand">
       <div class="badge-ring">
-        <img src="/school-badge.png" alt="中国劳动关系学院校徽" class="brand-badge" />
+        <img src="/school-badge.png" :alt="t('login.schoolBadgeAlt')" class="brand-badge" />
       </div>
-      <h2 class="brand-name">中国劳动关系学院图书馆</h2>
-      <p class="brand-subtitle">China University of Labor Relations Library</p>
+      <h2 class="brand-name">{{ t('login.brandName') }}</h2>
+      <p class="brand-subtitle">{{ t('login.brandSubtitle') }}</p>
       <p class="brand-desc typing-text">
         <span
           v-for="(character, index) in props.typedChars"
@@ -41,7 +41,7 @@
       @mouseleave="emit('card-mouse-leave')"
     >
       <div class="login-header">
-        <div class="tab-switcher" role="tablist" aria-label="登录与注册切换">
+        <div class="tab-switcher" role="tablist" :aria-label="t('login.tabSwitcherAria')">
           <button
             :class="['tab-btn', { active: props.isLogin }]"
             type="button"
@@ -50,7 +50,7 @@
             @click="emit('switch-mode', true)"
           >
             <span class="material-symbols-outlined tab-icon" aria-hidden="true">login</span>
-            登录
+            {{ t('login.tabLogin') }}
           </button>
           <button
             :class="['tab-btn', { active: !props.isLogin }]"
@@ -60,7 +60,7 @@
             @click="emit('switch-mode', false)"
           >
             <span class="material-symbols-outlined tab-icon" aria-hidden="true">person_add</span>
-            注册
+            {{ t('login.tabRegister') }}
           </button>
           <div class="tab-indicator" :class="{ 'tab-right': !props.isLogin }" aria-hidden="true"></div>
         </div>
@@ -71,7 +71,7 @@
           <FormInput
             v-model="props.formData.studentId"
             icon="badge"
-            label="学工号"
+            :label="t('login.studentId')"
             name="student_id"
             autocomplete="username"
             inputmode="numeric"
@@ -89,7 +89,7 @@
             v-if="!props.isLogin"
             v-model="props.formData.username"
             icon="person"
-            label="用户名"
+            :label="t('login.username')"
             name="username"
             autocomplete="nickname"
             :required="true"
@@ -99,7 +99,7 @@
             v-model="props.formData.password"
             :type="props.showPassword ? 'text' : 'password'"
             icon="lock"
-            :label="props.isLogin ? '登录密码' : '设置密码'"
+            :label="props.isLogin ? t('login.loginPassword') : t('login.setPassword')"
             name="password"
             :autocomplete="props.isLogin ? 'current-password' : 'new-password'"
             :required="true"
@@ -107,7 +107,7 @@
             @type="event => emit('input-typing', event, 'password')"
           >
             <template #trailing>
-              <button type="button" class="toggle-pass" :aria-label="props.showPassword ? '隐藏密码' : '显示密码'" @click="emit('toggle-password-visibility')">
+              <button type="button" class="toggle-pass" :aria-label="props.showPassword ? t('login.hidePassword') : t('login.showPassword')" @click="emit('toggle-password-visibility')">
                 <span class="material-symbols-outlined toggle-eye" :class="{ 'eye-open': props.showPassword }">
                   {{ props.showPassword ? 'visibility_off' : 'visibility' }}
                 </span>
@@ -132,7 +132,7 @@
             v-model="props.formData.confirmPassword"
             type="password"
             icon="lock_reset"
-            label="确认密码"
+            :label="t('login.confirmPassword')"
             name="confirm_password"
             autocomplete="new-password"
             :required="true"
@@ -149,8 +149,8 @@
           </FormInput>
 
           <div v-if="!props.isLogin" class="register-grid">
-            <FormInput v-model="props.formData.email" type="email" icon="mail" label="邮箱（选填）" name="email" autocomplete="email" />
-            <FormInput v-model="props.formData.phone" type="tel" icon="phone_android" label="手机号（选填）" name="phone" autocomplete="tel" inputmode="tel" />
+            <FormInput v-model="props.formData.email" type="email" icon="mail" :label="t('login.email')" name="email" autocomplete="email" />
+            <FormInput v-model="props.formData.phone" type="tel" icon="phone_android" :label="t('login.phone')" name="phone" autocomplete="tel" inputmode="tel" />
           </div>
 
           <div v-if="props.isLogin" class="form-extras">
@@ -158,9 +158,9 @@
               <div class="custom-check-box" :class="{ checked: props.formData.rememberMe }">
                 <span class="material-symbols-outlined check-icon">check</span>
               </div>
-              <span>记住本机</span>
+              <span>{{ t('login.rememberMe') }}</span>
             </label>
-            <a href="#" class="forgot-link" @click.prevent="router.push({ name: 'ForgotPassword' })">忘记密码</a>
+            <a href="#" class="forgot-link" @click.prevent="router.push({ name: 'ForgotPassword' })">{{ t('login.forgotPassword') }}</a>
           </div>
 
           <Transition name="toast">
@@ -189,21 +189,21 @@
           >
             <span v-if="!props.isLoading" class="btn-content">
               <span class="material-symbols-outlined btn-icon" aria-hidden="true">{{ props.isLogin ? 'login' : 'person_add' }}</span>
-              {{ props.isLogin ? '进入书库' : '创建账户' }}
+              {{ props.isLogin ? t('login.enterLibrary') : t('login.createAccount') }}
             </span>
             <span v-else class="btn-loading">
               <span class="spinner"></span>
-              {{ props.isLogin ? '登录中...' : '提交中...' }}
+              {{ props.isLogin ? t('login.loggingIn') : t('login.submitting') }}
             </span>
           </button>
 
           <div v-if="props.isLogin && !props.isLoading" class="keyboard-hint">
             <span class="kbd">Enter</span>
-            <span class="kbd-text">按 Enter 快速登录</span>
+            <span class="kbd-text">{{ t('login.enterToLogin') }}</span>
           </div>
 
           <div v-if="props.isLogin" class="quick-actions">
-            <div class="divider-line"><span>馆务入口</span></div>
+            <div class="divider-line"><span>{{ t('login.portal') }}</span></div>
             <div class="social-btns">
               <div v-for="(button, index) in props.socialButtons" :key="index" class="social-btn-wrapper">
                 <button
@@ -231,13 +231,14 @@
       <div class="card-light" :style="props.cardLightStyle"></div>
     </div>
 
-    <p class="login-footer-text">© 2026 中国劳动关系学院图书馆</p>
+    <p class="login-footer-text">{{ t('login.copyright') }}</p>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import FormInput from '../common/FormInput.vue'
 
 interface SocialButton {
@@ -296,6 +297,7 @@ const emit = defineEmits<{
   (e: 'seal-click'): void
 }>()
 
+const { t } = useI18n()
 const loginCardRef = ref<HTMLDivElement | null>(null)
 const submitBtnRef = ref<HTMLButtonElement | null>(null)
 const router = useRouter()

@@ -1,8 +1,8 @@
 <template>
   <div class="cache-management">
     <div class="cache-header">
-      <h2>离线数据管理</h2>
-      <p class="cache-description">管理离线缓存的书籍数据,提升弱网环境下的使用体验</p>
+      <h2>{{ t('cacheManagement.title') }}</h2>
+      <p class="cache-description">{{ t('cacheManagement.description') }}</p>
     </div>
 
     <div class="cache-stats">
@@ -10,7 +10,7 @@
         <div class="stat-icon">📚</div>
         <div class="stat-content">
           <div class="stat-value">{{ stats.bookCount }}</div>
-          <div class="stat-label">已缓存书籍</div>
+          <div class="stat-label">{{ t('cacheManagement.stats.cachedBooks') }}</div>
         </div>
       </div>
 
@@ -18,7 +18,7 @@
         <div class="stat-icon">🔥</div>
         <div class="stat-content">
           <div class="stat-value">{{ stats.hotBookCount }}</div>
-          <div class="stat-label">热门书籍</div>
+          <div class="stat-label">{{ t('cacheManagement.stats.hotBooks') }}</div>
         </div>
       </div>
 
@@ -26,7 +26,7 @@
         <div class="stat-icon">🕐</div>
         <div class="stat-content">
           <div class="stat-value">{{ lastUpdateText }}</div>
-          <div class="stat-label">最后更新</div>
+          <div class="stat-label">{{ t('cacheManagement.stats.lastUpdate') }}</div>
         </div>
       </div>
     </div>
@@ -45,7 +45,7 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
         </svg>
-        <span>{{ isUpdating ? '更新中...' : '立即更新缓存' }}</span>
+        <span>{{ isUpdating ? t('cacheManagement.buttons.updating') : t('cacheManagement.buttons.updateNow') }}</span>
       </button>
 
       <button
@@ -61,7 +61,7 @@
           <circle cx="12" cy="12" r="10" stroke-width="2"/>
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6l4 2" />
         </svg>
-        <span>{{ isClearing ? '清空中...' : '清空所有缓存' }}</span>
+        <span>{{ isClearing ? t('cacheManagement.buttons.clearing') : t('cacheManagement.buttons.clearAll') }}</span>
       </button>
     </div>
 
@@ -77,12 +77,12 @@
     </div>
 
     <div class="cache-info">
-      <h3>离线功能说明</h3>
+      <h3>{{ t('cacheManagement.info.title') }}</h3>
       <ul>
-        <li>系统会自动缓存您浏览过的书籍信息</li>
-        <li>热门书籍会在联网时自动更新</li>
-        <li>离线状态下可以查看已缓存的书籍详情</li>
-        <li>借阅、预约等操作需要网络连接</li>
+        <li>{{ t('cacheManagement.info.item1') }}</li>
+        <li>{{ t('cacheManagement.info.item2') }}</li>
+        <li>{{ t('cacheManagement.info.item3') }}</li>
+        <li>{{ t('cacheManagement.info.item4') }}</li>
       </ul>
     </div>
   </div>
@@ -90,8 +90,10 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useNetworkStatus } from '@/composables/useNetworkStatus';
 
+const { t } = useI18n();
 const { isOnline, manualUpdateCache, clearAllCache, getCacheStats } = useNetworkStatus();
 
 const stats = ref({
@@ -108,7 +110,7 @@ const messageType = ref<'success' | 'error'>('success');
 
 const lastUpdateText = computed(() => {
   if (!stats.value.lastUpdate) {
-    return '从未更新';
+    return t('cacheManagement.time.never');
   }
 
   const now = Date.now();
@@ -117,10 +119,10 @@ const lastUpdateText = computed(() => {
   const hours = Math.floor(diff / 3600000);
   const days = Math.floor(diff / 86400000);
 
-  if (minutes < 1) return '刚刚';
-  if (minutes < 60) return `${minutes}分钟前`;
-  if (hours < 24) return `${hours}小时前`;
-  return `${days}天前`;
+  if (minutes < 1) return t('cacheManagement.time.justNow');
+  if (minutes < 60) return t('cacheManagement.time.minutesAgo', { minutes });
+  if (hours < 24) return t('cacheManagement.time.hoursAgo', { hours });
+  return t('cacheManagement.time.daysAgo', { days });
 });
 
 const loadStats = async () => {
@@ -134,7 +136,7 @@ const loadStats = async () => {
 
 const handleUpdateCache = async () => {
   if (!isOnline.value) {
-    showMessage('需要网络连接才能更新缓存', 'error');
+    showMessage(t('cacheManagement.toast.networkRequired'), 'error');
     return;
   }
 
@@ -144,21 +146,21 @@ const handleUpdateCache = async () => {
   try {
     const success = await manualUpdateCache();
     if (success) {
-      showMessage('缓存更新成功', 'success');
+      showMessage(t('cacheManagement.toast.updateSuccess'), 'success');
       await loadStats();
     } else {
-      showMessage('缓存更新失败,请稍后重试', 'error');
+      showMessage(t('cacheManagement.toast.updateFailed'), 'error');
     }
   } catch (error) {
     console.error('更新缓存失败:', error);
-    showMessage('缓存更新失败', 'error');
+    showMessage(t('cacheManagement.toast.updateFailed'), 'error');
   } finally {
     isUpdating.value = false;
   }
 };
 
 const handleClearCache = async () => {
-  if (!confirm('确定要清空所有缓存吗?此操作不可恢复。')) {
+  if (!confirm(t('cacheManagement.confirm'))) {
     return;
   }
 
@@ -168,14 +170,14 @@ const handleClearCache = async () => {
   try {
     const success = await clearAllCache();
     if (success) {
-      showMessage('缓存已清空', 'success');
+      showMessage(t('cacheManagement.toast.cleared'), 'success');
       await loadStats();
     } else {
-      showMessage('清空缓存失败', 'error');
+      showMessage(t('cacheManagement.toast.clearFailed'), 'error');
     }
   } catch (error) {
     console.error('清空缓存失败:', error);
-    showMessage('清空缓存失败', 'error');
+    showMessage(t('cacheManagement.toast.clearFailed'), 'error');
   } finally {
     isClearing.value = false;
   }

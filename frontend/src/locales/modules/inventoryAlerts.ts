@@ -41,6 +41,8 @@ export default {
         LOW_STOCK: '低库存',
         HIGH_DEMAND: '高需求',
       },
+      coverPlaceholder: '书',
+      loadError: '加载预警数据失败',
       empty: {
         icon: '稳',
         text: '暂无库存预警',
@@ -89,6 +91,8 @@ export default {
         LOW_STOCK: 'Low Stock',
         HIGH_DEMAND: 'High Demand',
       },
+      coverPlaceholder: 'Book',
+      loadError: 'Failed to load inventory alerts',
       empty: {
         icon: 'OK',
         text: 'No inventory alerts',

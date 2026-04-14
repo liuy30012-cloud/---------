@@ -1,15 +1,15 @@
 <template>
   <div class="damage-reports page-stack">
     <PageHeader
-      title="损坏报告中心"
+      :title="t('damageReports.title')"
       eyebrow="Damage Reports"
-      description="查看和管理书籍损坏报告，追踪处理进度。"
+      :description="t('damageReports.description')"
     >
       <template #actions>
         <div class="page-actions">
           <button class="page-action-btn page-action-btn--secondary" @click="refresh">
             <span class="material-symbols-outlined">refresh</span>
-            <span>刷新</span>
+            <span>{{ t('damageReports.refresh') }}</span>
           </button>
         </div>
       </template>
@@ -18,19 +18,19 @@
     <!-- 统计卡片 -->
     <section v-if="isAdmin && statistics" class="stats-grid surface-card">
       <div class="stat-tile">
-        <span class="stat-label">待处理</span>
+        <span class="stat-label">{{ t('damageReports.stats.pending') }}</span>
         <strong class="stat-value stat-value--pending">{{ statistics.pendingCount }}</strong>
       </div>
       <div class="stat-tile">
-        <span class="stat-label">处理中</span>
+        <span class="stat-label">{{ t('damageReports.stats.inProgress') }}</span>
         <strong class="stat-value stat-value--progress">{{ statistics.inProgressCount }}</strong>
       </div>
       <div class="stat-tile">
-        <span class="stat-label">已修复</span>
+        <span class="stat-label">{{ t('damageReports.stats.resolved') }}</span>
         <strong class="stat-value stat-value--resolved">{{ statistics.resolvedCount }}</strong>
       </div>
       <div class="stat-tile">
-        <span class="stat-label">已驳回</span>
+        <span class="stat-label">{{ t('damageReports.stats.rejected') }}</span>
         <strong class="stat-value stat-value--rejected">{{ statistics.rejectedCount }}</strong>
       </div>
     </section>
@@ -54,12 +54,12 @@
     <section class="report-list">
       <div v-if="loading && reports.length === 0" class="surface-card loading-card">
         <div class="spinner"></div>
-        <p>正在加载报告...</p>
+        <p>{{ t('damageReports.loading') }}</p>
       </div>
 
       <div v-else-if="reports.length === 0" class="surface-card empty-card">
         <span class="material-symbols-outlined empty-icon">inventory_2</span>
-        <p>暂无损坏报告</p>
+        <p>{{ t('damageReports.empty') }}</p>
       </div>
 
       <div v-else class="report-cards">
@@ -74,11 +74,11 @@
             <div class="report-main">
               <h3 class="report-title">{{ report.bookTitle }}</h3>
               <div class="report-types">
-                <span v-for="t in report.damageTypes" :key="t" class="damage-type-label">{{ damageTypeLabel(t) }}</span>
+                <span v-for="dt in report.damageTypes" :key="dt" class="damage-type-label">{{ damageTypeLabel(dt) }}</span>
               </div>
               <p class="report-meta">
                 {{ formatDate(report.createdAt) }} · {{ report.reporterName }}
-                <template v-if="report.resolvedAt"> · 已于 {{ formatDate(report.resolvedAt) }} 处理</template>
+                <template v-if="report.resolvedAt"> · {{ t('damageReports.detail.processedAt', { date: formatDate(report.resolvedAt) }) }}</template>
               </p>
             </div>
             <span class="status-pill" :class="'status-pill--' + report.status.toLowerCase()">
@@ -90,9 +90,9 @@
 
       <!-- 分页 -->
       <div v-if="totalPages > 1" class="pagination">
-        <button class="page-btn" :disabled="page === 0" @click="page--; loadReports()">上一页</button>
+        <button class="page-btn" :disabled="page === 0" @click="page--; loadReports()">{{ t('damageReports.pagination.prev') }}</button>
         <span class="page-info">{{ page + 1 }} / {{ totalPages }}</span>
-        <button class="page-btn" :disabled="page >= totalPages - 1" @click="page++; loadReports()">下一页</button>
+        <button class="page-btn" :disabled="page >= totalPages - 1" @click="page++; loadReports()">{{ t('damageReports.pagination.next') }}</button>
       </div>
     </section>
 
@@ -100,66 +100,66 @@
     <div v-if="selectedReport" class="modal-overlay" @click="selectedReport = null">
       <div class="detail-modal" @click.stop>
         <div class="modal-header">
-          <h2>报告详情</h2>
+          <h2>{{ t('damageReports.detail.title') }}</h2>
           <button class="close-btn" @click="selectedReport = null">✕</button>
         </div>
         <div class="modal-body">
           <div class="detail-section">
-            <span class="detail-label">书籍</span>
+            <span class="detail-label">{{ t('damageReports.detail.book') }}</span>
             <p>《{{ selectedReport.bookTitle }}》</p>
           </div>
           <div class="detail-section">
-            <span class="detail-label">报告人</span>
+            <span class="detail-label">{{ t('damageReports.detail.reporter') }}</span>
             <p>{{ selectedReport.reporterName }}</p>
           </div>
           <div class="detail-section">
-            <span class="detail-label">损坏类型</span>
+            <span class="detail-label">{{ t('damageReports.detail.damageType') }}</span>
             <div class="report-types">
-              <span v-for="t in selectedReport.damageTypes" :key="t" class="damage-type-label">{{ damageTypeLabel(t) }}</span>
+              <span v-for="dt in selectedReport.damageTypes" :key="dt" class="damage-type-label">{{ damageTypeLabel(dt) }}</span>
             </div>
           </div>
           <div v-if="selectedReport.description" class="detail-section">
-            <span class="detail-label">描述</span>
+            <span class="detail-label">{{ t('damageReports.detail.description') }}</span>
             <p>{{ selectedReport.description }}</p>
           </div>
           <div class="detail-section">
-            <span class="detail-label">现场照片</span>
+            <span class="detail-label">{{ t('damageReports.detail.photos') }}</span>
             <div class="detail-photos">
               <img
                 v-for="(url, idx) in selectedReport.photoUrls"
                 :key="idx"
                 :src="photoFullUrl(url)"
-                alt="破损照片"
+                :alt="t('damageReports.detail.photoAlt')"
                 class="detail-photo"
               />
             </div>
           </div>
           <div class="detail-section">
-            <span class="detail-label">状态</span>
+            <span class="detail-label">{{ t('damageReports.detail.status') }}</span>
             <span class="status-pill" :class="'status-pill--' + selectedReport.status.toLowerCase()">
               {{ statusLabel(selectedReport.status) }}
             </span>
           </div>
           <div v-if="selectedReport.adminNotes" class="detail-section">
-            <span class="detail-label">管理员备注</span>
+            <span class="detail-label">{{ t('damageReports.detail.adminNotes') }}</span>
             <p>{{ selectedReport.adminNotes }}</p>
           </div>
 
           <!-- 管理员操作 -->
           <template v-if="isAdmin && selectedReport.status === 'PENDING'">
             <div class="admin-actions">
-              <textarea v-model="adminNotes" class="form-textarea" placeholder="处理备注（可选）" rows="2"></textarea>
+              <textarea v-model="adminNotes" class="form-textarea" :placeholder="t('damageReports.detail.processingNote')" rows="2"></textarea>
               <div class="admin-btns">
-                <button class="btn-action btn-action--resolve" @click="handleUpdate('IN_PROGRESS')">开始处理</button>
-                <button class="btn-action btn-action--reject" @click="handleUpdate('REJECTED')">驳回</button>
+                <button class="btn-action btn-action--resolve" @click="handleUpdate('IN_PROGRESS')">{{ t('damageReports.detail.startProcessing') }}</button>
+                <button class="btn-action btn-action--reject" @click="handleUpdate('REJECTED')">{{ t('damageReports.detail.reject') }}</button>
               </div>
             </div>
           </template>
           <template v-if="isAdmin && selectedReport.status === 'IN_PROGRESS'">
             <div class="admin-actions">
-              <textarea v-model="adminNotes" class="form-textarea" placeholder="处理备注（可选）" rows="2"></textarea>
+              <textarea v-model="adminNotes" class="form-textarea" :placeholder="t('damageReports.detail.processingNote')" rows="2"></textarea>
               <div class="admin-btns">
-                <button class="btn-action btn-action--resolve" @click="handleUpdate('RESOLVED')">标记已修复</button>
+                <button class="btn-action btn-action--resolve" @click="handleUpdate('RESOLVED')">{{ t('damageReports.detail.markResolved') }}</button>
               </div>
             </div>
           </template>
@@ -171,11 +171,13 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useUserStore } from '../stores/user'
 import { damageReportApi, type DamageReport, type DamageReportStatistics } from '../api/damageReportApi'
 import { API_CONFIG } from '../config'
 import PageHeader from '../components/layout/PageHeader.vue'
 
+const { t } = useI18n()
 const userStore = useUserStore()
 const isAdmin = computed(() => userStore.isAdmin)
 
@@ -188,36 +190,20 @@ const currentFilter = ref('')
 const selectedReport = ref<DamageReport | null>(null)
 const adminNotes = ref('')
 
-const statusFilters = [
-  { label: '全部', value: '' },
-  { label: '待处理', value: 'PENDING' },
-  { label: '处理中', value: 'IN_PROGRESS' },
-  { label: '已修复', value: 'RESOLVED' },
-  { label: '已驳回', value: 'REJECTED' },
-]
-
-const damageTypeMap: Record<string, string> = {
-  COVER_TORN: '封面破损',
-  PAGE_MISSING: '页面缺失',
-  WATER_DAMAGE: '水渍',
-  GRAFFITI: '涂写',
-  BINDING_BROKEN: '装订脱落',
-  OTHER: '其他',
-}
-
-const statusMap: Record<string, string> = {
-  PENDING: '待处理',
-  IN_PROGRESS: '处理中',
-  RESOLVED: '已修复',
-  REJECTED: '已驳回',
-}
+const statusFilters = computed(() => [
+  { label: t('damageReports.filters.all'), value: '' },
+  { label: t('damageReports.filters.pending'), value: 'PENDING' },
+  { label: t('damageReports.filters.inProgress'), value: 'IN_PROGRESS' },
+  { label: t('damageReports.filters.resolved'), value: 'RESOLVED' },
+  { label: t('damageReports.filters.rejected'), value: 'REJECTED' },
+])
 
 function damageTypeLabel(key: string) {
-  return damageTypeMap[key] || key
+  return t(`damageReports.damageType.${key}`, key)
 }
 
 function statusLabel(key: string) {
-  return statusMap[key] || key
+  return t(`damageReports.statusMap.${key}`, key)
 }
 
 function formatDate(dateStr: string | null) {

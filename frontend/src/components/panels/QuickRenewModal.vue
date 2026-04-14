@@ -2,22 +2,22 @@
   <div class="modal-overlay" @click="$emit('close')">
     <div class="modal-content" @click.stop>
       <div class="modal-header">
-        <h2>快速续借</h2>
+        <h2>{{ t('quickActions.renewModal.title') }}</h2>
         <button class="close-btn" @click="$emit('close')">×</button>
       </div>
 
       <div class="modal-body">
         <div v-if="loading" class="loading">
           <div class="spinner"></div>
-          <p>加载中...</p>
+          <p>{{ t('quickActions.renewModal.loading') }}</p>
         </div>
 
         <div v-else-if="renewableBooks.length === 0" class="empty-state">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"></path>
           </svg>
-          <p>暂无可续借书籍</p>
-          <small>当前没有符合续借条件的借阅记录。</small>
+          <p>{{ t('quickActions.renewModal.emptyTitle') }}</p>
+          <small>{{ t('quickActions.renewModal.emptyCopy') }}</small>
         </div>
 
         <div v-else class="books-list">
@@ -31,7 +31,7 @@
           >
             <div class="book-info">
               <h4>{{ book.bookTitle }}</h4>
-              <p class="author">{{ book.bookIsbn || '暂无 ISBN' }}</p>
+              <p class="author">{{ book.bookIsbn || t('quickActions.renewModal.noIsbn') }}</p>
               <p class="due-date">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
                   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -39,10 +39,10 @@
                   <line x1="8" y1="2" x2="8" y2="6"></line>
                   <line x1="3" y1="10" x2="21" y2="10"></line>
                 </svg>
-                归还日期: {{ formatDate(book.dueDate) }}
+                {{ t('quickActions.renewModal.dueDate') }}: {{ formatDate(book.dueDate) }}
               </p>
               <p class="renewal-count">
-                <span class="badge">可续借</span>
+                <span class="badge">{{ t('quickActions.renewModal.renewable') }}</span>
               </p>
             </div>
             <button
@@ -50,7 +50,7 @@
               :disabled="renewingBooks.has(book.id)"
               @click="renewBook(book.id)"
             >
-              <span v-if="!renewingBooks.has(book.id)">续借</span>
+              <span v-if="!renewingBooks.has(book.id)">{{ t('quickActions.renewModal.renew') }}</span>
               <span v-else>
                 <svg class="spinner-small" viewBox="0 0 50 50">
                   <circle cx="25" cy="25" r="20" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="31.4 94.2" />
@@ -62,8 +62,8 @@
       </div>
 
       <div class="modal-footer">
-        <p class="info-text">每本书最多可续借一次，续借后会自动刷新本列表。</p>
-        <button class="btn-close" @click="$emit('close')">关闭</button>
+        <p class="info-text">{{ t('quickActions.renewModal.info') }}</p>
+        <button class="btn-close" @click="$emit('close')">{{ t('quickActions.renewModal.close') }}</button>
       </div>
     </div>
   </div>
@@ -71,7 +71,10 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { borrowApi, type BorrowRecord } from '@/api/borrowApi'
+
+const { t } = useI18n()
 
 defineEmits<{
   (e: 'close'): void
@@ -98,8 +101,8 @@ async function loadRenewableBooks() {
       Boolean(record.dueDate)
     ))
   } catch (error) {
-    console.error('加载续借列表失败:', error)
-    showMessage('加载续借列表失败', 'error')
+    console.error(t('quickActions.renewModal.toast.loadFailed') + ':', error)
+    showMessage(t('quickActions.renewModal.toast.loadFailed'), 'error')
   } finally {
     loading.value = false
   }
@@ -112,11 +115,11 @@ async function renewBook(recordId: number) {
 
   try {
     await borrowApi.renewBorrow(recordId)
-    showMessage('续借成功', 'success')
+    showMessage(t('quickActions.renewModal.toast.success'), 'success')
     renewableBooks.value = renewableBooks.value.filter((book) => book.id !== recordId)
   } catch (error) {
-    console.error('续借失败:', error)
-    showMessage('续借失败，请稍后重试', 'error')
+    console.error(t('quickActions.renewModal.toast.failed') + ':', error)
+    showMessage(t('quickActions.renewModal.toast.failed'), 'error')
   } finally {
     const updatedSet = new Set(renewingBooks.value)
     updatedSet.delete(recordId)

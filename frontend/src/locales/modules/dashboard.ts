@@ -2,8 +2,11 @@ export default {
   zh: {
     dashboard: {
       title: '运营总览',
+      eyebrow: 'Operations Overview',
+      description: '在同一块运营面板里查看借阅走势、热门馆藏与分类分布。',
       refresh: '刷新数据',
       loading: '加载中...',
+      errorPrefix: '加载失败：',
       stats: {
         totalBooks: '馆藏总量',
         availableBooks: '当前可借',
@@ -23,8 +26,11 @@ export default {
   en: {
     dashboard: {
       title: 'Operations Overview',
+      eyebrow: 'Operations Overview',
+      description: 'View borrowing trends, popular titles, and category distribution on a single operations dashboard.',
       refresh: 'Refresh Data',
       loading: 'Loading...',
+      errorPrefix: 'Load failed: ',
       stats: {
         totalBooks: 'Total Collection',
         availableBooks: 'Available',

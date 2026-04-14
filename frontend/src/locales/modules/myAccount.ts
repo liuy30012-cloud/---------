@@ -2,6 +2,7 @@ export default {
   zh: {
     myAccount: {
       title: '我的账号',
+      description: '把个人资料、借阅画像、密码修改和提醒偏好统一收口到一个账户页里，适合高频读者长期使用。',
       profile: {
         email: '邮箱',
         phone: '手机',
@@ -54,6 +55,7 @@ export default {
   en: {
     myAccount: {
       title: 'My Account',
+      description: 'Personal details, borrowing profile, password management, and notification preferences all in one place for frequent readers.',
       profile: {
         email: 'Email',
         phone: 'Phone',

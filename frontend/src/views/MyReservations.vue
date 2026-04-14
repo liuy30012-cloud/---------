@@ -1,12 +1,12 @@
 <template>
   <div class="my-reservations page-stack">
     <PageHeader
-      title="我的预约"
+      :title="t('myReservations.title')"
       eyebrow="Reservation Queue"
-      description="排队人数、预计等待时间、到馆通知与取书时限都对读者透明展示，不再只剩一个模糊状态。"
+      :description="t('myReservations.description')"
     />
 
-    <div v-if="reservations.length === 0" class="empty-state">当前没有预约记录。</div>
+    <div v-if="reservations.length === 0" class="empty-state">{{ t('myReservations.empty') }}</div>
 
     <div v-else class="reservation-list">
       <article
@@ -18,47 +18,47 @@
         <div class="card-head">
           <div>
             <h3>{{ reservation.bookTitle }}</h3>
-            <p>{{ reservation.location || '馆藏位置待补充' }}</p>
+            <p>{{ reservation.location || t('myReservations.location') }}</p>
           </div>
           <span class="status-chip" :class="`status-chip--${reservation.status.toLowerCase()}`">{{ statusText(reservation.status) }}</span>
         </div>
 
         <div class="detail-grid">
           <div class="detail-item">
-            <span>队列前方</span>
+            <span>{{ t('myReservations.detail.queueAhead') }}</span>
             <strong>{{ reservation.queueAhead ?? Math.max((reservation.queuePosition || 1) - 1, 0) }}</strong>
           </div>
           <div class="detail-item">
-            <span>预计等待</span>
-            <strong>{{ reservation.estimatedWaitDays ? `${reservation.estimatedWaitDays} 天` : '-' }}</strong>
+            <span>{{ t('myReservations.detail.estimatedWait') }}</span>
+            <strong>{{ reservation.estimatedWaitDays ? t('myReservations.detail.daysUnit', { days: reservation.estimatedWaitDays }) : '-' }}</strong>
           </div>
           <div class="detail-item">
-            <span>通知时间</span>
+            <span>{{ t('myReservations.detail.notifyDate') }}</span>
             <strong>{{ formatDate(reservation.notifyDate) }}</strong>
           </div>
           <div class="detail-item">
-            <span>取书时限</span>
+            <span>{{ t('myReservations.detail.pickupDeadline') }}</span>
             <strong>{{ formatDate(reservation.pickupDeadline || reservation.expireDate) }}</strong>
           </div>
           <div v-if="reservation.status === 'AVAILABLE' && reservation.daysUntilExpiry !== undefined" class="detail-item">
-            <span>距离过期</span>
+            <span>{{ t('myReservations.detail.daysUntilExpiry') }}</span>
             <strong :class="{ 'text-warning': reservation.isExpiringSoon }">
               {{ reservation.daysUntilExpiry }} 天
             </strong>
           </div>
           <div v-if="reservation.extensionCount && reservation.extensionCount > 0" class="detail-item">
-            <span>已延期</span>
+            <span>{{ t('myReservations.detail.extensionsCount') }}</span>
             <strong>{{ reservation.extensionCount }} 次</strong>
           </div>
           <div class="detail-item detail-item--wide">
-            <span>状态说明</span>
-            <strong>{{ reservation.statusHint || '等待系统更新' }}</strong>
+            <span>{{ t('myReservations.detail.statusHint') }}</span>
+            <strong>{{ reservation.statusHint || t('myReservations.detail.waitingUpdate') }}</strong>
           </div>
         </div>
 
         <div v-if="reservation.isExpiringSoon" class="expiry-warning">
           <span class="warning-icon">⚠️</span>
-          <span>取书时限即将到期,请尽快取书或申请延期!</span>
+          <span>{{ t('myReservations.expiryWarning') }}</span>
         </div>
 
         <div class="action-row">
@@ -69,7 +69,7 @@
             :disabled="isSubmitting"
             @click="openDialog('cancel', reservation)"
           >
-            取消预约
+            {{ t('myReservations.buttons.cancel') }}
           </button>
           <button
             v-if="reservation.status === 'AVAILABLE'"
@@ -78,7 +78,7 @@
             :disabled="isSubmitting"
             @click="openDialog('pickup', reservation)"
           >
-            现在取书
+            {{ t('myReservations.buttons.pickup') }}
           </button>
           <button
             v-if="reservation.status === 'AVAILABLE' && reservation.canExtend"
@@ -87,7 +87,7 @@
             :disabled="isSubmitting"
             @click="openDialog('extend', reservation)"
           >
-            延长时限
+            {{ t('myReservations.buttons.extend') }}
           </button>
         </div>
       </article>
@@ -110,6 +110,7 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { reservationApi, type ReservationRecord } from '../api/borrowApi'
 import ConfirmDialog from '../components/common/ConfirmDialog.vue'
 import FeedbackToast from '../components/common/FeedbackToast.vue'
@@ -117,6 +118,8 @@ import PageHeader from '../components/layout/PageHeader.vue'
 import { logger } from '../utils/logger'
 
 const router = useRouter()
+const { t } = useI18n()
+
 const reservations = ref<ReservationRecord[]>([])
 const isSubmitting = ref(false)
 
@@ -127,8 +130,8 @@ const dialog = reactive({
   eyebrow: '',
   title: '',
   message: '',
-  confirmText: '确认',
-  cancelText: '取消',
+  confirmText: '',
+  cancelText: '',
 })
 
 const toast = reactive<{ message: string; type: 'success' | 'error' | 'info' }>({
@@ -157,18 +160,18 @@ function openDialog(action: 'cancel' | 'pickup' | 'extend', reservation: Reserva
 
   if (action === 'extend') {
     dialog.eyebrow = 'Extend'
-    dialog.title = '延长取书时限'
-    dialog.message = '延长后，取书时限将增加2天。每个预约只能延长1次。'
-    dialog.confirmText = '确认延长'
-    dialog.cancelText = '取消'
+    dialog.title = t('myReservations.dialog.extendTitle')
+    dialog.message = t('myReservations.dialog.extendMsg')
+    dialog.confirmText = t('myReservations.dialog.confirmExtend')
+    dialog.cancelText = t('myReservations.dialog.cancel')
   } else {
     dialog.eyebrow = action === 'pickup' ? 'Pickup' : 'Cancel'
-    dialog.title = action === 'pickup' ? '确认取走预约图书' : '确认取消预约'
+    dialog.title = action === 'pickup' ? t('myReservations.dialog.pickupTitle') : t('myReservations.dialog.cancelTitle')
     dialog.message = action === 'pickup'
-      ? '确认后，这条预约会转为正式借阅记录，并在”我的借阅”里继续跟踪。'
-      : '取消后，系统会立即把队列位置让给下一位读者。'
-    dialog.confirmText = action === 'pickup' ? '确认取书' : '确认取消'
-    dialog.cancelText = '返回'
+      ? t('myReservations.dialog.pickupMsg')
+      : t('myReservations.dialog.cancelMsg')
+    dialog.confirmText = action === 'pickup' ? t('myReservations.dialog.confirmPickup') : t('myReservations.dialog.confirmCancel')
+    dialog.cancelText = t('myReservations.dialog.back')
   }
 }
 
@@ -184,34 +187,27 @@ async function runAction() {
   try {
     if (dialog.action === 'cancel') {
       const response = await reservationApi.cancelReservation(dialog.reservation.id)
-      showToast(response.data.message || '预约已取消。', 'success')
+      showToast(response.data.message || t('myReservations.toast.cancelled'), 'success')
       await loadReservations()
     } else if (dialog.action === 'pickup') {
       const response = await reservationApi.pickupReservation(dialog.reservation.id)
-      showToast(response.data.message || '预约已转为借阅。', 'success')
+      showToast(response.data.message || t('myReservations.toast.convertedToBorrow'), 'success')
       await router.push({ name: 'MyBorrows' })
     } else if (dialog.action === 'extend') {
       const response = await reservationApi.extendReservation(dialog.reservation.id)
-      showToast(response.data.message || '取书时限已延长。', 'success')
+      showToast(response.data.message || t('myReservations.toast.extended'), 'success')
       await loadReservations()
     }
     closeDialog()
   } catch (error: any) {
-    showToast(error.response?.data?.message || '操作失败。', 'error')
+    showToast(error.response?.data?.message || t('myReservations.toast.operationFailed'), 'error')
   } finally {
     isSubmitting.value = false
   }
 }
 
 function statusText(status: string) {
-  const map: Record<string, string> = {
-    WAITING: '排队中',
-    AVAILABLE: '可取书',
-    COMPLETED: '已完成',
-    CANCELLED: '已取消',
-    EXPIRED: '已过期',
-  }
-  return map[status] || status
+  return t(`myReservations.status.${status}`) || status
 }
 
 function formatDate(dateStr?: string | null) {
