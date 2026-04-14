@@ -100,7 +100,7 @@ export default {
       },
       toolbar: {
         currentQuery: 'Current Query',
-        allCollection: 'All Collection',
+        allCollection: 'Entire Collection',
         results: '{total} results · Page {page} / {totalPages}',
         perPage: 'Per page',
       },
@@ -109,14 +109,14 @@ export default {
       emptyCopy: 'Try adjusting your keywords or filters. No fallback data will be shown.',
       badge: {
         available: 'Available',
-        reserve: 'Reserve',
+        reserve: 'Reservation Required',
       },
       pagination: {
         prev: 'Previous',
         next: 'Next',
       },
       circulation: {
-        referenceOnly: 'In-Library Use',
+        referenceOnly: 'Reference Only',
         manualApproval: 'Manual Approval',
         autoApproval: 'Auto Approval',
       },

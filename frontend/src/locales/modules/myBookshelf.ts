@@ -61,7 +61,7 @@ export default {
       },
       empty: {
         all: 'Your bookshelf is empty. Go discover books you might like.',
-        favOnly: 'No books that are favorited without a reading status.',
+        favOnly: 'No favorited books without a reading status.',
         statusFiltered: 'No books marked as "{status}".',
       },
       goDiscover: 'Discover Books',

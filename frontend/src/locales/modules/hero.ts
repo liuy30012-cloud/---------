@@ -41,7 +41,7 @@ export default {
       metaNextStep: 'Next Step',
       metaNextStepValue: 'Details, borrow, reserve',
       searchTitle: 'Unified search entry',
-      searchNote: 'Keyword, author, year, category, sorting',
+      searchNote: 'Keyword, author, year, category, and sorting',
       searchPlaceholder: 'Search title, author, or ISBN',
       searchBtn: 'Open results',
       trendingLabel: 'Quick picks',

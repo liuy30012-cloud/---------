@@ -144,7 +144,7 @@ export default {
   },
   en: {
     purchaseSuggestions: {
-      title: 'Purchase Wish Pool',
+      title: 'Purchase Suggestions',
       description: 'Submit books you\'d like the library to purchase, vote on existing requests, and track purchase progress. Admins can also view algorithm-based purchase suggestions on this page.',
       buttons: {
         refresh: 'Refresh Pool',
@@ -185,7 +185,7 @@ export default {
       },
       tips: {
         kicker: 'Before You Submit',
-        title: 'The system will automatically do three things for you',
+        title: 'The system automatically handles three things',
         tip1: 'If the book is already in the collection, it will prompt you to go to the book detail or reserve it instead of creating a duplicate.',
         tip2: 'If the same book already exists in the wish pool, it will prompt you to vote on the existing request instead of adding a duplicate.',
         tip3: 'Voting is one per person. The system will automatically refresh the trending status and progress bar.',
@@ -197,7 +197,7 @@ export default {
       },
       empty: {
         title: 'No purchase requests submitted yet.',
-        description: 'The first book you want to buy can be initiated by you.',
+        description: 'You can be the first to suggest a book.',
       },
       card: {
         proposedBy: 'Submitted by {name}',
@@ -234,7 +234,7 @@ export default {
         mediumPriority: 'Medium Priority',
         additionalCopies: 'Suggested Additional Copies',
         estimatedBudget: 'Estimated Budget',
-        noSuggestions: 'No priority algorithm purchase suggestions at this time.',
+        noSuggestions: 'No priority algorithm purchase suggestions available.',
         currentCopies: 'Current Copies',
         suggestedCopies: 'Suggested Copies',
         pendingPurchase: 'Additional',

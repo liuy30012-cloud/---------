@@ -121,11 +121,11 @@ export default {
       backToResults: 'Back to Results',
       statusRibbon: {
         available: 'Available Now',
-        busy: 'Currently Queued',
+        busy: 'Queued',
       },
       borrowButton: {
         default: 'Borrow',
-        referenceOnly: 'In-Library Use',
+        referenceOnly: 'Reference Only',
         manualApproval: 'Request Borrow (Manual Approval)',
         autoApproval: 'Request Borrow (Auto Approval)',
       },
@@ -155,7 +155,7 @@ export default {
         unknown: 'Unknown',
       },
       circulation: {
-        referenceOnly: 'In-Library Use',
+        referenceOnly: 'Reference Only',
         manual: 'Manual Approval',
         auto: 'Auto Approval',
       },

@@ -127,7 +127,7 @@ export default {
       },
       historyTable: {
         book: 'Book',
-        borrowDate: 'Borrowed',
+        borrowDate: 'Borrow Date',
         dueDate: 'Due',
         returnDate: 'Returned',
         status: 'Status',

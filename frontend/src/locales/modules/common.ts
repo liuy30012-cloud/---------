@@ -116,8 +116,8 @@ export default {
     },
     time: {
       justNow: 'Just now',
-      minutesAgo: '{n} min ago',
-      hoursAgo: '{n} hr ago',
+      minutesAgo: '{n} minutes ago',
+      hoursAgo: '{n} hours ago',
       daysAgo: '{n} days ago',
       yesterday: 'Yesterday',
       unknown: 'Unknown',
@@ -135,9 +135,9 @@ export default {
       auto: 'Auto Approval',
     },
     favorite: {
-      add: 'Favorite',
-      remove: 'Unfavorite',
-      added: 'Favorited',
+      add: 'Add to Favorites',
+      remove: 'Remove from Favorites',
+      added: 'Added to Favorites',
       addFavorite: 'Add to favorites',
       removeFavorite: 'Remove from favorites',
     },

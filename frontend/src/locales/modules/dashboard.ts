@@ -40,10 +40,10 @@ export default {
         utilizationRate: 'Utilization',
       },
       charts: {
-        borrowTrend: '30-Day Borrow Trend',
+        borrowTrend: '30-Day Borrowing Trend',
         popularBooks: 'Popular Books',
-        categoryTotal: 'Category Totals',
-        categoryRate: 'Category Borrow Rate',
+        categoryTotal: 'Category Breakdown',
+        categoryRate: 'Borrow Rate by Category',
       },
     },
   },

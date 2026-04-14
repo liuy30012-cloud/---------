@@ -108,7 +108,7 @@ export default {
         reporter: 'Reporter',
         damageType: 'Damage Type',
         description: 'Description',
-        photos: 'Scene Photos',
+        photos: 'Damage Photos',
         photoAlt: 'Damage photo',
         status: 'Status',
         adminNotes: 'Admin Notes',

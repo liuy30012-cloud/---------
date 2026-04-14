@@ -63,8 +63,8 @@ export default {
       time: {
         never: 'Never updated',
         justNow: 'Just now',
-        minutesAgo: '{minutes} min ago',
-        hoursAgo: '{hours} hr ago',
+        minutesAgo: '{minutes} minutes ago',
+        hoursAgo: '{hours} hours ago',
         daysAgo: '{days} days ago',
       },
       confirm: 'Are you sure you want to clear all cache? This action cannot be undone.',

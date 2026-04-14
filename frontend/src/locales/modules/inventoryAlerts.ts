@@ -67,7 +67,7 @@ export default {
         total: 'All',
         critical: 'Crit',
         warning: 'Warn',
-        outOfStock: 'O/S',
+        outOfStock: 'Out',
         lowStock: 'Low',
         highDemand: 'Hot',
       },

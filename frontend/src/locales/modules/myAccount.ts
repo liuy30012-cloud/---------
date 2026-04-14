@@ -60,15 +60,15 @@ export default {
         email: 'Email',
         phone: 'Phone',
         role: 'Role',
-        notFilled: 'Not filled',
+        notFilled: 'Not provided',
       },
       borrowProfile: {
         title: 'Borrow Profile',
         totalBorrows: 'Total Borrows',
         currentBorrows: 'Current Borrows',
         favoriteCategory: 'Favorite Category',
-        averageBorrowDays: 'Avg Borrow Days',
-        pending: 'Pending',
+        averageBorrowDays: 'Avg. Borrow Duration',
+        pending: 'Not Yet Available',
         loadFailed: 'Failed to load user profile.',
       },
       password: {
@@ -86,7 +86,7 @@ export default {
         reservationUpdatesDesc: 'Includes reservation availability, pickup deadlines, and expiration reminders.',
         dueReminders: 'Due & Overdue Reminders',
         dueRemindersDesc: 'Advance reminders for due dates to help frequent readers avoid late returns.',
-        save: 'Save Preferences',
+        save: 'Save on This Device',
       },
       export: {
         title: 'Data Export',
