@@ -1,1 +1,78 @@
-export default { zh: {}, en: {} }
+export default {
+  zh: {
+    quickActions: {
+      trigger: '快捷',
+      title: '快捷操作',
+      groups: {
+        borrows: '我的借阅',
+        reservations: '预约管理',
+        recentSearches: '最近搜索',
+        account: '账户',
+      },
+      actions: {
+        myBorrows: '我的借阅',
+        quickRenew: '快速续借',
+        myReservations: '我的预约',
+        newSearch: '新建搜索',
+        myAccount: '我的账户',
+        logout: '退出登录',
+      },
+      footer: '提示：使用快捷键快速访问功能',
+      renewModal: {
+        title: '快速续借',
+        loading: '加载中...',
+        emptyTitle: '暂无可续借书籍',
+        emptyCopy: '当前没有符合续借条件的借阅记录。',
+        noIsbn: '暂无 ISBN',
+        dueDate: '归还日期',
+        renewable: '可续借',
+        renew: '续借',
+        info: '每本书最多可续借一次，续借后会自动刷新本列表。',
+        close: '关闭',
+        toast: {
+          success: '续借成功',
+          failed: '续借失败，请稍后重试',
+          loadFailed: '加载续借列表失败',
+        },
+      },
+    },
+  },
+  en: {
+    quickActions: {
+      trigger: 'Quick',
+      title: 'Quick Actions',
+      groups: {
+        borrows: 'My Borrows',
+        reservations: 'Reservations',
+        recentSearches: 'Recent Searches',
+        account: 'Account',
+      },
+      actions: {
+        myBorrows: 'My Borrows',
+        quickRenew: 'Quick Renew',
+        myReservations: 'My Reservations',
+        newSearch: 'New Search',
+        myAccount: 'My Account',
+        logout: 'Sign Out',
+      },
+      footer: 'Tip: Use keyboard shortcuts for quick access',
+      renewModal: {
+        title: 'Quick Renew',
+        loading: 'Loading...',
+        emptyTitle: 'No books available for renewal',
+        emptyCopy: 'No borrow records currently eligible for renewal.',
+        noIsbn: 'No ISBN',
+        dueDate: 'Due Date',
+        renewable: 'Renewable',
+        renew: 'Renew',
+        info: 'Each book can be renewed once. The list refreshes automatically after renewal.',
+        close: 'Close',
+        toast: {
+          success: 'Renewal successful',
+          failed: 'Renewal failed. Please try again later.',
+          loadFailed: 'Failed to load renewable books',
+        },
+      },
+    },
+  },
+}
