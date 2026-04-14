@@ -21,6 +21,17 @@ export default {
         categoryTotal: '分类总量',
         categoryRate: '分类借阅率',
       },
+      errors: {
+        loadFailed: '加载仪表盘数据失败。',
+      },
+      chartLegend: {
+        borrow: '借阅',
+        return: '归还',
+        borrowCount: '借阅量',
+        totalBooks: '馆藏总量',
+        borrowedBooks: '借出数量',
+        borrowRate: '借阅率',
+      },
     },
   },
   en: {
@@ -44,6 +55,17 @@ export default {
         popularBooks: 'Popular Books',
         categoryTotal: 'Category Breakdown',
         categoryRate: 'Borrow Rate by Category',
+      },
+      errors: {
+        loadFailed: 'Failed to load dashboard data.',
+      },
+      chartLegend: {
+        borrow: 'Borrow',
+        return: 'Return',
+        borrowCount: 'Borrow Count',
+        totalBooks: 'Total Books',
+        borrowedBooks: 'Borrowed',
+        borrowRate: 'Borrow Rate',
       },
     },
   },

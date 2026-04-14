@@ -142,6 +142,8 @@ import { statisticsApi, type UserProfile } from '../api/statisticsApi'
 import { exportApi } from '../api/exportApi'
 import { useUserStore } from '../stores/user'
 import { logger } from '../utils/logger'
+import { useToast } from '../composables/useToast'
+import { downloadFile, getTimestamp } from '../utils/downloadHelpers'
 
 const { t } = useI18n()
 const userStore = useUserStore()
@@ -156,10 +158,7 @@ const passwordForm = reactive({
 })
 
 const preferences = reactive(loadPreferences())
-const toast = reactive<{ message: string; type: 'success' | 'error' | 'info' }>({
-  message: '',
-  type: 'info',
-})
+const { toast, showToast } = useToast()
 
 onMounted(() => {
   void loadProfile()
@@ -261,30 +260,6 @@ async function exportAllData() {
   } finally {
     isExporting.value = false
   }
-}
-
-function downloadFile(blob: Blob, filename: string) {
-  const url = window.URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.href = url
-  link.download = filename
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
-  window.URL.revokeObjectURL(url)
-}
-
-function getTimestamp() {
-  const now = new Date()
-  return `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`
-}
-
-function showToast(message: string, type: 'success' | 'error' | 'info') {
-  toast.message = message
-  toast.type = type
-  window.setTimeout(() => {
-    toast.message = ''
-  }, 2600)
 }
 </script>
 

@@ -176,6 +176,8 @@ import { useUserStore } from '../stores/user'
 import { damageReportApi, type DamageReport, type DamageReportStatistics } from '../api/damageReportApi'
 import { API_CONFIG } from '../config'
 import PageHeader from '../components/layout/PageHeader.vue'
+import { formatLocalDate as formatDate } from '../utils/timeHelpers'
+import { logger } from '../utils/logger'
 
 const { t } = useI18n()
 const userStore = useUserStore()
@@ -204,12 +206,6 @@ function damageTypeLabel(key: string) {
 
 function statusLabel(key: string) {
   return t(`damageReports.statusMap.${key}`, key)
-}
-
-function formatDate(dateStr: string | null) {
-  if (!dateStr) return ''
-  const d = new Date(dateStr)
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
 function photoFullUrl(url: string) {
@@ -250,7 +246,7 @@ async function loadReports() {
       }
     }
   } catch (e) {
-    console.error('Failed to load reports', e)
+    logger.error('Failed to load reports', e)
   } finally {
     loading.value = false
   }
@@ -264,7 +260,7 @@ async function loadStatistics() {
       statistics.value = res.data.data
     }
   } catch (e) {
-    console.error('Failed to load statistics', e)
+    logger.error('Failed to load statistics', e)
   }
 }
 
@@ -280,7 +276,7 @@ async function handleUpdate(status: string) {
       await refresh()
     }
   } catch (e) {
-    console.error('Failed to update status', e)
+    logger.error('Failed to update status', e)
   }
 }
 

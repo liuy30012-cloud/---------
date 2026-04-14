@@ -290,6 +290,8 @@ import { useUserStore } from '../stores/user'
 import { handleImageError } from '../utils/imageHelpers'
 import { logger } from '../utils/logger'
 import { formatLocalDate as formatDate } from '../utils/timeHelpers'
+import { useToast } from '../composables/useToast'
+import { useConfirmDialog } from '../composables/useConfirmDialog'
 
 const route = useRoute()
 const router = useRouter()
@@ -305,20 +307,8 @@ const reviewDraft = reactive({
   content: '',
 })
 
-const dialog = reactive({
-  open: false,
-  eyebrow: '',
-  title: '',
-  message: '',
-  confirmText: '',
-  cancelText: '',
-  action: '' as 'borrow' | 'reserve' | '',
-})
-
-const toast = reactive<{ message: string; type: 'success' | 'error' | 'info' }>({
-  message: '',
-  type: 'info',
-})
+const { dialog, openDialog, closeDialog: closeDialogBase } = useConfirmDialog()
+const { toast, showToast } = useToast()
 
 const isFavorited = ref(false)
 const currentReadingStatus = ref<ReadingStatusEnum | ''>('')
@@ -377,31 +367,32 @@ function ensureAuth() {
 
 function requestBorrow() {
   if (!book.value || !ensureAuth()) return
-  dialog.open = true
-  dialog.action = 'borrow'
-  dialog.eyebrow = 'Borrow'
-  dialog.title = t('bookDetail.dialog.borrowTitle')
-  dialog.message = book.value.circulationPolicy === 'MANUAL'
-    ? t('bookDetail.dialog.borrowManualMsg')
-    : t('bookDetail.dialog.borrowAutoMsg')
-  dialog.confirmText = t('bookDetail.dialog.submitBorrow')
-  dialog.cancelText = t('bookDetail.dialog.thinkAgain')
+  openDialog({
+    eyebrow: 'Borrow',
+    title: t('bookDetail.dialog.borrowTitle'),
+    message: book.value.circulationPolicy === 'MANUAL'
+      ? t('bookDetail.dialog.borrowManualMsg')
+      : t('bookDetail.dialog.borrowAutoMsg'),
+    confirmText: t('bookDetail.dialog.submitBorrow'),
+    cancelText: t('bookDetail.dialog.thinkAgain'),
+    action: 'borrow',
+  })
 }
 
 function requestReservation() {
   if (!book.value || !ensureAuth()) return
-  dialog.open = true
-  dialog.action = 'reserve'
-  dialog.eyebrow = 'Reserve'
-  dialog.title = t('bookDetail.dialog.reserveTitle')
-  dialog.message = t('bookDetail.dialog.reserveMsg')
-  dialog.confirmText = t('bookDetail.dialog.confirmReserve')
-  dialog.cancelText = t('bookDetail.dialog.cancel')
+  openDialog({
+    eyebrow: 'Reserve',
+    title: t('bookDetail.dialog.reserveTitle'),
+    message: t('bookDetail.dialog.reserveMsg'),
+    confirmText: t('bookDetail.dialog.confirmReserve'),
+    cancelText: t('bookDetail.dialog.cancel'),
+    action: 'reserve',
+  })
 }
 
 function closeDialog() {
-  dialog.open = false
-  dialog.action = ''
+  closeDialogBase()
 }
 
 async function runDialogAction() {
@@ -448,14 +439,6 @@ async function submitReview() {
   } finally {
     isSubmitting.value = false
   }
-}
-
-function showToast(message: string, type: 'success' | 'error' | 'info') {
-  toast.message = message
-  toast.type = type
-  window.setTimeout(() => {
-    toast.message = ''
-  }, 2600)
 }
 
 function circulationLabel(policy: string) {

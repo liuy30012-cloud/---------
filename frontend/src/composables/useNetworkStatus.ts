@@ -5,6 +5,7 @@
 
 import { ref, onMounted, onUnmounted } from 'vue';
 import { offlineDB } from '@/utils/offlineDB';
+import { logger } from '../utils/logger';
 
 export function useNetworkStatus() {
   const isOnline = ref(navigator.onLine);
@@ -16,14 +17,14 @@ export function useNetworkStatus() {
     isOnline.value = true;
     showOfflineNotice.value = false;
 
-    console.log('[Network] 网络已恢复');
+    logger.log('[Network] 网络已恢复');
 
     // 自动更新热门书籍缓存
     try {
       await updateHotBooksCache();
-      console.log('[Network] 热门书籍缓存已更新');
+      logger.log('[Network] 热门书籍缓存已更新');
     } catch (error) {
-      console.error('[Network] 更新缓存失败:', error);
+      logger.error('[Network] 更新缓存失败:', error);
     }
 
     lastOnlineTime.value = Date.now();
@@ -31,7 +32,7 @@ export function useNetworkStatus() {
 
   const handleOffline = () => {
     isOnline.value = false;
-    console.log('[Network] 网络已断开');
+    logger.log('[Network] 网络已断开');
   };
 
   // 更新热门书籍缓存
@@ -74,7 +75,7 @@ export function useNetworkStatus() {
       await updateHotBooksCache();
       return true;
     } catch (error) {
-      console.error('[Network] 手动更新缓存失败:', error);
+      logger.error('[Network] 手动更新缓存失败:', error);
       return false;
     }
   };
@@ -107,7 +108,7 @@ export function useNetworkStatus() {
 
       return true;
     } catch (error) {
-      console.error('[Network] 清空缓存失败:', error);
+      logger.error('[Network] 清空缓存失败:', error);
       return false;
     }
   };
@@ -116,7 +117,7 @@ export function useNetworkStatus() {
   const checkOfflineAction = (actionName: string): boolean => {
     if (!isOnline.value) {
       showOfflineNotice.value = true;
-      console.warn(`[Network] 操作 "${actionName}" 需要网络连接`);
+      logger.warn(`[Network] 操作 "${actionName}" 需要网络连接`);
       return false;
     }
     return true;
@@ -133,7 +134,7 @@ export function useNetworkStatus() {
         lastUpdate: lastUpdate || null
       };
     } catch (error) {
-      console.error('[Network] 获取缓存统计失败:', error);
+      logger.error('[Network] 获取缓存统计失败:', error);
       return {
         bookCount: 0,
         hotBookCount: 0,
@@ -150,7 +151,7 @@ export function useNetworkStatus() {
 
     // 初始化时如果在线,更新缓存
     if (isOnline.value) {
-      updateHotBooksCache().catch(console.error);
+      updateHotBooksCache().catch(e => logger.error('[Network] initial cache update failed:', e));
     }
   });
 

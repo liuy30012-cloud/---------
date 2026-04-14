@@ -131,13 +131,16 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { borrowApi, type BorrowRecord } from '../api/borrowApi'
 import ConfirmDialog from '../components/common/ConfirmDialog.vue'
 import FeedbackToast from '../components/common/FeedbackToast.vue'
 import PageHeader from '../components/layout/PageHeader.vue'
 import { logger } from '../utils/logger'
+import { useToast } from '../composables/useToast'
+import { useConfirmDialog } from '../composables/useConfirmDialog'
+import { formatLocalDate as formatDate } from '../utils/timeHelpers'
 
 const { t } = useI18n()
 
@@ -146,21 +149,9 @@ const currentBorrows = ref<BorrowRecord[]>([])
 const borrowHistory = ref<BorrowRecord[]>([])
 const isSubmitting = ref(false)
 
-const dialog = reactive({
-  open: false,
-  action: '' as 'pickup' | 'renew' | 'return' | '',
-  record: null as BorrowRecord | null,
-  eyebrow: '',
-  title: '',
-  message: '',
-  confirmText: '',
-  cancelText: '',
-})
-
-const toast = reactive<{ message: string; type: 'success' | 'error' | 'info' }>({
-  message: '',
-  type: 'info',
-})
+const pendingRecord = ref<BorrowRecord | null>(null)
+const { dialog, openDialog, closeDialog: closeDialogBase } = useConfirmDialog()
+const { toast, showToast } = useToast()
 
 onMounted(() => {
   void Promise.all([loadCurrentBorrows(), loadBorrowHistory()])
@@ -187,38 +178,38 @@ async function loadBorrowHistory() {
 }
 
 function confirmAction(action: 'pickup' | 'renew' | 'return', record: BorrowRecord) {
-  dialog.open = true
-  dialog.action = action
-  dialog.record = record
-  dialog.eyebrow = action.toUpperCase()
-  dialog.title = action === 'pickup' ? t('myBorrows.dialog.confirmPickup') : action === 'renew' ? t('myBorrows.dialog.confirmRenew') : t('myBorrows.dialog.confirmReturn')
-  dialog.message = action === 'pickup'
-    ? t('myBorrows.dialog.pickupMsg')
-    : action === 'renew'
-      ? t('myBorrows.dialog.renewMsg')
-      : t('myBorrows.dialog.returnMsg')
-  dialog.confirmText = action === 'pickup' ? t('myBorrows.dialog.startBorrow') : action === 'renew' ? t('myBorrows.dialog.confirmRenewText') : t('myBorrows.dialog.confirmReturnText')
-  dialog.cancelText = t('myBorrows.dialog.cancel')
+  pendingRecord.value = record
+  openDialog({
+    eyebrow: action.toUpperCase(),
+    title: action === 'pickup' ? t('myBorrows.dialog.confirmPickup') : action === 'renew' ? t('myBorrows.dialog.confirmRenew') : t('myBorrows.dialog.confirmReturn'),
+    message: action === 'pickup'
+      ? t('myBorrows.dialog.pickupMsg')
+      : action === 'renew'
+        ? t('myBorrows.dialog.renewMsg')
+        : t('myBorrows.dialog.returnMsg'),
+    confirmText: action === 'pickup' ? t('myBorrows.dialog.startBorrow') : action === 'renew' ? t('myBorrows.dialog.confirmRenewText') : t('myBorrows.dialog.confirmReturnText'),
+    cancelText: t('myBorrows.dialog.cancel'),
+    action,
+  })
 }
 
 function closeDialog() {
-  dialog.open = false
-  dialog.action = ''
-  dialog.record = null
+  closeDialogBase()
+  pendingRecord.value = null
 }
 
 async function runAction() {
-  if (!dialog.record || !dialog.action) return
+  if (!pendingRecord.value || !dialog.action) return
   isSubmitting.value = true
   try {
     if (dialog.action === 'pickup') {
-      const response = await borrowApi.pickupBorrow(dialog.record.id)
+      const response = await borrowApi.pickupBorrow(pendingRecord.value.id)
       showToast(response.data.message || t('myBorrows.toast.pickupConfirmed'), 'success')
     } else if (dialog.action === 'renew') {
-      const response = await borrowApi.renewBorrow(dialog.record.id)
+      const response = await borrowApi.renewBorrow(pendingRecord.value.id)
       showToast(response.data.message || t('myBorrows.toast.renewed'), 'success')
     } else {
-      const response = await borrowApi.returnBook(dialog.record.id)
+      const response = await borrowApi.returnBook(pendingRecord.value.id)
       showToast(response.data.message || t('myBorrows.toast.returned'), 'success')
     }
     closeDialog()
@@ -240,27 +231,12 @@ function isOverdue(dueDate?: string | null) {
   return !Number.isNaN(due.getTime()) && Date.now() > due.getTime()
 }
 
-function formatDate(dateStr?: string | null) {
-  if (!dateStr) return '-'
-  const date = new Date(dateStr)
-  if (Number.isNaN(date.getTime())) return dateStr
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
-}
-
 function statusText(status: string) {
   return t(`myBorrows.status.${status}`) || status
 }
 
 function nextActionText(action?: string) {
   return t(`myBorrows.nextAction.${action || ''}`) || '-'
-}
-
-function showToast(message: string, type: 'success' | 'error' | 'info') {
-  toast.message = message
-  toast.type = type
-  window.setTimeout(() => {
-    toast.message = ''
-  }, 2600)
 }
 </script>
 

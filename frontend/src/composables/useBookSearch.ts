@@ -53,14 +53,6 @@ export const MOCK_BOOKS: Book[] = [
   { id: "5", title: "Faust", author: "Johann Wolfgang von Goethe", isbn: "9781234567890", location: "德文文献室", year: '1808', status: 'Draft', languageCode: 'Deutsch', availability: 'checkedOut', category: 'Literature' },
 ]
 
-export const RELATED_BOOKS = [
-  { title: "The Design of Everyday Things", author: "Don Norman", img: "https://lh3.googleusercontent.com/aida-public/AB6AXuAD7CA9NIOl3jX9pMduAn3yJPP1w4WM0Rb4W3BiE3rszMcabHUPt6V26CF7iWmRzLFUqdGFpTwSbrS7FmhjtbWtzap3Dnb5sCKhs7Xj81BFXPvSG0oZ4o9vFJx5wp1Ufp296B-_lXe_9n9BfwABZm7tf-DGHKtKyzjnDubJmvrPENuXJgfEyfvBWFfw6Pz4dFJXUb79SNQJy_0z8lhlxdfCzQI9tH6Mdq4P0Lu-G7iPtCxXxHWQlHdPW_ZHgCAE6EKmgYDSPGsDKwDQ" },
-  { title: "Universal Principles of Design", author: "William Lidwell", img: "https://lh3.googleusercontent.com/aida-public/AB6AXuAc5gaw_WK_ZVZTuBcic21xXREHCQlwLkSqjlM08TRX_6DaXlg-G7h4W3i81fbyjYdiuI8sdaYevBcyOSYDiIwWDDVofiLNTqPyTVasMAJVdBFYCRJk7g6MKxdwOdQvBjGJXSm6eVzhZndpB7kwT4K6dLtsGTO3MtvF2dks6jMkTe1FKeSbZM6RP2N2mVLaLT3huxjwUx2d6L5y5VJ5X6qUC_vLQ78rAwmaa0PpufhB1S6lwIZAo9WUl_YYghETmvrSdPT6ahSt_TsB" },
-  { title: "Grid Systems", author: "Josef Müller-Brockmann", img: "https://lh3.googleusercontent.com/aida-public/AB6AXuDYk9dJaire7Jv7-fVeJCOS5a6F_jJzm8eFD5pYvLqSJ7ra22Sqeu9lTZTuGZyy_4-PVya0ue3MK7zBB6QrlZYVQqab1iP3FKb2IVNd6sToJo_F4B2FCvpPEz26gX9WJCKGUT8Nj_2DwQzzLBg1MFLCivJe6fhr4A8x0MGQaC-zxLMhFEen_ypu8rzdMX6wNl_ZvPxJUJwTkJTow1K17MjuG3S4LRvQC3B_O9P3_KRYjRiuX2oV_jGo0G3t361Up0TAMoxsuXekcBqL" },
-  { title: "Thinking with Type", author: "Ellen Lupton", img: "https://lh3.googleusercontent.com/aida-public/AB6AXuAhAMbR8o2-8cKWRnCQJZWPQL8PqsbFaz-kdzCA-4JijqIZB9KdvjS4QGNRa7P4i217AF9XgX3SKSBnGf5FINOOeLtK-j2415k2mlN3R83Qh2NLPAkWChIPIdw6k5ntevNwL3owKqm_uz-tT6vIJld_nc4if2-UCysEmLzvf-AQS89daQj8zr9uN7FCSEM6KEzQK76BMuug1xTeH2yCKp86KKavQznEYTgHh4rz_z7NwaeZcVvo-pb1gwGsWp0mp8nW0f-7obbn5jxN" },
-  { title: "Design As Art", author: "Bruno Munari", img: "https://lh3.googleusercontent.com/aida-public/AB6AXuAvVLZnylaT-oBahqM0Wt7THgehtqChGSlB7LNBLvxzDJU1_5lmAng6LAS2BNfDEtdrav-FHwRD7ghJgoPtFs36uAkpaRlMLshWHXCyCT-hJ3j4IdECAY8lr4t7ZO6bpI-VHqRJdF_BPIcYudaLH7Qyu-8RF5n06mhK6cDVdU_JONQQn-R0Rr7ZZVH9_g8onh1pPhaU8hMNPu08Iu5ZT52i401iYs5L8b-OBwp8HaYcLLOq1H5rB_RVREqLGq2_b979gJXxw6khVI-c" }
-]
-
 export function useBookSearch(emitPetEvent: (event: string, data?: any) => void, addToHistory: (keyword: string, resultCount: number) => Promise<void>) {
   const DEMO_MODE = import.meta.env.VITE_DEMO_BOOKS === 'true'
   const searchQuery = ref('')

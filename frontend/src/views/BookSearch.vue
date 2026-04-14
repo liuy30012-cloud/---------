@@ -187,6 +187,7 @@ import FeedbackToast from '../components/common/FeedbackToast.vue'
 import PageHeader from '../components/layout/PageHeader.vue'
 import { logger } from '../utils/logger'
 import { useUserStore } from '../stores/user'
+import { useToast } from '../composables/useToast'
 
 const { t } = useI18n()
 
@@ -217,10 +218,7 @@ const pagination = reactive({
   page: 0,
   totalPages: 0,
 })
-const toast = reactive<{ message: string; type: 'success' | 'error' | 'info' }>({
-  message: '',
-  type: 'info',
-})
+const { toast, showToast } = useToast()
 
 const favoritedBookIds = ref<Set<number>>(new Set())
 
@@ -420,14 +418,6 @@ function circulationLabel(policy: string) {
   if (policy === 'REFERENCE_ONLY') return t('bookSearch.circulation.referenceOnly')
   if (policy === 'MANUAL') return t('bookSearch.circulation.manualApproval')
   return t('bookSearch.circulation.autoApproval')
-}
-
-function showToast(message: string, type: 'success' | 'error' | 'info') {
-  toast.message = message
-  toast.type = type
-  window.setTimeout(() => {
-    toast.message = ''
-  }, 2600)
 }
 </script>
 

@@ -11,7 +11,7 @@ export function useLoginForm() {
   const showPassword = ref(false)
   const errorMessage = ref('')
   const successMessage = ref('')
-  const focusedField = ref('')
+  const focusedField = ref('') // 保留用于模板绑定
   const shakeError = ref(false)
   const typingField = ref('')
   const submitHovered = ref(false)

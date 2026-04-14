@@ -2,8 +2,10 @@ import { ref } from 'vue'
 import { statisticsApi, type DashboardData } from '../api/statisticsApi'
 import { sanitizeApiMessage } from '../utils/apiMessage'
 import { logger } from '../utils/logger'
+import { useI18n } from 'vue-i18n'
 
 export function useDashboardCharts() {
+  const { t } = useI18n()
   let echarts: any = null
   const chartTextColor = '#233226'
   const chartMutedColor = 'rgba(53, 68, 55, 0.66)'
@@ -44,11 +46,11 @@ export function useDashboardCharts() {
         }, 100)
       } else {
         dashboardData.value = null
-        errorMessage.value = sanitizeApiMessage(response.data.message, '加载仪表盘数据失败。')
+        errorMessage.value = sanitizeApiMessage(response.data.message, t('dashboard.errors.loadFailed'))
       }
     } catch (error) {
       dashboardData.value = null
-      errorMessage.value = '加载仪表盘数据失败。'
+      errorMessage.value = t('dashboard.errors.loadFailed')
       logger.error('Failed to load dashboard data:', error)
     } finally {
       loading.value = false
@@ -71,7 +73,7 @@ export function useDashboardCharts() {
             borderColor: chartBorderColor,
             textStyle: { color: chartTextColor },
           },
-          legend: { data: ['借阅', '归还'], textStyle: { color: chartMutedColor } },
+          legend: { data: [t('dashboard.chartLegend.borrow'), t('dashboard.chartLegend.return')], textStyle: { color: chartMutedColor } },
           grid: { left: 40, right: 16, top: 48, bottom: 52, containLabel: true },
           xAxis: {
             type: 'category',
@@ -87,7 +89,7 @@ export function useDashboardCharts() {
           },
           series: [
             {
-              name: '借阅',
+              name: t('dashboard.chartLegend.borrow'),
               type: 'line',
               data: trends.map(t => t.borrowCount),
               smooth: true,
@@ -109,7 +111,7 @@ export function useDashboardCharts() {
               },
             },
             {
-              name: '归还',
+              name: t('dashboard.chartLegend.return'),
               type: 'line',
               data: trends.map(t => t.returnCount),
               smooth: true,
@@ -162,7 +164,7 @@ export function useDashboardCharts() {
           },
           series: [
             {
-              name: '借阅量',
+              name: t('dashboard.chartLegend.borrowCount'),
               type: 'bar',
               data: books.map(b => b.borrowCount),
               barWidth: 18,
@@ -200,7 +202,7 @@ export function useDashboardCharts() {
             borderColor: chartBorderColor,
             textStyle: { color: chartTextColor },
           },
-          legend: { data: ['馆藏总量', '借出数量'], textStyle: { color: chartMutedColor } },
+          legend: { data: [t('dashboard.chartLegend.totalBooks'), t('dashboard.chartLegend.borrowedBooks')], textStyle: { color: chartMutedColor } },
           grid: { left: 32, right: 18, top: 48, bottom: 24, containLabel: true },
           xAxis: {
             type: 'category',
@@ -215,14 +217,14 @@ export function useDashboardCharts() {
           },
           series: [
             {
-              name: '馆藏总量',
+              name: t('dashboard.chartLegend.totalBooks'),
               type: 'bar',
               data: stats.map(c => c.totalBooks),
               barWidth: 20,
               itemStyle: { color: '#6f8f70', borderRadius: [999, 999, 0, 0] },
             },
             {
-              name: '借出数量',
+              name: t('dashboard.chartLegend.borrowedBooks'),
               type: 'bar',
               data: stats.map(c => c.borrowedBooks),
               barWidth: 20,
@@ -248,7 +250,7 @@ export function useDashboardCharts() {
           textStyle: { color: chartMutedColor },
         },
         series: [{
-          name: '借阅率',
+          name: t('dashboard.chartLegend.borrowRate'),
           type: 'pie',
           radius: '60%',
           data: data.categoryStatistics!.map(c => ({ name: c.category, value: c.borrowRate })),

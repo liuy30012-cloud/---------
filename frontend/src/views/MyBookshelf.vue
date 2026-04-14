@@ -104,6 +104,7 @@ import ConfirmDialog from '../components/common/ConfirmDialog.vue'
 import FeedbackToast from '../components/common/FeedbackToast.vue'
 import PageHeader from '../components/layout/PageHeader.vue'
 import { handleImageError } from '../utils/imageHelpers'
+import { useToast } from '../composables/useToast'
 
 const router = useRouter()
 const { t } = useI18n()
@@ -128,10 +129,7 @@ const statusCounts = reactive<Record<string, number>>({
   READ: 0,
 })
 const activeTab = ref('all')
-const toast = reactive<{ message: string; type: 'success' | 'error' | 'info' }>({
-  message: '',
-  type: 'info',
-})
+const { toast, showToast } = useToast()
 
 const removeDialog = reactive({
   open: false,
@@ -277,14 +275,6 @@ function goToSearch() {
 }
 
 const onImgError = (event: Event) => handleImageError(event, '/logo-photo.jpg')
-
-function showToast(message: string, type: 'success' | 'error' | 'info') {
-  toast.message = message
-  toast.type = type
-  window.setTimeout(() => {
-    toast.message = ''
-  }, 2600)
-}
 </script>
 
 <style scoped>
