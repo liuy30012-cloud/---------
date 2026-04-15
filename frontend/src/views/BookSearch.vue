@@ -63,7 +63,10 @@
             <option value="title_asc">{{ t('bookSearch.sortOptions.titleAsc') }}</option>
           </select>
         </div>
-        <button class="sidebar-submit" type="button" @click="submitSearch">{{ t('bookSearch.sidebar.updateResults') }}</button>
+        <button class="sidebar-submit" type="button" :disabled="loading" @click="submitSearch">
+          <span v-if="loading" class="btn-spinner"></span>
+          {{ loading ? t('bookSearch.sidebar.searching') : t('bookSearch.sidebar.updateResults') }}
+        </button>
       </aside>
 
       <section class="search-results">
@@ -92,9 +95,25 @@
           </div>
         </div>
 
-        <div v-if="loading" :key="`loading-${resultMotionKey}`" v-reveal="{ preset: 'section', once: true }" class="state-card surface-card">
-          <div class="spinner"></div>
-          <p>{{ t('bookSearch.loading') }}</p>
+        <div v-if="loading" :key="`loading-${resultMotionKey}`" class="result-grid">
+          <div
+            v-for="i in form.size"
+            :key="`skeleton-${i}`"
+            class="skeleton-card"
+            :style="{ animationDelay: `${i * 0.06}s` }"
+          >
+            <div class="skeleton-cover"></div>
+            <div class="skeleton-body">
+              <div class="skeleton-line skeleton-line--title"></div>
+              <div class="skeleton-line skeleton-line--author"></div>
+              <div class="skeleton-line skeleton-line--meta"></div>
+              <div class="skeleton-pill"></div>
+              <div class="skeleton-footer">
+                <div class="skeleton-line skeleton-line--short"></div>
+                <div class="skeleton-line skeleton-line--short"></div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div v-else-if="books.length === 0" :key="`empty-${resultMotionKey}`" v-reveal="{ preset: 'section', once: true }" class="state-card surface-card">
@@ -508,6 +527,28 @@ function circulationLabel(policy: string) {
   box-shadow: 0 24px 42px rgba(199, 160, 103, 0.34);
 }
 
+.sidebar-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-spinner {
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  border: 2px solid rgba(26, 19, 13, 0.2);
+  border-top-color: #1a130d;
+  animation: spin 0.7s linear infinite;
+  vertical-align: middle;
+  margin-right: 0.35rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 .search-results {
   display: flex;
   flex-direction: column;
@@ -575,13 +616,79 @@ function circulationLabel(policy: string) {
   color: var(--on-surface-variant);
 }
 
-.spinner {
-  width: 2rem;
-  height: 2rem;
-  border-radius: 50%;
-  border: 2px solid rgba(215, 179, 122, 0.14);
-  border-top-color: var(--primary);
-  animation: spin 0.8s linear infinite;
+/* ---- Skeleton Loading ---- */
+.skeleton-card {
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  border-radius: 1.35rem;
+  background:
+    linear-gradient(180deg, rgba(246, 236, 218, 0.94) 0%, rgba(235, 222, 201, 0.92) 100%);
+  border: 1px solid rgba(133, 122, 107, 0.18);
+  box-shadow:
+    0 22px 42px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.skeleton-cover {
+  aspect-ratio: 3 / 4;
+  border-radius: 1rem;
+  background: rgba(86, 58, 32, 0.08);
+  animation: skeleton-pulse 1.4s ease-in-out infinite;
+}
+
+.skeleton-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding-top: 1rem;
+}
+
+.skeleton-line {
+  height: 0.85rem;
+  border-radius: 999px;
+  background: rgba(86, 58, 32, 0.1);
+  animation: skeleton-pulse 1.4s ease-in-out infinite;
+}
+
+.skeleton-line--title {
+  width: 70%;
+  height: 1.1rem;
+}
+
+.skeleton-line--author {
+  width: 45%;
+}
+
+.skeleton-line--meta {
+  width: 60%;
+}
+
+.skeleton-line--short {
+  width: 30%;
+  height: 0.75rem;
+}
+
+.skeleton-pill {
+  width: fit-content;
+  margin-top: 0.25rem;
+  padding: 0.55rem 1.2rem;
+  border-radius: 999px;
+  background: rgba(86, 58, 32, 0.08);
+  animation: skeleton-pulse 1.4s ease-in-out infinite;
+}
+
+.skeleton-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.6rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid rgba(133, 122, 107, 0.12);
+}
+
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
 }
 
 .result-grid {
@@ -742,10 +849,6 @@ function circulationLabel(policy: string) {
   color: #1a130d;
   background: linear-gradient(135deg, #d7b37a 0%, #ba8850 48%, #efd0a6 100%);
   box-shadow: 0 16px 32px rgba(199, 160, 103, 0.26);
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
 }
 
 @media (max-width: 1024px) {

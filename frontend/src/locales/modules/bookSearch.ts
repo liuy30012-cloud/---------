@@ -22,6 +22,7 @@ export default {
         checkedOut: '当前已借出',
         sort: '排序',
         updateResults: '更新结果',
+        searching: '搜索中…',
       },
       sortOptions: {
         relevance: '综合优先',
@@ -90,6 +91,7 @@ export default {
         checkedOut: 'Currently Checked Out',
         sort: 'Sort',
         updateResults: 'Update Results',
+        searching: 'Searching…',
       },
       sortOptions: {
         relevance: 'Relevance',
