@@ -1,5 +1,6 @@
 package com.library.model;
 
+import com.library.listener.BookSyncListener;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.springframework.data.annotation.CreatedDate;
@@ -9,7 +10,7 @@ import java.time.LocalDateTime;
 
 @Data
 @Entity
-@EntityListeners(AuditingEntityListener.class)
+@EntityListeners({AuditingEntityListener.class, BookSyncListener.class})
 @Table(name = "books", indexes = {
     @Index(name = "idx_title", columnList = "title"),
     @Index(name = "idx_author", columnList = "author"),
