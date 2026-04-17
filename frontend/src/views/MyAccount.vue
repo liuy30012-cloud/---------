@@ -224,7 +224,7 @@ async function exportBorrowHistory(format: 'excel' | 'json') {
   isExporting.value = true
   try {
     const response = await exportApi.exportBorrowHistory(format)
-    downloadFile(response.data, `借阅历史_${getTimestamp()}.${format === 'json' ? 'json' : 'xlsx'}`)
+    downloadFile(response.data, `${t('myAccount.export.filenameBorrowHistory')}_${getTimestamp()}.${format === 'json' ? 'json' : 'xlsx'}`)
     showToast(t('myAccount.toast.exportSuccess'), 'success')
   } catch (error) {
     logger.error('Failed to export borrow history:', error)
@@ -238,7 +238,7 @@ async function exportBookReviews() {
   isExporting.value = true
   try {
     const response = await exportApi.exportBookReviews()
-    downloadFile(response.data, `我的评价_${getTimestamp()}.xlsx`)
+    downloadFile(response.data, `${t('myAccount.export.filenameReviews')}_${getTimestamp()}.xlsx`)
     showToast(t('myAccount.toast.exportSuccess'), 'success')
   } catch (error) {
     logger.error('Failed to export book reviews:', error)
@@ -252,7 +252,7 @@ async function exportAllData() {
   isExporting.value = true
   try {
     const response = await exportApi.exportAllData()
-    downloadFile(response.data, `我的数据_${getTimestamp()}.xlsx`)
+    downloadFile(response.data, `${t('myAccount.export.filenameAllData')}_${getTimestamp()}.xlsx`)
     showToast(t('myAccount.toast.exportSuccess'), 'success')
   } catch (error) {
     logger.error('Failed to export all data:', error)

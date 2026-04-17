@@ -42,6 +42,9 @@ export default {
         borrowHistoryJson: '导出借阅历史 (JSON)',
         reviews: '导出我的评价',
         allData: '打包下载全部数据',
+        filenameBorrowHistory: '借阅历史',
+        filenameReviews: '我的评价',
+        filenameAllData: '我的数据',
       },
       toast: {
         passwordIncomplete: '请完整填写密码字段。',
@@ -95,6 +98,9 @@ export default {
         borrowHistoryJson: 'Export Borrow History (JSON)',
         reviews: 'Export My Reviews',
         allData: 'Download All Data',
+        filenameBorrowHistory: 'BorrowHistory',
+        filenameReviews: 'MyReviews',
+        filenameAllData: 'MyData',
       },
       toast: {
         passwordIncomplete: 'Please fill in all password fields.',
