@@ -76,4 +76,10 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     List<Book> findTop6ByCategoryAndIdNotOrderByBorrowedCountDesc(String category, Long id);
 
     List<Book> findTop6ByAuthorAndIdNotOrderByBorrowedCountDesc(String author, Long id);
+
+    @Query("SELECT SUM(b.totalCopies) FROM Book b")
+    Long sumTotalCopies();
+
+    @Query("SELECT SUM(b.availableCopies) FROM Book b")
+    Long sumAvailableCopies();
 }

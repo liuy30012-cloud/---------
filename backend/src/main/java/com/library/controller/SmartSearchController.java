@@ -6,10 +6,12 @@ import com.library.model.BookTag;
 import com.library.repository.BookTagRepository;
 import com.library.service.BookRecommendationService;
 import com.library.service.SmartSearchService;
+import com.library.util.JwtUtil;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -23,15 +25,18 @@ public class SmartSearchController {
     private final SmartSearchService smartSearchService;
     private final BookRecommendationService recommendationService;
     private final BookTagRepository bookTagRepository;
+    private final JwtUtil jwtUtil;
 
     public SmartSearchController(
         SmartSearchService smartSearchService,
         BookRecommendationService recommendationService,
-        BookTagRepository bookTagRepository
+        BookTagRepository bookTagRepository,
+        JwtUtil jwtUtil
     ) {
         this.smartSearchService = smartSearchService;
         this.recommendationService = recommendationService;
         this.bookTagRepository = bookTagRepository;
+        this.jwtUtil = jwtUtil;
     }
 
     /**
@@ -123,14 +128,18 @@ public class SmartSearchController {
      */
     @PostMapping("/books/{bookId}/tags")
     public ResponseEntity<ApiResponse<BookTag>> addBookTag(
+        Authentication authentication,
         @PathVariable Long bookId,
         @RequestParam String tagName,
         @RequestParam(defaultValue = "USER_GENERATED") String tagType
     ) {
+        Long userId = getUserIdFromAuth(authentication);
+
         BookTag tag = new BookTag();
         tag.setBookId(bookId);
         tag.setTagName(tagName);
         tag.setTagType(tagType);
+        tag.setUserId(userId);
         tag.setUsageCount(0);
 
         BookTag saved = bookTagRepository.save(tag);
@@ -144,5 +153,16 @@ public class SmartSearchController {
     public ResponseEntity<ApiResponse<List<BookTag>>> getBookTags(@PathVariable Long bookId) {
         List<BookTag> tags = bookTagRepository.findByBookId(bookId);
         return ApiResponse.ok(tags);
+    }
+
+    /**
+     * 从JWT token中提取用户ID
+     */
+    private Long getUserIdFromAuth(Authentication authentication) {
+        if (authentication == null || authentication.getCredentials() == null) {
+            throw new IllegalArgumentException("缺少认证令牌。");
+        }
+        String token = authentication.getCredentials().toString();
+        return jwtUtil.getUserIdFromToken(token);
     }
 }

@@ -12,6 +12,8 @@ import com.library.model.Book;
 import com.library.model.BorrowRecord;
 import com.library.model.BorrowRecord.BorrowStatus;
 import com.library.model.ReservationRecord.ReservationStatus;
+import com.library.service.elasticsearch.ElasticsearchStatisticsService;
+import com.library.service.fallback.MysqlStatisticsService;
 import com.library.service.statistics.BorrowTrendService;
 import com.library.service.statistics.CategoryStatisticsService;
 import com.library.service.statistics.InventoryAlertService;
@@ -19,6 +21,7 @@ import com.library.service.statistics.PopularBooksService;
 import com.library.service.statistics.PurchaseSuggestionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.temporal.ChronoUnit;
@@ -42,6 +45,11 @@ public class StatisticsService {
     private final com.library.repository.BookRepository bookRepository;
     private final com.library.repository.BorrowRecordRepository borrowRecordRepository;
     private final com.library.repository.ReservationRecordRepository reservationRecordRepository;
+    private final ElasticsearchStatisticsService elasticsearchStatisticsService;
+    private final MysqlStatisticsService mysqlStatisticsService;
+
+    @Value("${library.search.elasticsearch.enabled:true}")
+    private boolean elasticsearchEnabled;
 
     public List<PopularBookDTO> getPopularBooks(int limit) {
         return popularBooksService.getPopularBooks(limit);
@@ -119,14 +127,36 @@ public class StatisticsService {
     }
 
     public InventoryStatisticsDTO getInventoryStatistics() {
-        List<Book> allBooks = bookRepository.findAll();
+        long totalBooks;
+        long availableBooks;
 
-        long totalBooks = allBooks.stream()
-            .mapToLong(Book::getTotalCopies)
-            .sum();
-        long availableBooks = allBooks.stream()
-            .mapToLong(Book::getAvailableCopies)
-            .sum();
+        // 优先使用 Elasticsearch，失败时降级到 MySQL
+        if (elasticsearchEnabled) {
+            try {
+                if (elasticsearchStatisticsService.isAvailable()) {
+                    Map<String, Long> stats = elasticsearchStatisticsService.getInventoryStatistics();
+                    totalBooks = stats.get("totalCopies");
+                    availableBooks = stats.get("availableCopies");
+                    log.debug("Using Elasticsearch for inventory statistics");
+                } else {
+                    log.warn("Elasticsearch is not available, falling back to MySQL");
+                    Map<String, Long> stats = mysqlStatisticsService.getInventoryStatistics();
+                    totalBooks = stats.get("totalCopies");
+                    availableBooks = stats.get("availableCopies");
+                }
+            } catch (Exception e) {
+                log.error("Elasticsearch query failed, falling back to MySQL", e);
+                Map<String, Long> stats = mysqlStatisticsService.getInventoryStatistics();
+                totalBooks = stats.get("totalCopies");
+                availableBooks = stats.get("availableCopies");
+            }
+        } else {
+            log.debug("Elasticsearch is disabled, using MySQL");
+            Map<String, Long> stats = mysqlStatisticsService.getInventoryStatistics();
+            totalBooks = stats.get("totalCopies");
+            availableBooks = stats.get("availableCopies");
+        }
+
         long borrowedBooks = totalBooks - availableBooks;
         long overdueBooks = borrowRecordRepository.countByStatus(BorrowStatus.OVERDUE);
         long reservedBooks = reservationRecordRepository.countByStatus(ReservationStatus.WAITING);

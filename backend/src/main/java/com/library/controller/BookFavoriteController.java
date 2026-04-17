@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,9 +25,9 @@ public class BookFavoriteController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<FavoriteResponse>> addFavorite(
-            @RequestHeader("Authorization") String token,
+            Authentication authentication,
             @Valid @RequestBody FavoriteRequest request) {
-        Long userId = extractUserId(token);
+        Long userId = getUserIdFromAuth(authentication);
         FavoriteResponse response = bookFavoriteService.addFavorite(userId, request.getBookId());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success(response, "收藏成功"));
@@ -34,41 +35,44 @@ public class BookFavoriteController {
 
     @DeleteMapping("/{bookId}")
     public ResponseEntity<ApiResponse<Void>> removeFavorite(
-            @RequestHeader("Authorization") String token,
+            Authentication authentication,
             @PathVariable Long bookId) {
-        Long userId = extractUserId(token);
+        Long userId = getUserIdFromAuth(authentication);
         bookFavoriteService.removeFavorite(userId, bookId);
         return ResponseEntity.ok(ApiResponse.success(null, "已取消收藏"));
     }
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<FavoriteResponse>>> getUserFavorites(
-            @RequestHeader("Authorization") String token) {
-        Long userId = extractUserId(token);
+            Authentication authentication) {
+        Long userId = getUserIdFromAuth(authentication);
         List<FavoriteResponse> favorites = bookFavoriteService.getUserFavorites(userId);
         return ResponseEntity.ok(ApiResponse.success(favorites, "获取收藏列表成功"));
     }
 
     @GetMapping("/check")
     public ResponseEntity<ApiResponse<Boolean>> checkFavorite(
-            @RequestHeader("Authorization") String token,
+            Authentication authentication,
             @RequestParam Long bookId) {
-        Long userId = extractUserId(token);
+        Long userId = getUserIdFromAuth(authentication);
         boolean isFavorited = bookFavoriteService.isFavorited(userId, bookId);
         return ResponseEntity.ok(ApiResponse.success(isFavorited, "查询收藏状态成功"));
     }
 
     @PostMapping("/batch-check")
     public ResponseEntity<ApiResponse<Set<Long>>> batchCheckFavorites(
-            @RequestHeader("Authorization") String token,
+            Authentication authentication,
             @RequestBody List<Long> bookIds) {
-        Long userId = extractUserId(token);
+        Long userId = getUserIdFromAuth(authentication);
         Set<Long> favoritedIds = bookFavoriteService.batchCheckFavorites(userId, bookIds);
         return ResponseEntity.ok(ApiResponse.success(favoritedIds, "批量查询收藏状态成功"));
     }
 
-    private Long extractUserId(String token) {
-        String jwt = token.replace("Bearer ", "");
-        return jwtUtil.getUserIdFromToken(jwt);
+    private Long getUserIdFromAuth(Authentication authentication) {
+        if (authentication == null || authentication.getCredentials() == null) {
+            throw new IllegalArgumentException("缺少认证令牌。");
+        }
+        String token = authentication.getCredentials().toString();
+        return jwtUtil.getUserIdFromToken(token);
     }
 }

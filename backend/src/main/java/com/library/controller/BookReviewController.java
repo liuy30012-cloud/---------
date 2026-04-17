@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,9 +29,9 @@ public class BookReviewController {
      */
     @PostMapping
     public ResponseEntity<ApiResponse<BookReviewResponse>> createReview(
-            @RequestHeader("Authorization") String token,
+            Authentication authentication,
             @Valid @RequestBody BookReviewRequest request) {
-        Long userId = extractUserId(token);
+        Long userId = getUserIdFromAuth(authentication);
         BookReviewResponse response = bookReviewService.createReview(userId, request);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success(response, "Review created successfully"));
@@ -42,9 +43,9 @@ public class BookReviewController {
     @PutMapping("/{reviewId}")
     public ResponseEntity<ApiResponse<BookReviewResponse>> updateReview(
             @PathVariable Long reviewId,
-            @RequestHeader("Authorization") String token,
+            Authentication authentication,
             @Valid @RequestBody BookReviewRequest request) {
-        Long userId = extractUserId(token);
+        Long userId = getUserIdFromAuth(authentication);
         BookReviewResponse response = bookReviewService.updateReview(reviewId, userId, request);
         return ResponseEntity.ok(ApiResponse.success(response, "Review updated successfully"));
     }
@@ -55,8 +56,8 @@ public class BookReviewController {
     @DeleteMapping("/{reviewId}")
     public ResponseEntity<ApiResponse<Void>> deleteReview(
             @PathVariable Long reviewId,
-            @RequestHeader("Authorization") String token) {
-        Long userId = extractUserId(token);
+            Authentication authentication) {
+        Long userId = getUserIdFromAuth(authentication);
         bookReviewService.deleteReview(reviewId, userId);
         return ResponseEntity.ok(ApiResponse.success(null, "Review deleted successfully"));
     }
@@ -91,10 +92,10 @@ public class BookReviewController {
      */
     @GetMapping("/my-reviews")
     public ResponseEntity<ApiResponse<Page<BookReviewResponse>>> getMyReviews(
-            @RequestHeader("Authorization") String token,
+            Authentication authentication,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        Long userId = extractUserId(token);
+        Long userId = getUserIdFromAuth(authentication);
         Page<BookReviewResponse> reviews = bookReviewService.getUserReviews(userId, page, size);
         return ResponseEntity.ok(ApiResponse.success(reviews, "Your reviews retrieved successfully"));
     }
@@ -128,11 +129,11 @@ public class BookReviewController {
         return ResponseEntity.ok(ApiResponse.success(reviews, "Latest reviews retrieved successfully"));
     }
 
-    /**
-     * 从JWT token中提取用户ID
-     */
-    private Long extractUserId(String token) {
-        String jwt = token.replace("Bearer ", "");
-        return jwtUtil.getUserIdFromToken(jwt);
+    private Long getUserIdFromAuth(Authentication authentication) {
+        if (authentication == null || authentication.getCredentials() == null) {
+            throw new IllegalArgumentException("缺少认证令牌。");
+        }
+        String token = authentication.getCredentials().toString();
+        return jwtUtil.getUserIdFromToken(token);
     }
 }

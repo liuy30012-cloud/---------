@@ -29,6 +29,9 @@ public class BookTag {
     @Column(name = "tag_type", length = 20)
     private String tagType; // SYSTEM, USER_GENERATED
 
+    @Column(name = "user_id")
+    private Long userId;
+
     @Column(name = "usage_count")
     private Integer usageCount = 0;
 

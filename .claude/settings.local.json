@@ -13,7 +13,10 @@
       "Bash(curl -s http://localhost:3000)",
       "mcp__chrome-devtools__take_screenshot",
       "mcp__chrome-devtools__emulate",
-      "Bash(./mvnw.cmd spring-boot:run)"
+      "Bash(./mvnw.cmd spring-boot:run)",
+      "Bash(awk '{print $9}')",
+      "Bash(where mvn *)",
+      "Bash(./mvnw.cmd clean *)"
     ]
   },
   "enabledPlugins": {
