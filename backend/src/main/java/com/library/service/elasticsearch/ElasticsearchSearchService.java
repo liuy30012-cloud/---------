@@ -150,7 +150,7 @@ public class ElasticsearchSearchService {
             );
 
         } catch (Exception e) {
-            log.error("Failed to search from Elasticsearch for keyword: ", keyword, e);
+            log.error("Failed to search from Elasticsearch for keyword: {}", keyword, e);
             throw new RuntimeException("Elasticsearch search query failed", e);
         }
     }

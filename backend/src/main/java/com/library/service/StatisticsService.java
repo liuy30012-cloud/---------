@@ -135,26 +135,26 @@ public class StatisticsService {
             try {
                 if (elasticsearchStatisticsService.isAvailable()) {
                     Map<String, Long> stats = elasticsearchStatisticsService.getInventoryStatistics();
-                    totalBooks = stats.get("totalCopies");
-                    availableBooks = stats.get("availableCopies");
+                    totalBooks = stats.getOrDefault("totalCopies", 0L);
+                    availableBooks = stats.getOrDefault("availableCopies", 0L);
                     log.debug("Using Elasticsearch for inventory statistics");
                 } else {
                     log.warn("Elasticsearch is not available, falling back to MySQL");
                     Map<String, Long> stats = mysqlStatisticsService.getInventoryStatistics();
-                    totalBooks = stats.get("totalCopies");
-                    availableBooks = stats.get("availableCopies");
+                    totalBooks = stats.getOrDefault("totalCopies", 0L);
+                    availableBooks = stats.getOrDefault("availableCopies", 0L);
                 }
             } catch (Exception e) {
                 log.error("Elasticsearch query failed, falling back to MySQL", e);
                 Map<String, Long> stats = mysqlStatisticsService.getInventoryStatistics();
-                totalBooks = stats.get("totalCopies");
-                availableBooks = stats.get("availableCopies");
+                totalBooks = stats.getOrDefault("totalCopies", 0L);
+                availableBooks = stats.getOrDefault("availableCopies", 0L);
             }
         } else {
             log.debug("Elasticsearch is disabled, using MySQL");
             Map<String, Long> stats = mysqlStatisticsService.getInventoryStatistics();
-            totalBooks = stats.get("totalCopies");
-            availableBooks = stats.get("availableCopies");
+            totalBooks = stats.getOrDefault("totalCopies", 0L);
+            availableBooks = stats.getOrDefault("availableCopies", 0L);
         }
 
         long borrowedBooks = totalBooks - availableBooks;

@@ -41,11 +41,15 @@ public class ElasticsearchStatisticsService {
             SearchHits<?> searchHits = elasticsearchOperations.search(query, Object.class);
             ElasticsearchAggregations aggregations = (ElasticsearchAggregations) searchHits.getAggregations();
 
-            if (aggregations != null) {
-                var sumAgg = aggregations.aggregations().get(0).aggregation().getAggregate().sum();
-                return (long) sumAgg.value();
+            if (aggregations != null && !aggregations.aggregations().isEmpty()) {
+                var aggList = aggregations.aggregations();
+                if (aggList.size() >= 1) {
+                    var sumAgg = aggList.get(0).aggregation().getAggregate().sum();
+                    return (long) sumAgg.value();
+                }
             }
 
+            log.warn("Elasticsearch aggregation returned empty or incomplete results");
             return 0L;
         } catch (Exception e) {
             log.error("Failed to get total copies sum from Elasticsearch", e);
@@ -68,11 +72,15 @@ public class ElasticsearchStatisticsService {
             SearchHits<?> searchHits = elasticsearchOperations.search(query, Object.class);
             ElasticsearchAggregations aggregations = (ElasticsearchAggregations) searchHits.getAggregations();
 
-            if (aggregations != null) {
-                var sumAgg = aggregations.aggregations().get(0).aggregation().getAggregate().sum();
-                return (long) sumAgg.value();
+            if (aggregations != null && !aggregations.aggregations().isEmpty()) {
+                var aggList = aggregations.aggregations();
+                if (aggList.size() >= 1) {
+                    var sumAgg = aggList.get(0).aggregation().getAggregate().sum();
+                    return (long) sumAgg.value();
+                }
             }
 
+            log.warn("Elasticsearch aggregation returned empty or incomplete results");
             return 0L;
         } catch (Exception e) {
             log.error("Failed to get available copies sum from Elasticsearch", e);
@@ -98,17 +106,20 @@ public class ElasticsearchStatisticsService {
             SearchHits<?> searchHits = elasticsearchOperations.search(query, Object.class);
             ElasticsearchAggregations aggregations = (ElasticsearchAggregations) searchHits.getAggregations();
 
-            if (aggregations != null) {
+            if (aggregations != null && !aggregations.aggregations().isEmpty()) {
                 var aggList = aggregations.aggregations();
-                long totalCopies = (long) aggList.get(0).aggregation().getAggregate().sum().value();
-                long availableCopies = (long) aggList.get(1).aggregation().getAggregate().sum().value();
+                if (aggList.size() >= 2) {
+                    long totalCopies = (long) aggList.get(0).aggregation().getAggregate().sum().value();
+                    long availableCopies = (long) aggList.get(1).aggregation().getAggregate().sum().value();
 
-                return Map.of(
-                    "totalCopies", totalCopies,
-                    "availableCopies", availableCopies
-                );
+                    return Map.of(
+                        "totalCopies", totalCopies,
+                        "availableCopies", availableCopies
+                    );
+                }
             }
 
+            log.warn("Elasticsearch aggregation returned empty or incomplete results");
             return Map.of("totalCopies", 0L, "availableCopies", 0L);
         } catch (Exception e) {
             log.error("Failed to get inventory statistics from Elasticsearch", e);
