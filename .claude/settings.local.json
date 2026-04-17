@@ -1,4 +1,21 @@
 {
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "mcp__chrome-devtools__navigate_page",
+      "mcp__chrome-devtools__take_snapshot",
+      "mcp__chrome-devtools__fill",
+      "mcp__chrome-devtools__click",
+      "Bash(npx -y @supabase/mcp-server-supabase@latest --help)",
+      "Bash(SUPABASE_ACCESS_TOKEN=sbp_8c53cb75ffcbda4f37598e03e75dfe9083898770 timeout 5 npx -y @supabase/mcp-server-supabase@latest)",
+      "Bash(npx vite:*)",
+      "Bash(curl -s http://localhost:5173)",
+      "Bash(curl -s http://localhost:3000)",
+      "mcp__chrome-devtools__take_screenshot",
+      "mcp__chrome-devtools__emulate",
+      "Bash(./mvnw.cmd spring-boot:run)"
+    ]
+  },
   "enabledPlugins": {
     "claude-md-management@claude-plugins-official": true
   }

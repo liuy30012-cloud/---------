@@ -116,9 +116,35 @@ export interface BookDetail {
   }
 }
 
+export interface SmartSearchParams {
+  query: string
+  page?: number
+  size?: number
+}
+
+export interface SmartSearchResponse {
+  books: Book[]
+  total: number
+  page: number
+  totalPages: number
+  originalQuery: string
+  normalizedQuery: string
+  didYouMean?: string
+  suggestions?: string[]
+  interpretation?: string
+}
+
 export const bookApi = {
   searchBooks: (params: BookSearchParams) =>
     httpClient.get<PaginatedApiResponse<Book[]>>('/api/books/search', { params }),
+
+  smartSearch: (params: SmartSearchParams) =>
+    httpClient.get<{ success: boolean; data: SmartSearchResponse; message?: string }>('/api/smart-search/search', { params }),
+
+  getSearchSuggestions: (prefix: string, limit = 8) =>
+    httpClient.get<{ success: boolean; data: string[]; message?: string }>('/api/smart-search/suggestions', {
+      params: { prefix, limit },
+    }),
 
   getBookDetail: (id: number) =>
     httpClient.get<{ success: boolean; data: BookDetail; message?: string }>(`/api/books/${id}`),

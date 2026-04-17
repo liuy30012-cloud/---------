@@ -313,6 +313,8 @@ const { toast, showToast } = useToast()
 const isFavorited = ref(false)
 const currentReadingStatus = ref<ReadingStatusEnum | ''>('')
 const readingNotes = ref('')
+const savedReadingNotes = ref('')
+let latestBookDetailRequestId = 0
 
 const borrowButtonText = computed(() => {
   if (!book.value) return t('bookDetail.borrowButton.default')
@@ -331,11 +333,26 @@ watch(() => route.params.id, () => {
   void loadBookDetail()
 })
 
+function normalizeReadingNotes(notes: string | null | undefined) {
+  return notes ?? ''
+}
+
+function resetPersonalBookState() {
+  isFavorited.value = false
+  currentReadingStatus.value = ''
+  readingNotes.value = ''
+  savedReadingNotes.value = ''
+}
+
 async function loadBookDetail() {
+  const requestId = ++latestBookDetailRequestId
+  const requestedBookId = Number(route.params.id)
   loading.value = true
+  resetPersonalBookState()
   try {
-    const bookId = Number(route.params.id)
-    const response = await bookApi.getBookDetail(bookId)
+    const response = await bookApi.getBookDetail(requestedBookId)
+    if (requestId !== latestBookDetailRequestId || requestedBookId !== Number(route.params.id)) return
+
     book.value = response.data.success ? response.data.data : null
 
     if (userStore.isLoggedIn && book.value) {
@@ -343,19 +360,26 @@ async function loadBookDetail() {
         favoriteApi.checkFavorite(book.value.id),
         readingStatusApi.getReadingStatus(book.value.id),
       ])
+      if (requestId !== latestBookDetailRequestId || requestedBookId !== Number(route.params.id)) return
+
       if (favRes.status === 'fulfilled' && favRes.value.data.success) {
         isFavorited.value = favRes.value.data.data
       }
       if (statusRes.status === 'fulfilled' && statusRes.value.data.success && statusRes.value.data.data) {
         currentReadingStatus.value = statusRes.value.data.data.status
-        readingNotes.value = statusRes.value.data.data.notes || ''
+        const notes = normalizeReadingNotes(statusRes.value.data.data.notes)
+        readingNotes.value = notes
+        savedReadingNotes.value = notes
       }
     }
   } catch (error) {
+    if (requestId !== latestBookDetailRequestId || requestedBookId !== Number(route.params.id)) return
     logger.error('Failed to load book detail:', error)
     book.value = null
   } finally {
-    loading.value = false
+    if (requestId === latestBookDetailRequestId && requestedBookId === Number(route.params.id)) {
+      loading.value = false
+    }
   }
 }
 
@@ -482,7 +506,7 @@ async function toggleFavorite() {
   }
 }
 
-async function updateReadingStatus() {
+async function legacyUpdateReadingStatus() {
   if (!book.value || !ensureAuth()) return
   if (!currentReadingStatus.value) return
   try {
@@ -493,13 +517,66 @@ async function updateReadingStatus() {
   }
 }
 
-async function saveNotes() {
+async function legacySaveNotes() {
   if (!book.value || !currentReadingStatus.value) return
   try {
     await readingStatusApi.upsertReadingStatus(book.value.id, currentReadingStatus.value, readingNotes.value || undefined)
-  } catch {
+  } catch (error) {
+    logger.warn('legacySaveNotes should not be used.', error)
     // 备注保存失败静默处理
   }
+}
+async function persistReadingStatus(options: {
+  successMessage?: string
+  errorMessage: string
+  logMessage: string
+}) {
+  if (!book.value || !currentReadingStatus.value) return false
+
+  try {
+    const response = await readingStatusApi.upsertReadingStatus(
+      book.value.id,
+      currentReadingStatus.value,
+      readingNotes.value || undefined,
+    )
+    const persistedStatus = response.data.data
+    const notes = normalizeReadingNotes(persistedStatus.notes)
+
+    currentReadingStatus.value = persistedStatus.status
+    readingNotes.value = notes
+    savedReadingNotes.value = notes
+
+    if (options.successMessage) {
+      showToast(options.successMessage, 'success')
+    }
+
+    return true
+  } catch (error: any) {
+    logger.error(options.logMessage, error)
+    showToast(error.response?.data?.message || options.errorMessage, 'error')
+    return false
+  }
+}
+
+async function updateReadingStatus() {
+  if (!book.value || !ensureAuth()) return
+  if (!currentReadingStatus.value) return
+
+  await persistReadingStatus({
+    successMessage: t('bookDetail.toast.readingStatusUpdated'),
+    errorMessage: t('bookDetail.toast.readingStatusUpdateFailed'),
+    logMessage: 'Failed to update reading status:',
+  })
+}
+
+async function saveNotes() {
+  if (!book.value || !currentReadingStatus.value) return
+  if (normalizeReadingNotes(readingNotes.value) === savedReadingNotes.value) return
+
+  await persistReadingStatus({
+    errorMessage: t('bookDetail.toast.notesSaveFailed'),
+    logMessage: 'Failed to save reading notes:',
+  })
 }
 </script>
 

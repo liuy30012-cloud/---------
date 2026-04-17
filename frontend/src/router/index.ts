@@ -12,6 +12,7 @@ const MyReservations = () => import('../views/MyReservations.vue')
 const MyAccount = () => import('../views/MyAccount.vue')
 const Dashboard = () => import('../views/Dashboard.vue')
 const InventoryAlerts = () => import('../views/InventoryAlerts.vue')
+const UserManagement = () => import('../views/UserManagement.vue')
 const PurchaseSuggestions = () => import('../views/PurchaseSuggestions.vue')
 const BookSearch = () => import('../views/BookSearch.vue')
 const BookDetail = () => import('../views/BookDetail.vue')
@@ -74,6 +75,12 @@ const routes = [
     path: '/inventory-alerts',
     name: 'InventoryAlerts',
     component: InventoryAlerts,
+    meta: { requiresAuth: true, requiresAdmin: true, layout: 'page' as AppLayout, shell: 'wide' as AppShell }
+  },
+  {
+    path: '/user-management',
+    name: 'UserManagement',
+    component: UserManagement,
     meta: { requiresAuth: true, requiresAdmin: true, layout: 'page' as AppLayout, shell: 'wide' as AppShell }
   },
   {

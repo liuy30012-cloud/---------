@@ -21,6 +21,7 @@ import myAccount from './modules/myAccount'
 import damageReports from './modules/damageReports'
 import purchaseSuggestions from './modules/purchaseSuggestions'
 import inventoryAlerts from './modules/inventoryAlerts'
+import userManagement from './modules/userManagement'
 import quickActions from './modules/quickActions'
 import offlineIndicator from './modules/offlineIndicator'
 import cacheManagement from './modules/cacheManagement'
@@ -44,7 +45,7 @@ const messages = merge([
   common, nav, hero, filters, catalog, related, notifications,
   history, footer, notFound, forgotPassword, login, bookSearch,
   bookDetail, dashboard, myBorrows, myReservations, myBookshelf,
-  myAccount, damageReports, purchaseSuggestions, inventoryAlerts,
+  myAccount, damageReports, purchaseSuggestions, inventoryAlerts, userManagement,
   quickActions, offlineIndicator, cacheManagement, captcha,
 ])
 

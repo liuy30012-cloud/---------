@@ -1,55 +1,75 @@
 import { ref, reactive, computed } from 'vue'
-import { useUserStore } from '../stores/user'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
+import { useUserStore } from '../stores/user'
 
 export function useLoginForm() {
   const router = useRouter()
   const userStore = useUserStore()
+  const { t } = useI18n()
 
   const isLogin = ref(true)
   const isLoading = ref(false)
   const showPassword = ref(false)
   const errorMessage = ref('')
   const successMessage = ref('')
-  const focusedField = ref('') // 保留用于模板绑定
+  const focusedField = ref('')
   const shakeError = ref(false)
   const typingField = ref('')
   const submitHovered = ref(false)
   const sealClicked = ref(false)
 
-  const sealTexts = ['竹里', '藏阅', '静观', '借阅', '书院']
+  const sealTexts = [
+    'login.sealTexts.bamboo',
+    'login.sealTexts.archive',
+    'login.sealTexts.quiet',
+    'login.sealTexts.borrow',
+    'login.sealTexts.academy',
+  ] as const
   const sealTextIndex = ref(0)
-  const sealText = computed(() => sealTexts[sealTextIndex.value])
+  const sealText = computed(() => t(sealTexts[sealTextIndex.value]))
 
   const socialButtons = reactive([
-    { icon: 'chat', title: '微信入口', hovered: false },
-    { icon: 'mail', title: '邮箱入口', hovered: false },
-    { icon: 'phone_android', title: '移动入口', hovered: false },
+    { icon: 'chat', titleKey: 'login.quickAccess.wechat', hovered: false },
+    { icon: 'mail', titleKey: 'login.quickAccess.email', hovered: false },
+    { icon: 'phone_android', titleKey: 'login.quickAccess.mobile', hovered: false },
   ])
 
   const formData = reactive({
-    studentId: '', username: '', password: '', confirmPassword: '',
-    email: '', phone: '', rememberMe: false,
+    studentId: '',
+    username: '',
+    password: '',
+    confirmPassword: '',
+    email: '',
+    phone: '',
+    rememberMe: false,
   })
 
-  const greetingText = computed(() => {
+  function getGreetingPeriodKey() {
     const hour = new Date().getHours()
-    if (hour < 6) return '夜深竹影静，仍可从容入馆'
-    if (hour < 12) return '晨光入院，适合检索新书'
-    if (hour < 18) return '午后竹影缓，正宜静心找书'
-    return '晚灯已启，书院仍为你留座'
+    if (hour < 6) return 'lateNight'
+    if (hour < 12) return 'morning'
+    if (hour < 18) return 'afternoon'
+    return 'evening'
+  }
+
+  const greetingText = computed(() => {
+    const period = getGreetingPeriodKey()
+    return t(`login.greetings.${period}`)
   })
 
   const greetingEmoji = computed(() => {
-    const hour = new Date().getHours()
-    if (hour < 6) return '月'
-    if (hour < 12) return '晨'
-    if (hour < 18) return '竹'
-    return '灯'
+    const period = getGreetingPeriodKey()
+    const emojiMap = {
+      lateNight: '🌙',
+      morning: '🌤️',
+      afternoon: '🎋',
+      evening: '🏮',
+    } as const
+    return emojiMap[period]
   })
 
-  const fullText = '竹里禅院 BAMBOO CLOISTER'
-  const typedChars = computed(() => fullText.split(''))
+  const typedChars = computed(() => t('login.brandTypingText').split(''))
 
   const passwordStrength = computed(() => {
     const password = formData.password
@@ -63,14 +83,30 @@ export function useLoginForm() {
     return score
   })
 
-  const strengthLabel = computed(() => ['', '偏弱', '合格', '稳妥', '很强'][passwordStrength.value] || '')
-  const passwordsMatch = computed(() => formData.password === formData.confirmPassword && formData.confirmPassword.length > 0)
+  const strengthLabel = computed(() => {
+    const strengthKeys = [
+      '',
+      'login.passwordStrength.weak',
+      'login.passwordStrength.fair',
+      'login.passwordStrength.good',
+      'login.passwordStrength.strong',
+    ] as const
+    const key = strengthKeys[passwordStrength.value]
+    return key ? t(key) : ''
+  })
+
+  const passwordsMatch = computed(() => (
+    formData.password === formData.confirmPassword && formData.confirmPassword.length > 0
+  ))
 
   let typingTimer: ReturnType<typeof setTimeout> | null = null
-  function onInputTyping(_e: Event, field: string) {
+
+  function onInputTyping(_event: Event, field: string) {
     typingField.value = field
     if (typingTimer) clearTimeout(typingTimer)
-    typingTimer = setTimeout(() => { typingField.value = '' }, 300)
+    typingTimer = setTimeout(() => {
+      typingField.value = ''
+    }, 300)
   }
 
   function togglePasswordVisibility() {
@@ -84,20 +120,23 @@ export function useLoginForm() {
     return { transform: `translate(${magneticX.value}px, ${magneticY.value}px)` }
   })
 
-  function onSubmitHover() { submitHovered.value = true }
+  function onSubmitHover() {
+    submitHovered.value = true
+  }
+
   function onSubmitLeave() {
     submitHovered.value = false
     magneticX.value = 0
     magneticY.value = 0
   }
 
-  function onSubmitMouseMove(e: MouseEvent, btnEl: HTMLElement | null) {
-    if (!btnEl) return
-    const rect = btnEl.getBoundingClientRect()
-    const cx = rect.left + rect.width / 2
-    const cy = rect.top + rect.height / 2
-    magneticX.value = (e.clientX - cx) * 0.1
-    magneticY.value = (e.clientY - cy) * 0.14
+  function onSubmitMouseMove(event: MouseEvent, buttonElement: HTMLElement | null) {
+    if (!buttonElement) return
+    const rect = buttonElement.getBoundingClientRect()
+    const centerX = rect.left + rect.width / 2
+    const centerY = rect.top + rect.height / 2
+    magneticX.value = (event.clientX - centerX) * 0.1
+    magneticY.value = (event.clientY - centerY) * 0.14
   }
 
   const formProgress = computed(() => {
@@ -118,11 +157,14 @@ export function useLoginForm() {
   function onSealClick() {
     sealClicked.value = true
     sealTextIndex.value = (sealTextIndex.value + 1) % sealTexts.length
-    setTimeout(() => { sealClicked.value = false }, 380)
+    setTimeout(() => {
+      sealClicked.value = false
+    }, 380)
   }
 
   function switchMode(login: boolean) {
     if (isLogin.value === login) return
+
     isLogin.value = login
     errorMessage.value = ''
     successMessage.value = ''
@@ -143,48 +185,64 @@ export function useLoginForm() {
 
     const triggerShake = () => {
       shakeError.value = true
-      setTimeout(() => { shakeError.value = false }, 500)
+      setTimeout(() => {
+        shakeError.value = false
+      }, 500)
     }
 
     if (!formData.studentId.trim()) {
-      errorMessage.value = '请输入学工号。'
+      errorMessage.value = t('login.validation.studentIdRequired')
       triggerShake()
       return
     }
 
     if (!formData.password.trim()) {
-      errorMessage.value = '请输入密码。'
+      errorMessage.value = t('login.validation.passwordRequired')
       triggerShake()
       return
     }
 
     if (!isLogin.value) {
       if (!formData.username.trim()) {
-        errorMessage.value = '请输入用户名。'
+        errorMessage.value = t('login.validation.usernameRequired')
         triggerShake()
         return
       }
+
       if (formData.password.length < 8 || formData.password.length > 20) {
-        errorMessage.value = '密码长度需保持在 8 到 20 位之间。'
+        errorMessage.value = t('login.validation.passwordLength')
         triggerShake()
         return
       }
+
       if (formData.password !== formData.confirmPassword) {
-        errorMessage.value = '两次输入的密码不一致。'
+        errorMessage.value = t('login.validation.passwordMismatch')
         triggerShake()
         return
       }
-      if (!/[a-z]/.test(formData.password) || !/[A-Z]/.test(formData.password) || !/\d/.test(formData.password) || !/[^a-zA-Z0-9]/.test(formData.password)) {
-        errorMessage.value = '密码需同时包含大小写字母、数字和特殊字符。'
+
+      if (
+        !/[a-z]/.test(formData.password)
+        || !/[A-Z]/.test(formData.password)
+        || !/\d/.test(formData.password)
+        || !/[^a-zA-Z0-9]/.test(formData.password)
+      ) {
+        errorMessage.value = t('login.validation.passwordComplexity')
         triggerShake()
         return
       }
     }
 
     isLoading.value = true
+
     try {
       if (isLogin.value) {
-        const result = await userStore.login(formData.studentId, formData.password, formData.rememberMe)
+        const result = await userStore.login(
+          formData.studentId,
+          formData.password,
+          formData.rememberMe,
+        )
+
         if (result.success) {
           triggerCelebration()
           setTimeout(() => router.push('/'), 800)
@@ -192,31 +250,34 @@ export function useLoginForm() {
           errorMessage.value = result.message
           triggerShake()
         }
+
+        return
+      }
+
+      const result = await userStore.register({
+        studentId: formData.studentId,
+        username: formData.username,
+        password: formData.password,
+        confirmPassword: formData.confirmPassword,
+        email: formData.email,
+        phone: formData.phone,
+      })
+
+      if (result.success) {
+        successMessage.value = t('login.messages.registerSuccess')
+        triggerCelebration()
+        setTimeout(() => {
+          isLogin.value = true
+          formData.password = ''
+          formData.confirmPassword = ''
+          successMessage.value = ''
+        }, 2000)
       } else {
-        const result = await userStore.register({
-          studentId: formData.studentId,
-          username: formData.username,
-          password: formData.password,
-          confirmPassword: formData.confirmPassword,
-          email: formData.email,
-          phone: formData.phone,
-        })
-        if (result.success) {
-          successMessage.value = '注册完成，请使用新账户登录。'
-          triggerCelebration()
-          setTimeout(() => {
-            isLogin.value = true
-            formData.password = ''
-            formData.confirmPassword = ''
-            successMessage.value = ''
-          }, 2000)
-        } else {
-          errorMessage.value = result.message
-          triggerShake()
-        }
+        errorMessage.value = result.message
+        triggerShake()
       }
     } catch (error: any) {
-      errorMessage.value = error.message || '操作未完成，请稍后再试。'
+      errorMessage.value = error.message || t('login.messages.genericError')
       triggerShake()
     } finally {
       isLoading.value = false
@@ -228,14 +289,36 @@ export function useLoginForm() {
   }
 
   return {
-    isLogin, isLoading, showPassword, errorMessage, successMessage,
-    focusedField, shakeError, typingField, submitHovered, sealClicked,
-    sealText, socialButtons, formData,
-    greetingText, greetingEmoji, typedChars,
-    passwordStrength, strengthLabel, passwordsMatch,
-    formProgress, progressOffset, magneticBtnStyle,
-    onInputTyping, togglePasswordVisibility,
-    onSubmitHover, onSubmitLeave, onSubmitMouseMove,
-    onSealClick, switchMode, handleSubmit, cleanup,
+    isLogin,
+    isLoading,
+    showPassword,
+    errorMessage,
+    successMessage,
+    focusedField,
+    shakeError,
+    typingField,
+    submitHovered,
+    sealClicked,
+    sealText,
+    socialButtons,
+    formData,
+    greetingText,
+    greetingEmoji,
+    typedChars,
+    passwordStrength,
+    strengthLabel,
+    passwordsMatch,
+    formProgress,
+    progressOffset,
+    magneticBtnStyle,
+    onInputTyping,
+    togglePasswordVisibility,
+    onSubmitHover,
+    onSubmitLeave,
+    onSubmitMouseMove,
+    onSealClick,
+    switchMode,
+    handleSubmit,
+    cleanup,
   }
 }

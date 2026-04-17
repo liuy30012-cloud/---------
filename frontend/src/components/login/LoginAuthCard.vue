@@ -209,14 +209,14 @@
                 <button
                   type="button"
                   class="social-btn"
-                  :title="button.title"
+                  :title="t(button.titleKey)"
                   @mouseenter="button.hovered = true"
                   @mouseleave="button.hovered = false"
                 >
                   <span class="material-symbols-outlined" aria-hidden="true">{{ button.icon }}</span>
                 </button>
                 <Transition name="tooltip">
-                  <span v-if="button.hovered" class="social-tooltip">{{ button.title }}</span>
+                  <span v-if="button.hovered" class="social-tooltip">{{ t(button.titleKey) }}</span>
                 </Transition>
               </div>
             </div>
@@ -243,7 +243,7 @@ import FormInput from '../common/FormInput.vue'
 
 interface SocialButton {
   icon: string
-  title: string
+  titleKey: string
   hovered: boolean
 }
 

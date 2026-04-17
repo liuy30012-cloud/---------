@@ -36,6 +36,16 @@
             {{ $t('nav.lang') }}
           </button>
 
+          <button
+            class="icon-btn theme-toggle-btn"
+            type="button"
+            :aria-label="theme.isDark.value ? t('nav.switchToLight') : t('nav.switchToDark')"
+            :title="theme.isDark.value ? t('nav.switchToLight') : t('nav.switchToDark')"
+            @click="theme.toggle"
+          >
+            <span class="material-symbols-outlined">{{ theme.isDark.value ? 'light_mode' : 'dark_mode' }}</span>
+          </button>
+
           <div class="icon-btn-wrapper">
             <button
               class="icon-btn"
@@ -209,6 +219,7 @@ import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { gsap, prefersReducedMotion } from '../../motion'
 import { useUserStore } from '../../stores/user'
 import { handleImageError } from '../../utils/imageHelpers'
+import { useTheme } from '../../composables/useTheme'
 
 const props = defineProps({
   notif: { type: Object, required: true },
@@ -219,6 +230,7 @@ const { t, locale } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
+const theme = useTheme()
 const petEventBus = inject('petEventBus') as any
 const navRef = ref<HTMLElement | null>(null)
 const linksRef = ref<HTMLElement | null>(null)
@@ -235,10 +247,11 @@ const navItems = computed(() => [
     { name: 'MyAccount', to: '/my-account', label: t('nav.account') },
     { name: 'Dashboard', to: '/dashboard', label: t('nav.dashboard') },
     { name: 'InventoryAlerts', to: '/inventory-alerts', label: t('nav.alerts') },
+    { name: 'UserManagement', to: '/user-management', label: t('nav.userManagement') },
     { name: 'PurchaseSuggestions', to: '/purchase-suggestions', label: t('nav.purchases') },
   ])
 
-const adminOnlyPages = new Set(['Dashboard', 'InventoryAlerts'])
+const adminOnlyPages = new Set(['Dashboard', 'InventoryAlerts', 'UserManagement'])
 const authOnlyPages = new Set(['MyBorrows', 'MyReservations', 'MyBookshelf', 'MyAccount', 'PurchaseSuggestions'])
 const visibleNavItems = computed(() => navItems.value.filter((item) => {
   if (adminOnlyPages.has(item.name) && !userStore.isAdmin) {

@@ -21,7 +21,47 @@
       <aside v-reveal="{ preset: 'sidebar', once: true }" class="search-sidebar surface-card">
         <div class="search-group">
           <label>{{ t('bookSearch.sidebar.keyword') }}</label>
-          <input v-model="form.keyword" type="text" :placeholder="t('bookSearch.sidebar.keywordPlaceholder')" @keyup.enter="submitSearch" />
+          <div ref="keywordComboboxRef" class="search-combobox">
+            <input
+              v-model="form.keyword"
+              type="text"
+              role="combobox"
+              aria-autocomplete="list"
+              :aria-expanded="keywordAutocompleteOpen"
+              :aria-controls="keywordAutocompleteListId"
+              :aria-activedescendant="keywordAutocompleteActiveIndex >= 0 ? getKeywordAutocompleteOptionId(keywordAutocompleteActiveIndex) : undefined"
+              :placeholder="t('bookSearch.sidebar.keywordPlaceholder')"
+              @focus="openKeywordAutocompleteIfAvailable()"
+              @blur="handleKeywordBlur"
+              @input="handleKeywordInput"
+              @keydown="handleKeywordKeydown"
+            />
+            <div
+              v-if="keywordAutocompleteLoading || keywordAutocompleteOpen"
+              :id="keywordAutocompleteListId"
+              class="search-autocomplete"
+              role="listbox"
+            >
+              <div v-if="keywordAutocompleteLoading && keywordAutocompleteSuggestions.length === 0" class="search-autocomplete__loading">
+                <span class="material-symbols-outlined" aria-hidden="true">hourglass_top</span>
+                <span>{{ autocompleteLoadingLabel }}</span>
+              </div>
+              <button
+                v-for="(suggestion, index) in keywordAutocompleteSuggestions"
+                v-else
+                :id="getKeywordAutocompleteOptionId(index)"
+                :key="`${suggestion}-${index}`"
+                :class="['search-autocomplete__item', { 'search-autocomplete__item--active': index === keywordAutocompleteActiveIndex }]"
+                type="button"
+                role="option"
+                :aria-selected="index === keywordAutocompleteActiveIndex"
+                @mousedown.prevent="applyKeywordSuggestion(suggestion)"
+              >
+                <span class="material-symbols-outlined" aria-hidden="true">history</span>
+                <span>{{ suggestion }}</span>
+              </button>
+            </div>
+          </div>
         </div>
         <div class="search-group">
           <label>{{ t('bookSearch.sidebar.author') }}</label>
@@ -93,6 +133,32 @@
               </select>
             </label>
           </div>
+        </div>
+
+        <div v-if="showSearchAssistance" v-reveal="{ preset: 'section', delay: 0.07, once: true }" class="search-assistance surface-card">
+          <p v-if="smartInterpretation" class="search-assistance__eyebrow">{{ assistanceCopy.interpretationLabel }}</p>
+          <p v-if="smartInterpretation" class="search-assistance__interpretation">{{ smartInterpretation }}</p>
+          <div v-if="smartDidYouMean" class="search-assistance__row">
+            <span class="search-assistance__label">{{ assistanceCopy.didYouMean }}</span>
+            <button class="search-assistance__pill search-assistance__pill--primary" type="button" @click="applySearchAssistance(smartDidYouMean)">
+              {{ smartDidYouMean }}
+            </button>
+          </div>
+          <div v-if="filteredSmartSuggestions.length > 0" class="search-assistance__row">
+            <span class="search-assistance__label">{{ assistanceCopy.moreSuggestions }}</span>
+            <div class="search-assistance__chips">
+              <button
+                v-for="suggestion in filteredSmartSuggestions"
+                :key="suggestion"
+                class="search-assistance__pill"
+                type="button"
+                @click="applySearchAssistance(suggestion)"
+              >
+                {{ suggestion }}
+              </button>
+            </div>
+          </div>
+          <p class="search-assistance__hint">{{ assistanceCopy.hint }}</p>
         </div>
 
         <div v-if="loading" :key="`loading-${resultMotionKey}`" class="result-grid">
@@ -197,23 +263,42 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, onMounted, reactive, ref, watch } from 'vue'
+import { computed, inject, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { bookApi, type Book, type BookSearchParams } from '../api/bookApi'
+import { bookApi, type Book, type BookSearchParams, type SmartSearchResponse } from '../api/bookApi'
 import { favoriteApi } from '../api/favoriteApi'
 import FeedbackToast from '../components/common/FeedbackToast.vue'
 import PageHeader from '../components/layout/PageHeader.vue'
 import { logger } from '../utils/logger'
 import { useUserStore } from '../stores/user'
 import { useToast } from '../composables/useToast'
+import { useSearchAutocomplete } from '../composables/useSearchAutocomplete'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
 const history = inject<any>('searchHistoryController', null)
+const keywordComboboxRef = ref<HTMLElement | null>(null)
+const {
+  listId: keywordAutocompleteListId,
+  suggestions: keywordAutocompleteSuggestions,
+  loading: keywordAutocompleteLoading,
+  isOpen: keywordAutocompleteOpen,
+  activeIndex: keywordAutocompleteActiveIndex,
+  getOptionId: getKeywordAutocompleteOptionId,
+  schedule: scheduleKeywordAutocomplete,
+  openIfAvailable: openKeywordAutocompleteIfAvailable,
+  close: closeKeywordAutocomplete,
+  clear: clearKeywordAutocomplete,
+  selectSuggestion: selectKeywordAutocomplete,
+  handleKeydown: handleKeywordAutocompleteKeydown,
+} = useSearchAutocomplete(async (query, limit) => {
+  const response = await bookApi.getSearchSuggestions(query, limit)
+  return response.data.success ? response.data.data : []
+})
 
 const form = reactive<BookSearchParams>({
   keyword: '',
@@ -240,6 +325,9 @@ const pagination = reactive({
 const { toast, showToast } = useToast()
 
 const favoritedBookIds = ref<Set<number>>(new Set())
+const smartDidYouMean = ref('')
+const smartSuggestions = ref<string[]>([])
+const smartInterpretation = ref('')
 
 const querySummary = computed(() => {
   const parts = [form.keyword, form.author, form.category, form.language].filter(Boolean)
@@ -254,9 +342,55 @@ const visiblePages = computed(() => {
   return Array.from({ length: end - start }, (_, index) => start + index)
 })
 
+const autocompleteLoadingLabel = computed(() =>
+  locale.value.startsWith('zh') ? '正在生成联想建议…' : 'Loading suggestions…',
+)
+
+const assistanceCopy = computed(() => (
+  locale.value.startsWith('zh')
+    ? {
+        interpretationLabel: '系统理解',
+        didYouMean: '您是不是想搜',
+        moreSuggestions: '还可以试试',
+        hint: '这些建议来自热门检索、书名和作者名。',
+      }
+    : {
+        interpretationLabel: 'System interpretation',
+        didYouMean: 'Did you mean',
+        moreSuggestions: 'Try one of these',
+        hint: 'Suggestions are based on popular searches, titles, and author names.',
+      }
+))
+
+const assistanceQuery = computed(() => String(form.keyword || form.author || '').trim())
+
+const filteredSmartSuggestions = computed(() => {
+  const blocked = new Set([
+    normalizeSearchText(assistanceQuery.value),
+    normalizeSearchText(smartDidYouMean.value),
+  ])
+
+  return Array.from(
+    new Set(
+      smartSuggestions.value.filter(suggestion => !blocked.has(normalizeSearchText(suggestion))),
+    ),
+  )
+})
+
+const showSearchAssistance = computed(() =>
+  Boolean(assistanceQuery.value) &&
+  (Boolean(smartDidYouMean.value) || Boolean(smartInterpretation.value) || filteredSmartSuggestions.value.length > 0) &&
+  (books.value.length === 0 || totalResults.value < 3),
+)
+
 onMounted(async () => {
+  document.addEventListener('mousedown', handleDocumentPointerDown)
   await Promise.all([loadCategories(), loadLanguages()])
   syncFromRoute()
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('mousedown', handleDocumentPointerDown)
 })
 
 watch(() => route.query, () => {
@@ -293,6 +427,7 @@ function syncFromRoute() {
   form.sort = String(route.query.sort || 'relevance')
   form.page = Number(route.query.page || 0)
   form.size = Number(route.query.size || 12)
+  clearKeywordAutocomplete()
   void fetchResults()
 }
 
@@ -334,10 +469,44 @@ function resetFilters() {
   submitSearch()
 }
 
+function normalizeSearchText(value: string) {
+  return value.trim().toLowerCase()
+}
+
+function resetSmartAssistance() {
+  smartDidYouMean.value = ''
+  smartSuggestions.value = []
+  smartInterpretation.value = ''
+}
+
+function syncSmartAssistance(payload: SmartSearchResponse | null, query: string) {
+  if (!payload) {
+    resetSmartAssistance()
+    return
+  }
+
+  const normalizedQuery = normalizeSearchText(query)
+  const nextDidYouMean = payload.didYouMean?.trim() || ''
+
+  smartDidYouMean.value =
+    nextDidYouMean && normalizeSearchText(nextDidYouMean) !== normalizedQuery
+      ? nextDidYouMean
+      : ''
+  smartSuggestions.value = Array.from(
+    new Set(
+      (payload.suggestions || [])
+        .map(item => item.trim())
+        .filter(item => item && normalizeSearchText(item) !== normalizedQuery),
+    ),
+  )
+  smartInterpretation.value = payload.interpretation?.trim() || ''
+}
+
 async function fetchResults() {
   loading.value = true
   errorMessage.value = ''
   try {
+    const assistiveQuery = assistanceQuery.value
     const params = {
       keyword: form.keyword,
       author: form.author,
@@ -349,7 +518,23 @@ async function fetchResults() {
       page: form.page,
       size: form.size,
     }
-    const response = await bookApi.searchBooks(params)
+    const [response, smartResponse] = await Promise.all([
+      bookApi.searchBooks(params),
+      assistiveQuery
+        ? bookApi.smartSearch({
+            query: assistiveQuery,
+            page: form.page,
+            size: form.size,
+          }).then(result => (result.data.success ? result.data.data : null)).catch(() => null)
+        : Promise.resolve(null),
+    ])
+
+    if (assistiveQuery) {
+      syncSmartAssistance(smartResponse, assistiveQuery)
+    } else {
+      resetSmartAssistance()
+    }
+
     books.value = response.data.data || []
     totalResults.value = response.data.total || books.value.length
     pagination.page = response.data.page || 0
@@ -382,12 +567,67 @@ async function fetchResults() {
     }
   } catch (error: any) {
     logger.error('Failed to search books:', error)
+    resetSmartAssistance()
     books.value = []
     totalResults.value = 0
     pagination.totalPages = 0
     errorMessage.value = error.response?.data?.message || t('bookSearch.toast.serviceUnavailable')
   } finally {
     loading.value = false
+  }
+}
+
+function handleKeywordInput() {
+  scheduleKeywordAutocomplete(String(form.keyword || ''))
+}
+
+function handleKeywordKeydown(event: KeyboardEvent) {
+  if (event.isComposing || event.keyCode === 229) {
+    return
+  }
+
+  const selectedSuggestion = handleKeywordAutocompleteKeydown(event)
+  if (selectedSuggestion) {
+    applyKeywordSuggestion(selectedSuggestion)
+    return
+  }
+
+  if (event.key === 'Enter') {
+    event.preventDefault()
+    submitSearch()
+  }
+}
+
+function applyKeywordSuggestion(suggestion: string) {
+  form.keyword = selectKeywordAutocomplete(suggestion)
+  submitSearch()
+}
+
+function applySearchAssistance(suggestion: string) {
+  if (form.keyword?.trim()) {
+    form.keyword = suggestion
+  } else if (form.author?.trim()) {
+    form.author = suggestion
+  } else {
+    form.keyword = suggestion
+  }
+
+  clearKeywordAutocomplete()
+  submitSearch()
+}
+
+function handleKeywordBlur() {
+  window.setTimeout(() => {
+    if (!keywordComboboxRef.value?.contains(document.activeElement)) {
+      closeKeywordAutocomplete()
+    }
+  }, 0)
+}
+
+function handleDocumentPointerDown(event: MouseEvent) {
+  if (!keywordComboboxRef.value) return
+  if (!keywordComboboxRef.value.contains(event.target as Node)) {
+    closeKeywordAutocomplete()
   }
 }
 
@@ -462,6 +702,10 @@ function circulationLabel(policy: string) {
   gap: 0.45rem;
 }
 
+.search-combobox {
+  position: relative;
+}
+
 .search-group label {
   font-size: 0.82rem;
   font-family: var(--font-label);
@@ -509,6 +753,58 @@ function circulationLabel(policy: string) {
   background: #120d0b;
 }
 
+.search-autocomplete {
+  position: absolute;
+  top: calc(100% + 0.45rem);
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.45rem;
+  border-radius: 1rem;
+  background: linear-gradient(180deg, rgba(23, 18, 15, 0.98) 0%, rgba(12, 9, 8, 0.98) 100%);
+  border: 1px solid rgba(199, 160, 103, 0.18);
+  box-shadow: 0 22px 38px rgba(0, 0, 0, 0.3);
+  z-index: 6;
+}
+
+.search-autocomplete__loading,
+.search-autocomplete__item {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  min-height: 2.7rem;
+  width: 100%;
+  padding: 0.7rem 0.8rem;
+  border: none;
+  border-radius: 0.85rem;
+  background: transparent;
+  color: rgba(243, 233, 215, 0.92);
+  text-align: left;
+}
+
+.search-autocomplete__loading {
+  color: rgba(229, 217, 197, 0.7);
+}
+
+.search-autocomplete__item {
+  cursor: pointer;
+  transition: background 0.18s ease, transform 0.18s ease;
+}
+
+.search-autocomplete__item:hover,
+.search-autocomplete__item--active {
+  background: rgba(215, 179, 122, 0.14);
+  transform: translateY(-1px);
+}
+
+.search-autocomplete__item .material-symbols-outlined,
+.search-autocomplete__loading .material-symbols-outlined {
+  color: rgba(215, 179, 122, 0.72);
+  font-size: 1.05rem;
+}
+
 .sidebar-submit {
   min-height: 3rem;
   border: none;
@@ -553,6 +849,68 @@ function circulationLabel(policy: string) {
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
+}
+
+.search-assistance {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.search-assistance__eyebrow {
+  margin: 0;
+  font-size: 0.72rem;
+  font-family: var(--font-label);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(215, 179, 122, 0.72);
+}
+
+.search-assistance__interpretation,
+.search-assistance__hint {
+  margin: 0;
+  color: rgba(229, 217, 197, 0.78);
+}
+
+.search-assistance__row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+}
+
+.search-assistance__label {
+  min-width: 5.5rem;
+  padding-top: 0.35rem;
+  color: rgba(243, 233, 215, 0.9);
+  font-weight: 700;
+}
+
+.search-assistance__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.search-assistance__pill {
+  min-height: 2.5rem;
+  padding: 0.55rem 1rem;
+  border-radius: 999px;
+  border: 1px solid rgba(215, 179, 122, 0.18);
+  background: rgba(215, 179, 122, 0.08);
+  color: rgba(255, 240, 213, 0.94);
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+.search-assistance__pill:hover {
+  transform: translateY(-1px);
+  background: rgba(215, 179, 122, 0.14);
+  border-color: rgba(215, 179, 122, 0.28);
+}
+
+.search-assistance__pill--primary {
+  background: linear-gradient(135deg, rgba(215, 179, 122, 0.2) 0%, rgba(186, 136, 80, 0.2) 100%);
 }
 
 .error-banner {
@@ -858,6 +1216,11 @@ function circulationLabel(policy: string) {
 
   .search-sidebar {
     position: static;
+  }
+
+  .search-autocomplete {
+    position: static;
+    margin-top: 0.45rem;
   }
 }
 

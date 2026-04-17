@@ -4,6 +4,7 @@ import httpClient from '../api/httpClient'
 import { sanitizeApiMessage } from '../utils/apiMessage'
 import { safeGetItem, safeGetJSON, safeRemoveItem, safeSetItem, safeSetJSON } from '../utils/storageHelpers'
 import { logger } from '../utils/logger'
+import i18n from '../i18n'
 
 enum UserRole {
   STUDENT = 'STUDENT',
@@ -29,7 +30,72 @@ interface AuthResponse {
   user: UserInfo
 }
 
+const AUTH_MESSAGE_KEY_MAP: Record<string, string> = {
+  '学号不能为空': 'login.validation.studentIdRequired',
+  '学号不能为空。': 'login.validation.studentIdRequired',
+  '密码不能为空': 'login.validation.passwordRequired',
+  '密码不能为空。': 'login.validation.passwordRequired',
+  '用户名不能为空': 'login.validation.usernameRequired',
+  '用户名不能为空。': 'login.validation.usernameRequired',
+  '确认密码不能为空': 'login.validation.confirmPasswordRequired',
+  '确认密码不能为空。': 'login.validation.confirmPasswordRequired',
+  '学号必须为 7 到 10 位数字': 'login.validation.studentIdFormat',
+  '用户名长度必须在 2 到 20 个字符之间': 'login.validation.usernameLength',
+  '密码长度必须在 8 到 20 个字符之间': 'login.validation.passwordLength',
+  '密码长度必须在 8 到 20 个字符之间。': 'login.validation.passwordLength',
+  '密码长度不能少于 8 个字符。': 'login.validation.passwordLength',
+  '密码长度不能超过 20 个字符。': 'login.validation.passwordLength',
+  '两次输入的密码不一致。': 'login.validation.passwordMismatch',
+  '邮箱格式不正确': 'login.validation.emailInvalid',
+  '手机号格式不正确': 'login.validation.phoneInvalid',
+  '密码必须包含数字。': 'login.validation.passwordRequiresNumber',
+  '密码必须同时包含大小写字母。': 'login.validation.passwordRequiresLetterCase',
+  '密码必须包含特殊字符。': 'login.validation.passwordRequiresSpecialChar',
+  '学号或密码错误。': 'login.messages.invalidCredentials',
+  '账号已被停用，请联系管理员。': 'login.messages.accountDisabled',
+  '账号已被临时锁定，请 30 分钟后再试。': 'login.messages.accountTemporarilyLocked',
+  '学号或邮箱已存在，请检查后重试。': 'login.messages.identityExists',
+  '该学号已注册。': 'login.messages.studentIdExists',
+  '该邮箱已被使用。': 'login.messages.emailExists',
+  '注册成功': 'login.messages.registerSuccess',
+}
+
 export const useUserStore = defineStore('user', () => {
+  const globalI18n = i18n as unknown as { global: { t: (message: string) => string } }
+  const translate = (key: string) => globalI18n.global.t(key)
+  const currentLocale = () => (i18n.global.locale as { value?: string } | string)
+  const getLocaleValue = () => {
+    const locale = currentLocale()
+    return typeof locale === 'string' ? locale : locale.value ?? 'en'
+  }
+  const containsChinese = (message: string) => /[\u3400-\u9FFF]/u.test(message)
+  const resolveAuthMessage = (message: unknown, fallbackKey: string) => {
+    const fallback = translate(fallbackKey)
+    if (typeof message !== 'string') {
+      return fallback
+    }
+
+    const normalized = message.trim()
+    if (!normalized) {
+      return fallback
+    }
+
+    const mappedKey = AUTH_MESSAGE_KEY_MAP[normalized]
+    if (mappedKey) {
+      return translate(mappedKey)
+    }
+
+    const sanitized = sanitizeApiMessage(normalized, fallback)
+    if (sanitized === fallback) {
+      return fallback
+    }
+
+    if (getLocaleValue() === 'en' && containsChinese(normalized)) {
+      return fallback
+    }
+
+    return sanitized
+  }
   const token = ref<string | null>(safeGetItem('token'))
   const refreshToken = ref<string | null>(safeGetItem('refreshToken'))
   const user = ref<UserInfo | null>(safeGetJSON<UserInfo>('user'))
@@ -68,9 +134,9 @@ export const useUserStore = defineStore('user', () => {
 
       const data = response.data
       setAuthState(data.token, data.refreshToken, data.user)
-      return { success: true, message: '登录成功' }
+      return { success: true, message: translate('login.messages.loginSuccess') }
     } catch (error: any) {
-      const message = sanitizeApiMessage(error.response?.data?.message, '登录失败，请重试')
+      const message = resolveAuthMessage(error.response?.data?.message, 'login.messages.loginFailed')
       return { success: false, message }
     } finally {
       isLoading.value = false
@@ -88,9 +154,9 @@ export const useUserStore = defineStore('user', () => {
     isLoading.value = true
     try {
       const response = await httpClient.post('/api/auth/register', data)
-      return { success: true, message: sanitizeApiMessage(response.data.message, '注册成功') }
+      return { success: true, message: resolveAuthMessage(response.data.message, 'login.messages.registerSuccess') }
     } catch (error: any) {
-      const message = sanitizeApiMessage(error.response?.data?.message, '注册失败，请重试')
+      const message = resolveAuthMessage(error.response?.data?.message, 'login.messages.registerFailed')
       return { success: false, message }
     } finally {
       isLoading.value = false

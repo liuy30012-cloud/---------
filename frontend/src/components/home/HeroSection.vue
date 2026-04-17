@@ -98,19 +98,55 @@
             <span class="hero-search-note">{{ t('hero.searchNote') }}</span>
           </div>
 
-          <div class="search-bar" role="search" aria-label="Search the library collection">
-            <span class="material-symbols-outlined search-icon" aria-hidden="true">search</span>
-            <input
-              v-model="searchQuery"
-              type="text"
-              class="search-input"
-              aria-label="Search title, author, or ISBN"
-              autocomplete="off"
-              spellcheck="false"
-              :placeholder="t('hero.searchPlaceholder')"
-              @keyup.enter="submitSearch"
-            />
-            <button class="search-btn" @click="submitSearch">{{ t('hero.searchBtn') }}</button>
+          <div ref="searchComboboxRef" class="search-combobox">
+            <div class="search-bar" role="search" aria-label="Search the library collection">
+              <span class="material-symbols-outlined search-icon" aria-hidden="true">search</span>
+              <input
+                v-model="searchQuery"
+                type="text"
+                class="search-input"
+                role="combobox"
+                aria-autocomplete="list"
+                aria-label="Search title, author, or ISBN"
+                :aria-expanded="searchAutocompleteOpen"
+                :aria-controls="searchAutocompleteListId"
+                :aria-activedescendant="searchAutocompleteActiveIndex >= 0 ? getSearchAutocompleteOptionId(searchAutocompleteActiveIndex) : undefined"
+                autocomplete="off"
+                spellcheck="false"
+                :placeholder="t('hero.searchPlaceholder')"
+                @focus="openSearchAutocompleteIfAvailable()"
+                @blur="handleSearchBlur"
+                @input="handleSearchInput"
+                @keydown="handleSearchKeydown"
+              />
+              <button class="search-btn" @click="submitSearch">{{ t('hero.searchBtn') }}</button>
+            </div>
+
+            <div
+              v-if="searchAutocompleteLoading || searchAutocompleteOpen"
+              :id="searchAutocompleteListId"
+              class="hero-suggestion-popover"
+              role="listbox"
+            >
+              <div v-if="searchAutocompleteLoading && searchAutocompleteSuggestions.length === 0" class="hero-suggestion-loading">
+                <span class="material-symbols-outlined" aria-hidden="true">hourglass_top</span>
+                <span>{{ searchLoadingLabel }}</span>
+              </div>
+              <button
+                v-for="(suggestion, index) in searchAutocompleteSuggestions"
+                v-else
+                :id="getSearchAutocompleteOptionId(index)"
+                :key="`${suggestion}-${index}`"
+                :class="['hero-suggestion-item', { 'hero-suggestion-item--active': index === searchAutocompleteActiveIndex }]"
+                type="button"
+                role="option"
+                :aria-selected="index === searchAutocompleteActiveIndex"
+                @mousedown.prevent="applySuggestion(suggestion)"
+              >
+                <span class="material-symbols-outlined" aria-hidden="true">history</span>
+                <span>{{ suggestion }}</span>
+              </button>
+            </div>
           </div>
 
           <div class="trending-tags">
@@ -131,8 +167,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, onUnmounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { bookApi } from '../../api/bookApi'
+import { useSearchAutocomplete } from '../../composables/useSearchAutocomplete'
 import DizhiClock from '../../dizhi/DizhiClock.vue'
 import ModernClock from '../../dizhi/ModernClock.vue'
 import { gsap, prefersReducedMotion } from '../../motion'
@@ -143,6 +181,7 @@ const emit = defineEmits<{
 
 const { t, locale } = useI18n()
 const searchQuery = ref('')
+const searchComboboxRef = ref<HTMLElement | null>(null)
 const heroRef = ref<HTMLElement | null>(null)
 const copyRef = ref<HTMLElement | null>(null)
 const searchPanelRef = ref<HTMLElement | null>(null)
@@ -153,6 +192,23 @@ const mistBackRef = ref<HTMLElement | null>(null)
 const mistMidRef = ref<HTMLElement | null>(null)
 const mistFrontRef = ref<HTMLElement | null>(null)
 let cleanupMotion: (() => void) | undefined
+const {
+  listId: searchAutocompleteListId,
+  suggestions: searchAutocompleteSuggestions,
+  loading: searchAutocompleteLoading,
+  isOpen: searchAutocompleteOpen,
+  activeIndex: searchAutocompleteActiveIndex,
+  getOptionId: getSearchAutocompleteOptionId,
+  schedule: scheduleSearchAutocomplete,
+  openIfAvailable: openSearchAutocompleteIfAvailable,
+  close: closeSearchAutocomplete,
+  clear: clearSearchAutocomplete,
+  selectSuggestion: selectSearchAutocomplete,
+  handleKeydown: handleSearchAutocompleteKeydown,
+} = useSearchAutocomplete(async (query, limit) => {
+  const response = await bookApi.getSearchSuggestions(query, limit)
+  return response.data.success ? response.data.data : []
+})
 
 const trendingTags = computed(() => [
   { label: t('hero.tag1Label'), query: t('hero.tag1Query') },
@@ -161,16 +217,65 @@ const trendingTags = computed(() => [
   { label: t('hero.tag4Label'), query: t('hero.tag4Query') },
 ])
 
+const searchLoadingLabel = computed(() =>
+  locale.value.startsWith('zh') ? '正在匹配相关书名与作者…' : 'Finding related titles and authors…',
+)
+
 function submitSearch() {
+  closeSearchAutocomplete()
   emit('search', searchQuery.value.trim())
+}
+
+function handleSearchInput() {
+  scheduleSearchAutocomplete(searchQuery.value)
+}
+
+function applySuggestion(suggestion: string) {
+  searchQuery.value = selectSearchAutocomplete(suggestion)
+  submitSearch()
+}
+
+function handleSearchKeydown(event: KeyboardEvent) {
+  if (event.isComposing || event.keyCode === 229) {
+    return
+  }
+
+  const selectedSuggestion = handleSearchAutocompleteKeydown(event)
+  if (selectedSuggestion) {
+    applySuggestion(selectedSuggestion)
+    return
+  }
+
+  if (event.key === 'Enter') {
+    event.preventDefault()
+    submitSearch()
+  }
 }
 
 function applyTag(query: string) {
   searchQuery.value = query
+  clearSearchAutocomplete()
   submitSearch()
 }
 
+function handleSearchBlur() {
+  window.setTimeout(() => {
+    if (!searchComboboxRef.value?.contains(document.activeElement)) {
+      closeSearchAutocomplete()
+    }
+  }, 0)
+}
+
+function handleDocumentPointerDown(event: MouseEvent) {
+  if (!searchComboboxRef.value) return
+  if (!searchComboboxRef.value.contains(event.target as Node)) {
+    closeSearchAutocomplete()
+  }
+}
+
 onMounted(() => {
+  document.addEventListener('mousedown', handleDocumentPointerDown)
+
   if (prefersReducedMotion() || !heroRef.value) {
     return
   }
@@ -345,6 +450,10 @@ onMounted(() => {
 
 onUnmounted(() => {
   cleanupMotion?.()
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('mousedown', handleDocumentPointerDown)
 })
 </script>
 
@@ -812,6 +921,10 @@ onUnmounted(() => {
   color: rgba(83, 94, 82, 0.7);
 }
 
+.search-combobox {
+  position: relative;
+}
+
 .search-bar {
   display: flex;
   align-items: center;
@@ -873,6 +986,58 @@ onUnmounted(() => {
   transform: translateY(-1px);
   box-shadow: 0 18px 34px rgba(121, 93, 57, 0.18);
   filter: saturate(1.04);
+}
+
+.hero-suggestion-popover {
+  position: absolute;
+  top: calc(100% + 0.55rem);
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.5rem;
+  border-radius: 1.35rem;
+  background: rgba(255, 252, 247, 0.97);
+  border: 1px solid rgba(109, 117, 99, 0.14);
+  box-shadow: 0 22px 40px rgba(49, 59, 50, 0.14);
+  z-index: 4;
+}
+
+.hero-suggestion-loading,
+.hero-suggestion-item {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  width: 100%;
+  min-height: 2.85rem;
+  padding: 0.75rem 0.9rem;
+  border: none;
+  border-radius: 1rem;
+  background: transparent;
+  color: var(--home-ink);
+  text-align: left;
+}
+
+.hero-suggestion-loading {
+  color: rgba(83, 94, 82, 0.72);
+}
+
+.hero-suggestion-item {
+  cursor: pointer;
+  transition: background 0.18s ease, transform 0.18s ease;
+}
+
+.hero-suggestion-item:hover,
+.hero-suggestion-item--active {
+  background: rgba(221, 205, 171, 0.28);
+  transform: translateY(-1px);
+}
+
+.hero-suggestion-item .material-symbols-outlined,
+.hero-suggestion-loading .material-symbols-outlined {
+  color: rgba(109, 89, 58, 0.64);
+  font-size: 1.1rem;
 }
 
 .trending-tags {
@@ -1027,6 +1192,11 @@ onUnmounted(() => {
     min-height: auto;
     padding: var(--space-3);
     border-radius: calc(var(--radius-xl) + 0.1rem);
+  }
+
+  .hero-suggestion-popover {
+    position: static;
+    margin-top: 0.7rem;
   }
 
   .search-btn {

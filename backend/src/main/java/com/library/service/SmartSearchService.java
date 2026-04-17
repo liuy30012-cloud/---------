@@ -9,11 +9,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class SmartSearchService {
@@ -68,12 +70,10 @@ public class SmartSearchService {
 
         // 2. 如果结果少于3个，尝试模糊搜索
         if (directResults.getTotalElements() < 3) {
-            List<String> allTitles = bookRepository.findAll().stream()
-                .map(Book::getTitle)
-                .collect(Collectors.toList());
+            List<String> searchTerms = collectSearchTerms();
 
             List<FuzzySearchService.SimilarityMatch> similarTitles =
-                fuzzySearchService.findSimilarMatches(normalizedQuery, allTitles);
+                fuzzySearchService.findSimilarMatches(normalizedQuery, searchTerms);
 
             if (!similarTitles.isEmpty()) {
                 result.setSuggestions(similarTitles.stream()
@@ -119,30 +119,31 @@ public class SmartSearchService {
         }
 
         String normalized = normalizeQuery(prefix);
+        int safeLimit = Math.max(limit, 1);
 
         // 从历史搜索中获取建议
         List<SearchSuggestion> historySuggestions =
             suggestionRepository.findByQueryStartingWithOrderByFrequencyDesc(
                 normalized,
-                PageRequest.of(0, Math.max(limit, 1))
+                PageRequest.of(0, safeLimit)
             );
 
-        List<String> suggestions = historySuggestions.stream()
+        LinkedHashSet<String> suggestions = historySuggestions.stream()
             .map(SearchSuggestion::getQuery)
-            .collect(Collectors.toList());
+            .filter(StringUtils::hasText)
+            .map(String::trim)
+            .collect(Collectors.toCollection(LinkedHashSet::new));
+
+        collectSearchTerms().stream()
+            .filter(term -> normalizeQuery(term).contains(normalized))
+            .forEach(term -> {
+                if (suggestions.size() < safeLimit) {
+                    suggestions.add(term);
+                }
+            });
 
         // 如果历史建议不足，从书名中补充
-        if (suggestions.size() < limit) {
-            List<Book> books = bookRepository.findAll();
-            List<String> titleSuggestions = books.stream()
-                .map(Book::getTitle)
-                .filter(title -> title.toLowerCase().contains(normalized.toLowerCase()))
-                .limit(limit - suggestions.size())
-                .collect(Collectors.toList());
-            suggestions.addAll(titleSuggestions);
-        }
-
-        return suggestions;
+        return suggestions.stream().limit(safeLimit).collect(Collectors.toList());
     }
 
     /**
@@ -207,6 +208,15 @@ public class SmartSearchService {
         return query.trim()
             .toLowerCase()
             .replaceAll("\\s+", " ");
+    }
+
+    private List<String> collectSearchTerms() {
+        return bookRepository.findAll().stream()
+            .flatMap(book -> Stream.of(book.getTitle(), book.getAuthor()))
+            .filter(StringUtils::hasText)
+            .map(String::trim)
+            .distinct()
+            .collect(Collectors.toList());
     }
 
     /**
