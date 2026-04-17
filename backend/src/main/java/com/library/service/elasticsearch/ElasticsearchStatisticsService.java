@@ -43,9 +43,12 @@ public class ElasticsearchStatisticsService {
 
             if (aggregations != null && !aggregations.aggregations().isEmpty()) {
                 var aggList = aggregations.aggregations();
-                if (aggList.size() >= 1) {
-                    var sumAgg = aggList.get(0).aggregation().getAggregate().sum();
-                    return (long) sumAgg.value();
+
+                // 按名称查找聚合结果，而不是按索引
+                for (var agg : aggList) {
+                    if ("total_copies_sum".equals(agg.aggregation().getName())) {
+                        return (long) agg.aggregation().getAggregate().sum().value();
+                    }
                 }
             }
 
@@ -74,9 +77,12 @@ public class ElasticsearchStatisticsService {
 
             if (aggregations != null && !aggregations.aggregations().isEmpty()) {
                 var aggList = aggregations.aggregations();
-                if (aggList.size() >= 1) {
-                    var sumAgg = aggList.get(0).aggregation().getAggregate().sum();
-                    return (long) sumAgg.value();
+
+                // 按名称查找聚合结果，而不是按索引
+                for (var agg : aggList) {
+                    if ("available_copies_sum".equals(agg.aggregation().getName())) {
+                        return (long) agg.aggregation().getAggregate().sum().value();
+                    }
                 }
             }
 
@@ -108,10 +114,23 @@ public class ElasticsearchStatisticsService {
 
             if (aggregations != null && !aggregations.aggregations().isEmpty()) {
                 var aggList = aggregations.aggregations();
-                if (aggList.size() >= 2) {
-                    long totalCopies = (long) aggList.get(0).aggregation().getAggregate().sum().value();
-                    long availableCopies = (long) aggList.get(1).aggregation().getAggregate().sum().value();
 
+                // 按名称查找聚合结果，而不是按索引
+                Long totalCopies = null;
+                Long availableCopies = null;
+
+                for (var agg : aggList) {
+                    String aggName = agg.aggregation().getName();
+                    long value = (long) agg.aggregation().getAggregate().sum().value();
+
+                    if ("total_copies_sum".equals(aggName)) {
+                        totalCopies = value;
+                    } else if ("available_copies_sum".equals(aggName)) {
+                        availableCopies = value;
+                    }
+                }
+
+                if (totalCopies != null && availableCopies != null) {
                     return Map.of(
                         "totalCopies", totalCopies,
                         "availableCopies", availableCopies
