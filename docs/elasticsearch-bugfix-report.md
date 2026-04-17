@@ -153,14 +153,86 @@ fix: 修复 Elasticsearch 集成中的 NPE 和日志格式问题
 
 ---
 
+---
+
+## 第二轮修复（2026-04-18）
+
+### 4. 聚合结果访问顺序依赖 - ElasticsearchStatisticsService.java
+
+**问题描述：**
+- 在 `getInventoryStatistics()`、`getTotalCopiesSum()`、`getAvailableCopiesSum()` 方法中
+- 使用索引 `get(0)` 和 `get(1)` 访问聚合结果
+- Elasticsearch 的聚合结果顺序不保证与定义顺序一致
+- 可能导致 `totalCopies` 和 `availableCopies` 的值被交换，造成统计数据错误
+
+**修复方案：**
+```java
+// 修复前
+if (aggregations != null && !aggregations.aggregations().isEmpty()) {
+    var aggList = aggregations.aggregations();
+    if (aggList.size() >= 2) {
+        long totalCopies = (long) aggList.get(0).aggregation().getAggregate().sum().value();
+        long availableCopies = (long) aggList.get(1).aggregation().getAggregate().sum().value();
+        return Map.of("totalCopies", totalCopies, "availableCopies", availableCopies);
+    }
+}
+
+// 修复后
+if (aggregations != null && !aggregations.aggregations().isEmpty()) {
+    var aggList = aggregations.aggregations();
+    
+    // 按名称查找聚合结果，而不是按索引
+    Long totalCopies = null;
+    Long availableCopies = null;
+    
+    for (var agg : aggList) {
+        String aggName = agg.aggregation().getName();
+        long value = (long) agg.aggregation().getAggregate().sum().value();
+        
+        if ("total_copies_sum".equals(aggName)) {
+            totalCopies = value;
+        } else if ("available_copies_sum".equals(aggName)) {
+            availableCopies = value;
+        }
+    }
+    
+    if (totalCopies != null && availableCopies != null) {
+        return Map.of("totalCopies", totalCopies, "availableCopies", availableCopies);
+    }
+}
+```
+
+**影响范围：** 3 个方法修复
+
+**提交信息：**
+```
+commit 357a69d
+fix: 修复 Elasticsearch 聚合结果按名称访问，避免顺序依赖
+```
+
+---
+
 ## 结论
 
-✅ **所有严重问题已修复**
+✅ **所有严重问题已修复（两轮修复）**
 
-修复后的代码：
+**第一轮修复（commit b72e8c0）：**
 - 消除了 `NullPointerException` 风险
 - 消除了 `IndexOutOfBoundsException` 风险
 - 修复了日志记录问题
-- 提高了系统健壮性和可维护性
 
-潜在问题已记录，可在后续迭代中优化。当前代码可以安全部署使用。
+**第二轮修复（commit 357a69d）：**
+- 消除了聚合结果顺序依赖问题
+- 避免了统计数据错误的风险
+
+修复后的代码：
+- ✅ 运行时安全（无 NPE、无 IndexOutOfBounds）
+- ✅ 数据准确性（按名称访问聚合结果）
+- ✅ 日志完整性（正确的日志格式）
+- ✅ 系统健壮性（完善的异常处理和降级逻辑）
+
+**总计修复：** 4 个严重问题  
+**修复提交：** 2 次  
+**修改文件：** 3 个
+
+当前代码可以安全部署使用。
