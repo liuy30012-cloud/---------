@@ -1,0 +1,15 @@
+# 测试环境配置
+# 禁用 Elasticsearch 以避免测试时的外部依赖
+
+library:
+  search:
+    elasticsearch:
+      enabled: false
+
+spring:
+  elasticsearch:
+    uris: http://localhost:9200
+  data:
+    elasticsearch:
+      repositories:
+        enabled: false

@@ -62,6 +62,15 @@ spring:
     redis:
       repositories:
         enabled: false
+    elasticsearch:
+      repositories:
+        enabled: true
+  elasticsearch:
+    uris: ${ES_URIS:http://localhost:9200}
+    username: ${ES_USERNAME:elastic}
+    password: ${ES_PASSWORD:changeme}
+    connection-timeout: 3s
+    socket-timeout: 5s
 
 jwt:
   secret: ${JWT_SECRET:your-256-bit-secret-key-change-this-in-production-environment-please-use-strong-key}
@@ -109,19 +118,6 @@ anti-crawler:
     bind-user-agent: true
   watermark:
     secret: ${WATERMARK_SECRET:watermark-trace-secret-library-2026}
-
-spring:
-  elasticsearch:
-    uris: ${ES_URIS:http://localhost:9200}
-    username: ${ES_USERNAME:elastic}
-    password: ${ES_PASSWORD:changeme}
-    connection-timeout: 3s
-    socket-timeout: 5s
-
-  data:
-    elasticsearch:
-      repositories:
-        enabled: true
 
 # Elasticsearch 功能开关
 library:
