@@ -4,6 +4,9 @@ import com.library.model.Book;
 import com.library.model.SearchSuggestion;
 import com.library.repository.BookRepository;
 import com.library.repository.SearchSuggestionRepository;
+import com.library.service.elasticsearch.ElasticsearchSearchService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -15,14 +18,18 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
+@Slf4j
 @Service
 public class SmartSearchService {
 
     private final BookRepository bookRepository;
     private final SearchSuggestionRepository suggestionRepository;
     private final FuzzySearchService fuzzySearchService;
+    private final ElasticsearchSearchService elasticsearchSearchService;
+
+    @Value("${library.search.elasticsearch.enabled:true}")
+    private boolean elasticsearchEnabled;
 
     // 自然语言搜索关键词映射
     private static final Map<String, String> INTENT_KEYWORDS = Map.ofEntries(
@@ -42,11 +49,13 @@ public class SmartSearchService {
     public SmartSearchService(
         BookRepository bookRepository,
         SearchSuggestionRepository suggestionRepository,
-        FuzzySearchService fuzzySearchService
+        FuzzySearchService fuzzySearchService,
+        ElasticsearchSearchService elasticsearchSearchService
     ) {
         this.bookRepository = bookRepository;
         this.suggestionRepository = suggestionRepository;
         this.fuzzySearchService = fuzzySearchService;
+        this.elasticsearchSearchService = elasticsearchSearchService;
     }
 
     /**
@@ -70,17 +79,41 @@ public class SmartSearchService {
 
         // 2. 如果结果少于3个，尝试模糊搜索
         if (directResults.getTotalElements() < 3) {
-            List<String> searchTerms = collectSearchTerms();
+            // 使用 Elasticsearch 或历史记录获取搜索词
+            List<String> searchTerms = new ArrayList<>();
 
-            List<FuzzySearchService.SimilarityMatch> similarTitles =
-                fuzzySearchService.findSimilarMatches(normalizedQuery, searchTerms);
+            // 尝试从 Elasticsearch 获取
+            if (elasticsearchEnabled) {
+                try {
+                    if (elasticsearchSearchService.isAvailable()) {
+                        searchTerms = elasticsearchSearchService.getSuggestions(normalizedQuery, 20);
+                    }
+                } catch (Exception e) {
+                    log.debug("Failed to get search terms from Elasticsearch: {}", e.getMessage());
+                }
+            }
 
-            if (!similarTitles.isEmpty()) {
-                result.setSuggestions(similarTitles.stream()
-                    .map(FuzzySearchService.SimilarityMatch::text)
-                    .limit(5)
-                    .collect(Collectors.toList()));
-                result.setDidYouMean(similarTitles.get(0).text());
+            // 如果 ES 没有结果，从历史记录获取
+            if (searchTerms.isEmpty()) {
+                searchTerms = suggestionRepository.findByQueryStartingWithOrderByFrequencyDesc(
+                    normalizedQuery,
+                    PageRequest.of(0, 20)
+                ).stream()
+                    .map(SearchSuggestion::getQuery)
+                    .collect(Collectors.toList());
+            }
+
+            if (!searchTerms.isEmpty()) {
+                List<FuzzySearchService.SimilarityMatch> similarTitles =
+                    fuzzySearchService.findSimilarMatches(normalizedQuery, searchTerms);
+
+                if (!similarTitles.isEmpty()) {
+                    result.setSuggestions(similarTitles.stream()
+                        .map(FuzzySearchService.SimilarityMatch::text)
+                        .limit(5)
+                        .collect(Collectors.toList()));
+                    result.setDidYouMean(similarTitles.get(0).text());
+                }
             }
         }
 
@@ -121,29 +154,36 @@ public class SmartSearchService {
         String normalized = normalizeQuery(prefix);
         int safeLimit = Math.max(limit, 1);
 
-        // 从历史搜索中获取建议
+        // 优先使用 Elasticsearch，失败时降级到历史记录
+        if (elasticsearchEnabled) {
+            try {
+                if (elasticsearchSearchService.isAvailable()) {
+                    List<String> esSuggestions = elasticsearchSearchService.getSuggestions(normalized, safeLimit);
+                    if (!esSuggestions.isEmpty()) {
+                        log.debug("Using Elasticsearch for search suggestions");
+                        return esSuggestions;
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("Elasticsearch suggestion query failed, falling back to history: {}", e.getMessage());
+            }
+        }
+
+        // 降级方案：从历史搜索中获取建议
+        log.debug("Using search history for suggestions");
         List<SearchSuggestion> historySuggestions =
             suggestionRepository.findByQueryStartingWithOrderByFrequencyDesc(
                 normalized,
                 PageRequest.of(0, safeLimit)
             );
 
-        LinkedHashSet<String> suggestions = historySuggestions.stream()
+        return historySuggestions.stream()
             .map(SearchSuggestion::getQuery)
             .filter(StringUtils::hasText)
             .map(String::trim)
-            .collect(Collectors.toCollection(LinkedHashSet::new));
-
-        collectSearchTerms().stream()
-            .filter(term -> normalizeQuery(term).contains(normalized))
-            .forEach(term -> {
-                if (suggestions.size() < safeLimit) {
-                    suggestions.add(term);
-                }
-            });
-
-        // 如果历史建议不足，从书名中补充
-        return suggestions.stream().limit(safeLimit).collect(Collectors.toList());
+            .distinct()
+            .limit(safeLimit)
+            .collect(Collectors.toList());
     }
 
     /**
@@ -208,15 +248,6 @@ public class SmartSearchService {
         return query.trim()
             .toLowerCase()
             .replaceAll("\\s+", " ");
-    }
-
-    private List<String> collectSearchTerms() {
-        return bookRepository.findAll().stream()
-            .flatMap(book -> Stream.of(book.getTitle(), book.getAuthor()))
-            .filter(StringUtils::hasText)
-            .map(String::trim)
-            .distinct()
-            .collect(Collectors.toList());
     }
 
     /**
