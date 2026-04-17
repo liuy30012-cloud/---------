@@ -15,6 +15,18 @@
 
 本系统是一个面向高校图书馆的**全栈智慧管理平台**，采用前后端分离架构，为读者提供书籍精准定位、智能搜索、借阅管理、AI 辅导阅读及数据可视化分析等一站式服务。系统同时提供 **Web 浏览器端**和基于 Electron 的 **Windows 绿色桌面客户端**，并内置了丰富的安全防护与运维监控能力。
 
+### 📊 项目规模
+
+| 指标 | 数据 |
+|------|------|
+| 📝 **代码总量** | 48,953 行（前端 35,468 行 + 后端 13,485 行） |
+| 🎨 **前端组件** | 26 个 Vue 组件 + 14 个页面视图 |
+| 🔧 **后端服务** | 19 个控制器 + 25 个服务 + 18 个实体模型 |
+| 🛡️ **安全过滤器** | 4 个安全过滤器（限流、反爬、JWT、水印） |
+| 📚 **文档数量** | 17+ 份技术文档 |
+| 🔄 **提交历史** | 43+ 次提交 |
+| 🌟 **核心特性** | 15+ 个功能模块 |
+
 ### ✨ 核心功能一览
 
 | 模块 | 功能 | 亮点 |
@@ -196,12 +208,14 @@ npm run electron:dev
 |------|------|
 | 框架 | Spring Boot 3.2.4 |
 | 安全 | Spring Security + JWT (jjwt 0.12.3) |
-| 持久化 | Spring Data JPA + MySQL |
+| 持久化 | Spring Data JPA + MySQL + Hibernate |
 | 搜索引擎 | Elasticsearch 8.x + IK 中文分词器 |
+| 缓存 | Redis + Spring Cache |
 | 验证 | Jakarta Validation |
 | 加密 | BCrypt |
 | 调度 | ShedLock 分布式任务调度 |
 | 监控 | Spring Actuator + Micrometer + Prometheus |
+| 熔断降级 | Resilience4j Circuit Breaker |
 | 简化 | Lombok |
 
 ### 前端技术栈
@@ -322,24 +336,34 @@ npm run electron:dev
 
 ## 🔐 安全体系
 
-本系统构建了**多层纵深安全防御**体系：
+本系统构建了**多层纵深安全防御**体系，包含 4 个核心安全过滤器和多项防护机制：
 
 ### 认证与访问控制
+
 - ✅ **BCrypt 密码加密** — 不可逆哈希存储
 - ✅ **JWT 令牌认证** — 无状态身份验证 + Token 刷新机制
 - ✅ **登录失败锁定** — 5 次失败后锁定 30 分钟
 - ✅ **CORS 跨域安全配置** — 严格域名白名单
 
 ### 反爬虫与反滥用
-- ✅ **多维度限流 (RateLimit)** — IP/用户/端点粒度速率限制
-- ✅ **反爬虫检测 (AntiCrawler)** — 请求频率与路径模式异常检测
+
+- ✅ **多维度限流 (RateLimitFilter)** — IP/用户/端点粒度速率限制
+- ✅ **反爬虫检测 (AntiCrawlerFilter)** — 请求频率与路径模式异常检测
 - ✅ **行为模式分析 (RequestPatternAnalyzer)** — 检测顺序遍历、定时轮询、广度优先爬取
 - ✅ **设备指纹识别** — 前端 Canvas/WebGL 指纹采集
 - ✅ **渐进式惩罚** — 可疑 IP 逐步加重限流至封禁
 - ✅ **蜜罐陷阱 (Honeypot)** — 隐藏端点诱捕恶意爬虫
 - ✅ **响应水印 (Watermark)** — 数据追溯标记
 
+### 性能与可用性
+
+- ✅ **Redis 缓存层** — 搜索结果缓存（5分钟）、热门书籍缓存（10分钟）
+- ✅ **数据库索引优化** — 复合索引覆盖常见搜索模式，性能提升 50-70%
+- ✅ **Elasticsearch 集成** — 全文搜索性能提升 50-60 倍
+- ✅ **熔断降级机制** — Resilience4j Circuit Breaker，ES 不可用时自动降级到 MySQL
+
 ### 基础设施安全
+
 - ✅ **DDoS 防御方案** — Nginx 限流 + iptables 规则 + 自动化脚本
 - ✅ **表单验证 & SQL 注入防护** — Jakarta Validation + 参数化查询
 - ✅ **Prometheus 监控** — 实时性能指标采集与告警
@@ -467,6 +491,7 @@ npm run build:win
 |------|------|
 | [ARCHITECTURE_ANALYSIS.md](./docs/ARCHITECTURE_ANALYSIS.md) | 全项目架构深度分析及目录依赖说明 |
 | [DEVELOPMENT_GUIDE.md](./docs/DEVELOPMENT_GUIDE.md) | 项目总开发指南与规划 |
+| [PERFORMANCE_OPTIMIZATION.md](./docs/PERFORMANCE_OPTIMIZATION.md) | 性能优化实现文档（Redis 缓存、数据库索引） |
 | [elasticsearch-setup.md](./docs/elasticsearch-setup.md) | Elasticsearch 部署指南 |
 | [elasticsearch-integration-checklist.md](./docs/elasticsearch-integration-checklist.md) | Elasticsearch 集成验收清单 |
 | [elasticsearch-bugfix-report.md](./docs/elasticsearch-bugfix-report.md) | Elasticsearch Bug 修复报告 |
@@ -474,6 +499,8 @@ npm run build:win
 | [借阅管理系统详细计划.md](./docs/借阅管理系统详细计划.md) | 借阅模块完整设计方案 |
 | [数据分析模块详细计划.md](./docs/数据分析模块详细计划.md) | 数据分析引擎设计方案 |
 | [开发完成总结.md](./docs/开发完成总结.md) | 项目核心业务总结 |
+| [离线功能使用说明.md](./docs/离线功能使用说明.md) | 离线模式功能说明 |
+| [SECURITY_CONFIGURATION_NOTES.md](./docs/SECURITY_CONFIGURATION_NOTES.md) | 安全配置说明 |
 | [DDoS 防御方案](./ddos-defense/README.md) | DDoS 防御体系文档 |
 | [test-api.bat](./test-api.bat) / [test-api.sh](./test-api.sh) | API 接口测试脚本 |
 
@@ -568,6 +595,18 @@ npm run build:win
 4. 推送到分支 (`git push origin feature/AmazingFeature`)
 5. 开启 Pull Request 进行审核
 
+### 代码规范
+
+- 后端：遵循 Spring Boot 最佳实践，使用 Lombok 简化代码
+- 前端：使用 Vue 3 Composition API + TypeScript
+- 提交信息：遵循 [Conventional Commits](https://www.conventionalcommits.org/) 规范
+  - `feat:` 新功能
+  - `fix:` Bug 修复
+  - `docs:` 文档更新
+  - `refactor:` 代码重构
+  - `test:` 测试相关
+  - `chore:` 构建/工具链更新
+
 ---
 
 ## 📄 许可证
@@ -590,9 +629,16 @@ npm run build:win
 - [Spring Boot](https://spring.io/projects/spring-boot) — 后端框架
 - [Vue.js](https://vuejs.org/) — 前端框架
 - [Electron](https://www.electronjs.org/) — 桌面端跨平台
+- [Elasticsearch](https://www.elastic.co/) — 全文搜索引擎
+- [Redis](https://redis.io/) — 高性能缓存
 - [ECharts](https://echarts.apache.org/) — 数据可视化
 - [Pinia](https://pinia.vuejs.org/) — 状态管理
 - [Axios](https://axios-http.com/) — HTTP 客户端
 - [JWT](https://jwt.io/) — 令牌认证
 - [ShedLock](https://github.com/lukas-krecan/ShedLock) — 分布式调度
 - [Micrometer](https://micrometer.io/) + [Prometheus](https://prometheus.io/) — 监控体系
+- [Resilience4j](https://resilience4j.readme.io/) — 熔断降级
+
+---
+
+**⭐ 如果这个项目对你有帮助，请给个 Star 支持一下！**
