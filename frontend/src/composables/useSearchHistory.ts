@@ -42,7 +42,7 @@ export function useSearchHistory(locale: { value: string }) {
   const loadHistory = async () => {
     try {
       const res = await httpClient.get<any[]>('/api/search-history')
-      searchHistory.value = res.data.map(normalizeHistoryItem)
+      searchHistory.value = res.data.data.map(normalizeHistoryItem)
     } catch {
       // keep local history
     }
@@ -72,7 +72,7 @@ export function useSearchHistory(locale: { value: string }) {
         ...payload,
         keyword: trimmed,
       })
-      const savedItem = normalizeHistoryItem(response.data)
+      const savedItem = normalizeHistoryItem(response.data.data)
       searchHistory.value = [
         savedItem,
         ...searchHistory.value.filter(item => item.timestamp !== now),

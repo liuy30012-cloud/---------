@@ -1,11 +1,13 @@
 package com.library.controller;
 
+import com.library.dto.ApiResponse;
 import com.library.dto.SearchHistoryRequest;
 import com.library.model.SearchHistoryRecord;
 import com.library.service.SearchHistoryService;
 import com.library.util.JwtUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,9 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/search-history")
@@ -27,25 +27,24 @@ public class SearchHistoryController {
     private final JwtUtil jwtUtil;
 
     @GetMapping
-    public List<SearchHistoryRecord> getHistory(Authentication authentication) {
+    public ResponseEntity<ApiResponse<List<SearchHistoryRecord>>> getHistory(Authentication authentication) {
         Long userId = getUserIdFromAuth(authentication);
-        return searchHistoryService.getHistory(userId);
+        List<SearchHistoryRecord> history = searchHistoryService.getHistory(userId);
+        return ApiResponse.ok(history);
     }
 
     @PostMapping
-    public SearchHistoryRecord addHistory(@Valid @RequestBody SearchHistoryRequest body, Authentication authentication) {
+    public ResponseEntity<ApiResponse<SearchHistoryRecord>> addHistory(@Valid @RequestBody SearchHistoryRequest body, Authentication authentication) {
         Long userId = getUserIdFromAuth(authentication);
-        return searchHistoryService.saveSearch(userId, body);
+        SearchHistoryRecord record = searchHistoryService.saveSearch(userId, body);
+        return ApiResponse.ok(record);
     }
 
     @DeleteMapping
-    public Map<String, String> clearHistory(Authentication authentication) {
+    public ResponseEntity<ApiResponse<Void>> clearHistory(Authentication authentication) {
         Long userId = getUserIdFromAuth(authentication);
         searchHistoryService.clearHistory(userId);
-
-        Map<String, String> result = new HashMap<>();
-        result.put("status", "ok");
-        return result;
+        return ApiResponse.ok(null, "搜索历史已清空");
     }
 
     private Long getUserIdFromAuth(Authentication authentication) {

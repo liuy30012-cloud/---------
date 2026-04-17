@@ -1,5 +1,6 @@
 package com.library.controller;
 
+import com.library.dto.ApiResponse;
 import com.library.dto.BorrowApprovalDecisionRequest;
 import com.library.dto.BorrowRequest;
 import com.library.dto.BorrowResponse;
@@ -18,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/borrow")
@@ -29,78 +29,59 @@ public class BorrowController {
     private final JwtUtil jwtUtil;
 
     @PostMapping("/apply")
-    public ResponseEntity<?> applyBorrow(@Valid @RequestBody BorrowRequest request, Authentication authentication) {
+    public ResponseEntity<ApiResponse<BorrowResponse>> applyBorrow(@Valid @RequestBody BorrowRequest request, Authentication authentication) {
         Long userId = getUserIdFromAuth(authentication);
         BorrowResponse response = borrowService.applyBorrow(userId, request);
-        return ResponseEntity.ok(Map.of(
-            "success", true,
-            "message", response.getStatusHint(),
-            "data", response
-        ));
+        return ApiResponse.ok(response, response.getStatusHint());
     }
 
     @PostMapping("/{recordId}/return")
-    public ResponseEntity<?> returnBook(@PathVariable Long recordId, Authentication authentication) {
+    public ResponseEntity<ApiResponse<BorrowResponse>> returnBook(@PathVariable Long recordId, Authentication authentication) {
         validateRecordId(recordId);
         Long userId = getUserIdFromAuth(authentication);
         BorrowResponse response = borrowService.returnBook(recordId, userId);
-        return ResponseEntity.ok(Map.of(
-            "success", true,
-            "message", "归还成功。",
-            "data", response
-        ));
+        return ApiResponse.ok(response, "归还成功。");
     }
 
     @PostMapping("/{recordId}/renew")
-    public ResponseEntity<?> renewBorrow(@PathVariable Long recordId, Authentication authentication) {
+    public ResponseEntity<ApiResponse<BorrowResponse>> renewBorrow(@PathVariable Long recordId, Authentication authentication) {
         validateRecordId(recordId);
         Long userId = getUserIdFromAuth(authentication);
         BorrowResponse response = borrowService.renewBorrow(recordId, userId);
-        return ResponseEntity.ok(Map.of(
-            "success", true,
-            "message", "续借成功。",
-            "data", response
-        ));
+        return ApiResponse.ok(response, "续借成功。");
     }
 
     @PostMapping("/{recordId}/pickup")
-    public ResponseEntity<?> confirmPickup(@PathVariable Long recordId, Authentication authentication) {
+    public ResponseEntity<ApiResponse<BorrowResponse>> confirmPickup(@PathVariable Long recordId, Authentication authentication) {
         validateRecordId(recordId);
         Long userId = getUserIdFromAuth(authentication);
         BorrowResponse response = borrowService.confirmPickup(recordId, userId);
-        return ResponseEntity.ok(Map.of(
-            "success", true,
-            "message", "取书成功。",
-            "data", response
-        ));
+        return ApiResponse.ok(response, "取书成功。");
     }
 
     @GetMapping("/history")
-    public ResponseEntity<?> getBorrowHistory(Authentication authentication) {
+    public ResponseEntity<ApiResponse<List<BorrowResponse>>> getBorrowHistory(Authentication authentication) {
         Long userId = getUserIdFromAuth(authentication);
         List<BorrowResponse> history = borrowService.getUserBorrowHistory(userId);
-        return ResponseEntity.ok(Map.of("success", true, "data", history));
+        return ApiResponse.ok(history);
     }
 
     @GetMapping("/current")
-    public ResponseEntity<?> getCurrentBorrows(Authentication authentication) {
+    public ResponseEntity<ApiResponse<List<BorrowResponse>>> getCurrentBorrows(Authentication authentication) {
         Long userId = getUserIdFromAuth(authentication);
         List<BorrowResponse> borrows = borrowService.getUserCurrentBorrows(userId);
-        return ResponseEntity.ok(Map.of("success", true, "data", borrows));
+        return ApiResponse.ok(borrows);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/admin/pending")
-    public ResponseEntity<?> getPendingBorrows() {
-        return ResponseEntity.ok(Map.of(
-            "success", true,
-            "data", borrowService.getPendingBorrows()
-        ));
+    public ResponseEntity<ApiResponse<List<BorrowResponse>>> getPendingBorrows() {
+        return ApiResponse.ok(borrowService.getPendingBorrows());
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/admin/{recordId}/decision")
-    public ResponseEntity<?> reviewBorrow(
+    public ResponseEntity<ApiResponse<BorrowResponse>> reviewBorrow(
         @PathVariable Long recordId,
         @Valid @RequestBody BorrowApprovalDecisionRequest request,
         Authentication authentication
@@ -114,11 +95,7 @@ public class BorrowController {
             request.getRejectReason()
         );
 
-        return ResponseEntity.ok(Map.of(
-            "success", true,
-            "message", response.getStatusHint(),
-            "data", response
-        ));
+        return ApiResponse.ok(response, response.getStatusHint());
     }
 
     private void validateRecordId(Long recordId) {

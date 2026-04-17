@@ -35,7 +35,7 @@ export function useNotifications(locale: { value: string }) {
   const loadNotifications = async () => {
     try {
       const res = await httpClient.get<NotificationItem[]>('/api/notifications')
-      notifications.value = res.data
+      notifications.value = res.data.data
     } catch (error) {
       logger.warn('Notifications API unavailable, returning empty list', error)
       notifications.value = []

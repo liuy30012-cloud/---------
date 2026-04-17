@@ -2,6 +2,7 @@ package com.library.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.library.dto.ApiResponse;
 import com.library.security.SecurityStateStore;
 import com.library.util.ClientIpResolver;
 import jakarta.servlet.http.HttpServletRequest;
@@ -51,7 +52,7 @@ public class CaptchaController {
     }
 
     @GetMapping("/generate")
-    public ResponseEntity<?> generateCaptcha(HttpServletRequest request) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> generateCaptcha(HttpServletRequest request) {
         String clientIp = ClientIpResolver.resolve(request);
         String userAgentHash = hashUserAgent(request.getHeader("User-Agent"));
 
@@ -80,21 +81,20 @@ public class CaptchaController {
         );
         saveSession(session);
 
-        Map<String, Object> response = new HashMap<>();
-        response.put("success", true);
-        response.put("sessionId", sessionId);
-        response.put("backgroundWidth", bgWidth);
-        response.put("backgroundHeight", bgHeight);
-        response.put("sliderWidth", sliderWidth);
-        response.put("targetX", targetX);
-        response.put("targetY", targetY);
-        response.put("puzzlePieces", puzzlePieces);
-        response.put("expiresIn", CAPTCHA_SESSION_TTL.toSeconds());
-        return ResponseEntity.ok(response);
+        Map<String, Object> data = new HashMap<>();
+        data.put("sessionId", sessionId);
+        data.put("backgroundWidth", bgWidth);
+        data.put("backgroundHeight", bgHeight);
+        data.put("sliderWidth", sliderWidth);
+        data.put("targetX", targetX);
+        data.put("targetY", targetY);
+        data.put("puzzlePieces", puzzlePieces);
+        data.put("expiresIn", CAPTCHA_SESSION_TTL.toSeconds());
+        return ApiResponse.ok(data);
     }
 
     @PostMapping("/verify")
-    public ResponseEntity<?> verifyCaptcha(@RequestBody Map<String, Object> body, HttpServletRequest request) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> verifyCaptcha(@RequestBody Map<String, Object> body, HttpServletRequest request) {
         String sessionId = (String) body.get("sessionId");
         Number sliderXNum = (Number) body.get("sliderX");
         Number dragTimeNum = (Number) body.get("dragTime");
@@ -102,28 +102,19 @@ public class CaptchaController {
         List<Map<String, Object>> dragTrail = (List<Map<String, Object>>) body.get("dragTrail");
 
         if (sessionId == null || sliderXNum == null) {
-            return ResponseEntity.badRequest().body(Map.of(
-                    "success", false,
-                    "message", "验证码参数不完整"
-            ));
+            return ApiResponse.error("验证码参数不完整");
         }
 
         CaptchaSessionRecord session = loadSession(sessionId);
         if (session == null) {
-            return ResponseEntity.badRequest().body(Map.of(
-                    "success", false,
-                    "message", "验证码已过期，请刷新"
-            ));
+            return ApiResponse.error("验证码已过期，请刷新");
         }
         stateStore.delete(sessionKey(sessionId));
 
         String clientIp = ClientIpResolver.resolve(request);
         String userAgentHash = hashUserAgent(request.getHeader("User-Agent"));
         if (!session.clientIp().equals(clientIp) || (bindUserAgent && !session.userAgentHash().equals(userAgentHash))) {
-            return ResponseEntity.badRequest().body(Map.of(
-                    "success", false,
-                    "message", "验证码上下文已失效，请刷新"
-            ));
+            return ApiResponse.error("验证码上下文已失效，请刷新");
         }
 
         int sliderX = sliderXNum.intValue();
@@ -131,18 +122,12 @@ public class CaptchaController {
 
         if (Math.abs(sliderX - session.targetX()) > CAPTCHA_TOLERANCE) {
             log.warn("Captcha verification failed: IP={} targetX={} sliderX={}", clientIp, session.targetX(), sliderX);
-            return ResponseEntity.ok(Map.of(
-                    "success", false,
-                    "message", "验证失败，请重试"
-            ));
+            return ApiResponse.ok(Map.of("verified", false), "验证失败，请重试");
         }
 
         if (dragTime < 200 || !validateDragTrail(dragTrail)) {
             log.warn("Captcha drag trail rejected: IP={} dragTime={}", clientIp, dragTime);
-            return ResponseEntity.ok(Map.of(
-                    "success", false,
-                    "message", "验证失败，请重试"
-            ));
+            return ApiResponse.ok(Map.of("verified", false), "验证失败，请重试");
         }
 
         long now = System.currentTimeMillis();
@@ -156,12 +141,11 @@ public class CaptchaController {
         );
         savePassToken(record);
 
-        return ResponseEntity.ok(Map.of(
-                "success", true,
-                "message", "验证通过",
+        return ApiResponse.ok(Map.of(
+                "verified", true,
                 "passToken", passToken,
                 "expiresIn", passTokenTtlSeconds
-        ));
+        ), "验证通过");
     }
 
     public boolean isPassTokenValid(String passToken, String clientIp, String userAgent) {

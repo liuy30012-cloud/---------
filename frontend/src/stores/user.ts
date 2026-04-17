@@ -181,8 +181,8 @@ export const useUserStore = defineStore('user', () => {
     try {
       const response = await httpClient.get('/api/auth/me')
       if (response.data.success) {
-        user.value = response.data.user
-        safeSetJSON('user', response.data.user)
+        user.value = response.data.data
+        safeSetJSON('user', response.data.data)
       }
     } catch (error) {
       logger.error('Failed to fetch user info:', error)

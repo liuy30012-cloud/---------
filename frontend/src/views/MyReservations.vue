@@ -116,9 +116,11 @@ import ConfirmDialog from '../components/common/ConfirmDialog.vue'
 import FeedbackToast from '../components/common/FeedbackToast.vue'
 import PageHeader from '../components/layout/PageHeader.vue'
 import { logger } from '../utils/logger'
+import { useToast } from '../composables/useToast'
 
 const router = useRouter()
 const { t } = useI18n()
+const { toast, showToast } = useToast()
 
 const reservations = ref<ReservationRecord[]>([])
 const isSubmitting = ref(false)
@@ -132,11 +134,6 @@ const dialog = reactive({
   message: '',
   confirmText: '',
   cancelText: '',
-})
-
-const toast = reactive<{ message: string; type: 'success' | 'error' | 'info' }>({
-  message: '',
-  type: 'info',
 })
 
 onMounted(() => {
@@ -215,14 +212,6 @@ function formatDate(dateStr?: string | null) {
   const date = new Date(dateStr)
   if (Number.isNaN(date.getTime())) return dateStr
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
-}
-
-function showToast(message: string, type: 'success' | 'error' | 'info') {
-  toast.message = message
-  toast.type = type
-  window.setTimeout(() => {
-    toast.message = ''
-  }, 2600)
 }
 </script>
 

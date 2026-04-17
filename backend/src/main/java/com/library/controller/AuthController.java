@@ -1,5 +1,6 @@
 package com.library.controller;
 
+import com.library.dto.ApiResponse;
 import com.library.dto.AuthResponse;
 import com.library.dto.LoginRequest;
 import com.library.dto.RegisterRequest;
@@ -10,6 +11,7 @@ import com.library.util.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,140 +33,101 @@ public class AuthController {
     private JwtUtil jwtUtil;
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> register(@Valid @RequestBody RegisterRequest request) {
         Map<String, Object> result = userService.register(request);
-        return ResponseEntity.ok(result);
+        return ApiResponse.ok(result);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request, HttpServletRequest httpRequest) {
+    public ResponseEntity<ApiResponse<AuthResponse>> login(@Valid @RequestBody LoginRequest request, HttpServletRequest httpRequest) {
         String ipAddress = ClientIpResolver.resolve(httpRequest);
         String userAgent = httpRequest.getHeader("User-Agent");
 
         AuthResponse response = userService.login(request, ipAddress, userAgent);
-        return ResponseEntity.ok(response);
+        return ApiResponse.ok(response);
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<?> refreshToken(@RequestBody Map<String, String> request) {
-        try {
-            String refreshToken = request.get("refreshToken");
-            if (refreshToken == null || refreshToken.isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of(
-                    "success", false,
-                    "message", "刷新令牌不能为空。"
-                ));
-            }
+    public ResponseEntity<ApiResponse<AuthResponse>> refreshToken(@RequestBody Map<String, String> request) {
+        String refreshToken = request.get("refreshToken");
+        if (refreshToken == null || refreshToken.isEmpty()) {
+            return ApiResponse.error("刷新令牌不能为空。");
+        }
 
+        try {
             AuthResponse response = userService.refreshToken(refreshToken);
-            return ResponseEntity.ok(response);
+            return ApiResponse.ok(response);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(401).body(Map.of(
-                "success", false,
-                "message", e.getMessage()
-            ));
+            return ApiResponse.error(HttpStatus.UNAUTHORIZED, e.getMessage());
         }
     }
 
     @GetMapping("/me")
-    public ResponseEntity<?> getCurrentUser(HttpServletRequest request) {
+    public ResponseEntity<ApiResponse<UserInfo>> getCurrentUser(HttpServletRequest request) {
+        String token = extractToken(request);
+        if (token == null) {
+            return ApiResponse.error(HttpStatus.UNAUTHORIZED, "缺少认证令牌。");
+        }
+
+        if (!jwtUtil.validateAccessToken(token)) {
+            return ApiResponse.error(HttpStatus.UNAUTHORIZED, "访问令牌无效或已过期。");
+        }
+
         try {
-            String token = extractToken(request);
-            if (token == null) {
-                return ResponseEntity.status(401).body(Map.of(
-                    "success", false,
-                    "message", "缺少认证令牌。"
-                ));
-            }
-
-            if (!jwtUtil.validateAccessToken(token)) {
-                return ResponseEntity.status(401).body(Map.of(
-                    "success", false,
-                    "message", "访问令牌无效或已过期。"
-                ));
-            }
-
             String studentId = jwtUtil.getStudentIdFromToken(token);
             UserInfo userInfo = userService.getUserInfo(studentId);
-
-            return ResponseEntity.ok(Map.of(
-                "success", true,
-                "user", userInfo
-            ));
+            return ApiResponse.ok(userInfo);
         } catch (Exception e) {
-            return ResponseEntity.status(401).body(Map.of(
-                "success", false,
-                "message", e.getMessage()
-            ));
+            return ApiResponse.error(HttpStatus.UNAUTHORIZED, e.getMessage());
         }
     }
 
     @PostMapping("/change-password")
-    public ResponseEntity<?> changePassword(@RequestBody Map<String, String> request, Authentication authentication) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> changePassword(@RequestBody Map<String, String> request, Authentication authentication) {
+        if (authentication == null || authentication.getCredentials() == null) {
+            return ApiResponse.error(HttpStatus.UNAUTHORIZED, "未授权访问。");
+        }
+
+        String token = authentication.getCredentials().toString();
+        String studentId = jwtUtil.getStudentIdFromToken(token);
+        String oldPassword = request.get("oldPassword");
+        String newPassword = request.get("newPassword");
+
+        if (oldPassword == null || oldPassword.isEmpty()) {
+            return ApiResponse.error("旧密码不能为空。");
+        }
+
+        if (newPassword == null || newPassword.isEmpty()) {
+            return ApiResponse.error("新密码不能为空。");
+        }
+
+        if (newPassword.length() < 8 || newPassword.length() > 20) {
+            return ApiResponse.error("新密码长度必须在 8 到 20 个字符之间。");
+        }
+
         try {
-            if (authentication == null || authentication.getCredentials() == null) {
-                return ResponseEntity.status(401).body(Map.of(
-                    "success", false,
-                    "message", "未授权访问。"
-                ));
-            }
-
-            String token = authentication.getCredentials().toString();
-            String studentId = jwtUtil.getStudentIdFromToken(token);
-            String oldPassword = request.get("oldPassword");
-            String newPassword = request.get("newPassword");
-
-            if (oldPassword == null || oldPassword.isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of(
-                    "success", false,
-                    "message", "旧密码不能为空。"
-                ));
-            }
-
-            if (newPassword == null || newPassword.isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of(
-                    "success", false,
-                    "message", "新密码不能为空。"
-                ));
-            }
-
-            if (newPassword.length() < 8 || newPassword.length() > 20) {
-                return ResponseEntity.badRequest().body(Map.of(
-                    "success", false,
-                    "message", "新密码长度必须在 8 到 20 个字符之间。"
-                ));
-            }
-
             Map<String, Object> result = userService.changePassword(studentId, oldPassword, newPassword);
-            return ResponseEntity.ok(result);
+            return ApiResponse.ok(result);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of(
-                "success", false,
-                "message", e.getMessage()
-            ));
+            return ApiResponse.error(e.getMessage());
         }
     }
 
     @PostMapping("/account-status")
-    public ResponseEntity<?> getAccountStatus(@RequestBody Map<String, String> request) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getAccountStatus(@RequestBody Map<String, String> request) {
         String studentId = request.get("studentId");
         if (studentId == null || studentId.isBlank()) {
-            return ResponseEntity.badRequest().body(Map.of(
-                "success", false,
-                "message", "学工号不能为空。"
-            ));
+            return ApiResponse.error("学工号不能为空。");
         }
 
         var user = userService.findByStudentId(studentId);
         if (user == null) {
-            return ResponseEntity.ok(Map.of(
-                "success", true,
+            return ApiResponse.ok(Map.of(
                 "exists", false
             ));
         }
 
-        return ResponseEntity.ok(Map.of(
-            "success", true,
+        return ApiResponse.ok(Map.of(
             "exists", true,
             "active", user.getStatus() == 1,
             "hasEmail", user.getEmail() != null && !user.getEmail().isBlank(),
@@ -173,15 +136,12 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(HttpServletRequest request) {
+    public ResponseEntity<ApiResponse<Void>> logout(HttpServletRequest request) {
         String token = extractToken(request);
         if (token != null) {
             jwtUtil.invalidateToken(token);
         }
-        return ResponseEntity.ok(Map.of(
-            "success", true,
-            "message", "退出成功"
-        ));
+        return ApiResponse.ok(null, "退出成功");
     }
 
     private String extractToken(HttpServletRequest request) {

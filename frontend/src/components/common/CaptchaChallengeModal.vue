@@ -95,8 +95,11 @@ interface CaptchaSessionResponse {
 interface CaptchaVerifyResponse {
   success: boolean
   message?: string
-  passToken?: string
-  expiresIn?: number
+  data?: {
+    verified?: boolean
+    passToken?: string
+    expiresIn?: number
+  }
 }
 
 interface DragPoint {
@@ -149,8 +152,8 @@ async function loadChallenge(clearError: boolean = true) {
   setCaptchaChallengeLoading(true)
 
   try {
-    const { data } = await baseHttp.get<CaptchaSessionResponse>('/api/captcha/generate')
-    session.value = data
+    const response = await baseHttp.get<{ success: boolean; data: CaptchaSessionResponse }>('/api/captcha/generate')
+    session.value = response.data.data
   } catch {
     cancelCaptchaChallenge(t('captcha.errors.loadFailed'))
     return
@@ -238,15 +241,15 @@ async function submitCaptcha() {
     }
 
     const { data } = await baseHttp.post<CaptchaVerifyResponse>('/api/captcha/verify', payload)
-    if (!data.success || !data.passToken) {
+    if (!data.success || !data.data?.verified || !data.data?.passToken) {
       const message = data.message || t('captcha.errors.verifyFailed')
       await loadChallenge(false)
       setCaptchaChallengeError(message)
       return
     }
 
-    setCaptchaPassToken(data.passToken, data.expiresIn ?? 600)
-    resolveCaptchaChallenge(data.passToken)
+    setCaptchaPassToken(data.data.passToken, data.data.expiresIn ?? 600)
+    resolveCaptchaChallenge(data.data.passToken)
   } catch {
     await loadChallenge(false)
     setCaptchaChallengeError(t('captcha.errors.verifyFailedLater'))
