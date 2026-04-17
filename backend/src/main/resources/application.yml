@@ -109,3 +109,33 @@ anti-crawler:
     bind-user-agent: true
   watermark:
     secret: ${WATERMARK_SECRET:watermark-trace-secret-library-2026}
+
+spring:
+  elasticsearch:
+    uris: ${ES_URIS:http://localhost:9200}
+    username: ${ES_USERNAME:elastic}
+    password: ${ES_PASSWORD:changeme}
+    connection-timeout: 3s
+    socket-timeout: 5s
+
+  data:
+    elasticsearch:
+      repositories:
+        enabled: true
+
+# Elasticsearch 功能开关
+library:
+  search:
+    elasticsearch:
+      enabled: ${ES_ENABLED:true}
+      fallback-enabled: true
+
+# Circuit Breaker 配置
+resilience4j:
+  circuitbreaker:
+    instances:
+      elasticsearch:
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+        sliding-window-size: 10
+        permitted-number-of-calls-in-half-open-state: 3
