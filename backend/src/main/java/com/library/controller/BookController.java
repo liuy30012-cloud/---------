@@ -21,9 +21,11 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -356,5 +358,64 @@ public class BookController {
         bookService.validateBook(book);
         Book createdBook = bookService.createBook(book);
         return ApiResponse.ok(createdBook);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<Book>> updateBook(
+        @PathVariable Long id,
+        @Valid @RequestBody com.library.dto.UpdateBookRequest request
+    ) {
+        Book existingBook = bookService.getBookById(id);
+        if (existingBook == null) {
+            return ApiResponse.notFound("图书不存在");
+        }
+
+        java.util.Optional<Book> duplicateIsbn = bookRepository.findByIsbn(request.getIsbn());
+        if (duplicateIsbn.isPresent() && !duplicateIsbn.get().getId().equals(id)) {
+            return ApiResponse.error("ISBN '" + request.getIsbn() + "' 已被其他图书使用", 409);
+        }
+
+        existingBook.setTitle(request.getTitle());
+        existingBook.setAuthor(request.getAuthor());
+        existingBook.setIsbn(request.getIsbn());
+        existingBook.setLocation(request.getLocation());
+        existingBook.setCoverUrl(request.getCoverUrl());
+        existingBook.setStatus(request.getStatus());
+        existingBook.setYear(request.getYear());
+        existingBook.setDescription(request.getDescription());
+        existingBook.setLanguageCode(request.getLanguageCode());
+        existingBook.setAvailability(request.getAvailability());
+        existingBook.setCategory(request.getCategory());
+
+        if (request.getCirculationPolicy() != null) {
+            existingBook.setCirculationPolicy(request.getCirculationPolicy());
+        }
+
+        if (request.getTotalCopies() != null) {
+            existingBook.setTotalCopies(request.getTotalCopies());
+            bookService.adjustCopiesOnUpdate(existingBook, existingBook);
+        }
+
+        bookService.validateBook(existingBook);
+        Book updatedBook = bookService.updateBook(existingBook);
+        return ApiResponse.ok(updatedBook);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<Void>> deleteBook(@PathVariable Long id) {
+        Book book = bookService.getBookById(id);
+        if (book == null) {
+            return ApiResponse.notFound("图书不存在");
+        }
+
+        try {
+            bookService.checkRelatedData(id);
+            bookService.deleteBook(id);
+            return ApiResponse.ok(null);
+        } catch (IllegalArgumentException e) {
+            return ApiResponse.error(e.getMessage(), 409);
+        }
     }
 }
