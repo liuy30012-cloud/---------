@@ -63,5 +63,60 @@ public class BookFileParser {
         }
     }
 
-    // __CONTINUE_HERE__
+    private static Book parseExcelRow(Row row) {
+        Book book = new Book();
+
+        book.setTitle(getCellValueAsString(row.getCell(0)));
+        book.setAuthor(getCellValueAsString(row.getCell(1)));
+        book.setIsbn(getCellValueAsString(row.getCell(2)));
+        book.setLocation(getCellValueAsString(row.getCell(3)));
+
+        String circulationPolicy = getCellValueAsString(row.getCell(4));
+        book.setCirculationPolicy(circulationPolicy.isEmpty() ? "可借阅" : circulationPolicy);
+
+        String totalCopiesStr = getCellValueAsString(row.getCell(5));
+        int totalCopies = totalCopiesStr.isEmpty() ? 1 : Integer.parseInt(totalCopiesStr);
+        book.setTotalCopies(totalCopies);
+        book.setAvailableCopies(totalCopies);
+        book.setBorrowedCount(0);
+
+        return book;
+    }
+
+    private static boolean isEmptyRow(Row row) {
+        for (Cell cell : row) {
+            if (cell != null && cell.getCellType() != CellType.BLANK) {
+                String value = getCellValueAsString(cell);
+                if (!value.trim().isEmpty()) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    private static String getCellValueAsString(Cell cell) {
+        if (cell == null) {
+            return "";
+        }
+
+        return switch (cell.getCellType()) {
+            case STRING -> cell.getStringCellValue();
+            case NUMERIC -> {
+                if (DateUtil.isCellDateFormatted(cell)) {
+                    yield cell.getDateCellValue().toString();
+                } else {
+                    double numericValue = cell.getNumericCellValue();
+                    if (numericValue == (long) numericValue) {
+                        yield String.valueOf((long) numericValue);
+                    } else {
+                        yield String.valueOf(numericValue);
+                    }
+                }
+            }
+            case BOOLEAN -> String.valueOf(cell.getBooleanCellValue());
+            case FORMULA -> cell.getCellFormula();
+            default -> "";
+        };
+    }
 }
