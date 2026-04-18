@@ -74,10 +74,17 @@ public class BookFileParser {
         String circulationPolicy = getCellValueAsString(row.getCell(4));
         book.setCirculationPolicy(circulationPolicy.isEmpty() ? "可借阅" : circulationPolicy);
 
-        String totalCopiesStr = getCellValueAsString(row.getCell(5));
-        int totalCopies = totalCopiesStr.isEmpty() ? 1 : Integer.parseInt(totalCopiesStr);
-        book.setTotalCopies(totalCopies);
-        book.setAvailableCopies(totalCopies);
+        String totalCopiesStr = getCellValueAsString(row.getCell(12));
+        if (totalCopiesStr != null && !totalCopiesStr.isEmpty()) {
+            try {
+                book.setTotalCopies(Integer.parseInt(totalCopiesStr));
+            } catch (NumberFormatException e) {
+                book.setTotalCopies(1);
+            }
+        } else {
+            book.setTotalCopies(1);
+        }
+        book.setAvailableCopies(book.getTotalCopies());
         book.setBorrowedCount(0);
 
         return book;
