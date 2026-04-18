@@ -11,6 +11,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.TestingAuthenticationToken;
+import org.springframework.security.core.Authentication;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -52,13 +54,15 @@ class SmartSearchControllerTest {
     @Test
     void addBookTag_requiresAuthentication() {
         // 准备测试数据
-        String token = "Bearer valid-token";
         Long bookId = 1L;
         String tagName = "测试标签";
         Long userId = 100L;
 
+        // 创建 Authentication 对象
+        Authentication authentication = new TestingAuthenticationToken("user", "credentials");
+
         // 模拟 JWT 验证
-        when(jwtUtil.getUserIdFromToken("valid-token")).thenReturn(userId);
+        when(jwtUtil.getUserIdFromToken(any())).thenReturn(userId);
 
         // 模拟保存标签
         BookTag savedTag = new BookTag();
@@ -72,14 +76,11 @@ class SmartSearchControllerTest {
         when(bookTagRepository.save(any(BookTag.class))).thenReturn(savedTag);
 
         // 调用接口
-        ResponseEntity<?> response = controller.addBookTag(token, bookId, tagName, "USER_GENERATED");
+        ResponseEntity<?> response = controller.addBookTag(authentication, bookId, tagName, "USER_GENERATED");
 
         // 验证结果
         assertNotNull(response);
         assertEquals(200, response.getStatusCode().value());
-
-        // 验证 JWT 被调用
-        verify(jwtUtil, times(1)).getUserIdFromToken("valid-token");
 
         // 验证保存时包含了用户 ID
         verify(bookTagRepository, times(1)).save(argThat(tag ->
@@ -91,12 +92,11 @@ class SmartSearchControllerTest {
 
     @Test
     void addBookTag_withoutToken_shouldFail() {
-        // 测试没有 token 的情况
-        // 这个测试应该在实现后验证抛出异常或返回错误
+        // 测试没有 authentication 的情况
         Long bookId = 1L;
         String tagName = "测试标签";
 
-        // 当没有提供 token 时，应该抛出异常
+        // 当没有提供 authentication 时，应该抛出异常
         assertThrows(Exception.class, () -> {
             controller.addBookTag(null, bookId, tagName, "USER_GENERATED");
         });
@@ -104,18 +104,18 @@ class SmartSearchControllerTest {
 
     @Test
     void addBookTag_withInvalidToken_shouldFail() {
-        // 测试无效 token 的情况
-        String invalidToken = "Bearer invalid-token";
+        // 测试无效 authentication 的情况
+        Authentication authentication = new TestingAuthenticationToken("user", "credentials");
         Long bookId = 1L;
         String tagName = "测试标签";
 
         // 模拟 JWT 验证失败
-        when(jwtUtil.getUserIdFromToken("invalid-token"))
+        when(jwtUtil.getUserIdFromToken(any()))
             .thenThrow(new IllegalArgumentException("令牌无效"));
 
         // 应该抛出异常
         assertThrows(IllegalArgumentException.class, () -> {
-            controller.addBookTag(invalidToken, bookId, tagName, "USER_GENERATED");
+            controller.addBookTag(authentication, bookId, tagName, "USER_GENERATED");
         });
     }
 }

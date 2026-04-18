@@ -69,12 +69,12 @@ class SearchHistoryControllerTest {
         when(searchHistoryService.saveSearch(org.mockito.ArgumentMatchers.eq(1L), org.mockito.ArgumentMatchers.any(SearchHistoryRequest.class)))
             .thenReturn(savedRecord);
 
-        SearchHistoryRecord record = controller.addHistory(
+        var response = controller.addHistory(
             request,
             new TestingAuthenticationToken("user", "mock-token")
         );
 
-        assertEquals("java", record.getKeyword());
-        assertEquals(0, record.getResultCount());
+        assertEquals("java", response.getBody().getData().getKeyword());
+        assertEquals(0, response.getBody().getData().getResultCount());
     }
 }
