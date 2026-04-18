@@ -20,11 +20,16 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import jakarta.validation.Valid;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -322,5 +327,34 @@ public class BookController {
             return "Take the breadcrumb route above to the shelf, then follow the pickup action shown on this page.";
         }
         return "Copies are currently out. Place a reservation and we will notify you when pickup is available.";
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping
+    public ResponseEntity<ApiResponse<Book>> createBook(@Valid @RequestBody com.library.dto.CreateBookRequest request) {
+        Book book = new Book();
+        book.setTitle(request.getTitle());
+        book.setAuthor(request.getAuthor());
+        book.setIsbn(request.getIsbn());
+        book.setLocation(request.getLocation());
+        book.setCoverUrl(request.getCoverUrl());
+        book.setStatus(request.getStatus());
+        book.setYear(request.getYear());
+        book.setDescription(request.getDescription());
+        book.setLanguageCode(request.getLanguageCode());
+        book.setAvailability(request.getAvailability());
+        book.setCategory(request.getCategory());
+        book.setCirculationPolicy(request.getCirculationPolicy());
+        book.setTotalCopies(request.getTotalCopies());
+        book.setAvailableCopies(request.getTotalCopies());
+        book.setBorrowedCount(0);
+
+        if (bookRepository.findByIsbn(request.getIsbn()).isPresent()) {
+            return ApiResponse.error(org.springframework.http.HttpStatus.CONFLICT, "ISBN '" + request.getIsbn() + "' 已存在");
+        }
+
+        bookService.validateBook(book);
+        Book createdBook = bookService.createBook(book);
+        return ApiResponse.ok(createdBook);
     }
 }
