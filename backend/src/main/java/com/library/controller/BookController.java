@@ -460,6 +460,8 @@ public class BookController {
             return ApiResponse.ok(response);
         } catch (IllegalArgumentException e) {
             return ApiResponse.error(e.getMessage(), 400);
+        } catch (com.opencsv.exceptions.CsvException e) {
+            return ApiResponse.error("CSV文件格式错误: " + e.getMessage(), 400);
         } catch (java.io.IOException e) {
             return ApiResponse.error("文件解析失败: " + e.getMessage(), 400);
         }
