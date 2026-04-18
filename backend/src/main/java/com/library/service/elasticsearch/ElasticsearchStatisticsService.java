@@ -3,6 +3,7 @@ package com.library.service.elasticsearch;
 import com.library.repository.BookDocumentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.elasticsearch.client.elc.ElasticsearchAggregations;
 import org.springframework.data.elasticsearch.client.elc.NativeQuery;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
@@ -21,6 +22,12 @@ import java.util.Map;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@ConditionalOnProperty(
+    prefix = "library.search.elasticsearch",
+    name = "enabled",
+    havingValue = "true",
+    matchIfMissing = true
+)
 public class ElasticsearchStatisticsService {
 
     private final ElasticsearchOperations elasticsearchOperations;

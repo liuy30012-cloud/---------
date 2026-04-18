@@ -19,8 +19,8 @@ import com.library.service.statistics.CategoryStatisticsService;
 import com.library.service.statistics.InventoryAlertService;
 import com.library.service.statistics.PopularBooksService;
 import com.library.service.statistics.PurchaseSuggestionService;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -33,7 +33,6 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class StatisticsService {
 
     private final PopularBooksService popularBooksService;
@@ -50,6 +49,32 @@ public class StatisticsService {
 
     @Value("${library.search.elasticsearch.enabled:true}")
     private boolean elasticsearchEnabled;
+
+    public StatisticsService(
+        PopularBooksService popularBooksService,
+        BorrowTrendService borrowTrendService,
+        CategoryStatisticsService categoryStatisticsService,
+        InventoryAlertService inventoryAlertService,
+        PurchaseSuggestionService purchaseSuggestionService,
+        UserService userService,
+        com.library.repository.BookRepository bookRepository,
+        com.library.repository.BorrowRecordRepository borrowRecordRepository,
+        com.library.repository.ReservationRecordRepository reservationRecordRepository,
+        @Autowired(required = false) ElasticsearchStatisticsService elasticsearchStatisticsService,
+        MysqlStatisticsService mysqlStatisticsService
+    ) {
+        this.popularBooksService = popularBooksService;
+        this.borrowTrendService = borrowTrendService;
+        this.categoryStatisticsService = categoryStatisticsService;
+        this.inventoryAlertService = inventoryAlertService;
+        this.purchaseSuggestionService = purchaseSuggestionService;
+        this.userService = userService;
+        this.bookRepository = bookRepository;
+        this.borrowRecordRepository = borrowRecordRepository;
+        this.reservationRecordRepository = reservationRecordRepository;
+        this.elasticsearchStatisticsService = elasticsearchStatisticsService;
+        this.mysqlStatisticsService = mysqlStatisticsService;
+    }
 
     public List<PopularBookDTO> getPopularBooks(int limit) {
         return popularBooksService.getPopularBooks(limit);
@@ -131,19 +156,12 @@ public class StatisticsService {
         long availableBooks;
 
         // 优先使用 Elasticsearch，失败时降级到 MySQL
-        if (elasticsearchEnabled) {
+        if (elasticsearchEnabled && elasticsearchStatisticsService != null) {
             try {
-                if (elasticsearchStatisticsService.isAvailable()) {
-                    Map<String, Long> stats = elasticsearchStatisticsService.getInventoryStatistics();
-                    totalBooks = stats.getOrDefault("totalCopies", 0L);
-                    availableBooks = stats.getOrDefault("availableCopies", 0L);
-                    log.debug("Using Elasticsearch for inventory statistics");
-                } else {
-                    log.warn("Elasticsearch is not available, falling back to MySQL");
-                    Map<String, Long> stats = mysqlStatisticsService.getInventoryStatistics();
-                    totalBooks = stats.getOrDefault("totalCopies", 0L);
-                    availableBooks = stats.getOrDefault("availableCopies", 0L);
-                }
+                Map<String, Long> stats = elasticsearchStatisticsService.getInventoryStatistics();
+                totalBooks = stats.getOrDefault("totalCopies", 0L);
+                availableBooks = stats.getOrDefault("availableCopies", 0L);
+                log.debug("Using Elasticsearch for inventory statistics");
             } catch (Exception e) {
                 log.error("Elasticsearch query failed, falling back to MySQL", e);
                 Map<String, Long> stats = mysqlStatisticsService.getInventoryStatistics();

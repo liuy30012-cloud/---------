@@ -6,6 +6,7 @@ import com.library.repository.BookRepository;
 import com.library.repository.SearchSuggestionRepository;
 import com.library.service.elasticsearch.ElasticsearchSearchService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -50,7 +51,7 @@ public class SmartSearchService {
         BookRepository bookRepository,
         SearchSuggestionRepository suggestionRepository,
         FuzzySearchService fuzzySearchService,
-        ElasticsearchSearchService elasticsearchSearchService
+        @Autowired(required = false) ElasticsearchSearchService elasticsearchSearchService
     ) {
         this.bookRepository = bookRepository;
         this.suggestionRepository = suggestionRepository;
@@ -83,11 +84,9 @@ public class SmartSearchService {
             List<String> searchTerms = new ArrayList<>();
 
             // 尝试从 Elasticsearch 获取
-            if (elasticsearchEnabled) {
+            if (elasticsearchEnabled && elasticsearchSearchService != null) {
                 try {
-                    if (elasticsearchSearchService.isAvailable()) {
-                        searchTerms = elasticsearchSearchService.getSuggestions(normalizedQuery, 20);
-                    }
+                    searchTerms = elasticsearchSearchService.getSuggestions(normalizedQuery, 20);
                 } catch (Exception e) {
                     log.debug("Failed to get search terms from Elasticsearch: {}", e.getMessage());
                 }
@@ -155,14 +154,12 @@ public class SmartSearchService {
         int safeLimit = Math.max(limit, 1);
 
         // 优先使用 Elasticsearch，失败时降级到历史记录
-        if (elasticsearchEnabled) {
+        if (elasticsearchEnabled && elasticsearchSearchService != null) {
             try {
-                if (elasticsearchSearchService.isAvailable()) {
-                    List<String> esSuggestions = elasticsearchSearchService.getSuggestions(normalized, safeLimit);
-                    if (!esSuggestions.isEmpty()) {
-                        log.debug("Using Elasticsearch for search suggestions");
-                        return esSuggestions;
-                    }
+                List<String> esSuggestions = elasticsearchSearchService.getSuggestions(normalized, safeLimit);
+                if (!esSuggestions.isEmpty()) {
+                    log.debug("Using Elasticsearch for search suggestions");
+                    return esSuggestions;
                 }
             } catch (Exception e) {
                 log.warn("Elasticsearch suggestion query failed, falling back to history: {}", e.getMessage());

@@ -2,6 +2,7 @@ package com.library.controller;
 
 import com.library.service.elasticsearch.ElasticsearchSyncService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -10,6 +11,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/admin/elasticsearch")
 @RequiredArgsConstructor
+@ConditionalOnProperty(
+    prefix = "library.search.elasticsearch",
+    name = "enabled",
+    havingValue = "true",
+    matchIfMissing = true
+)
 public class ElasticsearchSyncController {
 
     private final ElasticsearchSyncService syncService;

@@ -4,6 +4,7 @@ import com.library.document.BookDocument;
 import com.library.repository.BookDocumentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -28,6 +29,12 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@ConditionalOnProperty(
+    prefix = "library.search.elasticsearch",
+    name = "enabled",
+    havingValue = "true",
+    matchIfMissing = true
+)
 public class ElasticsearchSearchService {
 
     private final ElasticsearchOperations elasticsearchOperations;
