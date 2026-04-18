@@ -70,6 +70,12 @@ public class ApiResponse<T> {
                 .body(new ApiResponse<>(false, null, message));
     }
 
+    // 错误响应（自定义状态码 - 整数）
+    public static <T> ResponseEntity<ApiResponse<T>> error(String message, int statusCode) {
+        return ResponseEntity.status(statusCode)
+                .body(new ApiResponse<>(false, null, message));
+    }
+
     // 404响应
     public static <T> ResponseEntity<ApiResponse<T>> notFound(String message) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)

@@ -350,7 +350,7 @@ public class BookController {
         book.setBorrowedCount(0);
 
         if (bookRepository.findByIsbn(request.getIsbn()).isPresent()) {
-            return ApiResponse.error(org.springframework.http.HttpStatus.CONFLICT, "ISBN '" + request.getIsbn() + "' 已存在");
+            return ApiResponse.error("ISBN '" + request.getIsbn() + "' 已存在", 409);
         }
 
         bookService.validateBook(book);
