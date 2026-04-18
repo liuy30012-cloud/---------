@@ -11,6 +11,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -88,5 +90,73 @@ public class BookService {
 
         bookRepository.deleteById(bookId);
         log.info("图书 {} 已删除", bookId);
+    }
+
+    public void validateBook(Book book) {
+        if (book.getTitle() == null || book.getTitle().trim().isEmpty()) {
+            throw new IllegalArgumentException("图书标题不能为空。");
+        }
+        if (book.getAuthor() == null || book.getAuthor().trim().isEmpty()) {
+            throw new IllegalArgumentException("图书作者不能为空。");
+        }
+        if (book.getIsbn() == null || book.getIsbn().trim().isEmpty()) {
+            throw new IllegalArgumentException("图书 ISBN 不能为空。");
+        }
+        if (book.getLocation() == null || book.getLocation().trim().isEmpty()) {
+            throw new IllegalArgumentException("图书位置不能为空。");
+        }
+        if (book.getTotalCopies() == null || book.getTotalCopies() < 1) {
+            throw new IllegalArgumentException("图书总数必须至少为 1。");
+        }
+    }
+
+    public void checkRelatedData(Long bookId) {
+        Book book = bookRepository.findById(bookId).orElse(null);
+        if (book == null) {
+            throw new IllegalArgumentException("图书不存在。");
+        }
+
+        if (book.getBorrowedCount() > 0) {
+            throw new IllegalArgumentException("该图书仍有未归还记录，无法删除。");
+        }
+
+        List<com.library.model.ReservationRecord> activeReservations = reservationRecordRepository.findByBookIdAndStatusInOrderByCreatedAtAsc(
+            bookId,
+            java.util.Arrays.asList(
+                com.library.model.ReservationRecord.ReservationStatus.WAITING,
+                com.library.model.ReservationRecord.ReservationStatus.AVAILABLE
+            )
+        );
+        if (!activeReservations.isEmpty()) {
+            throw new IllegalArgumentException("该图书仍有活跃预约记录，无法删除。");
+        }
+
+        long reviewCount = bookReviewRepository.countByBookId(bookId);
+        if (reviewCount > 0) {
+            throw new IllegalArgumentException("该图书仍有评论记录，无法删除。");
+        }
+
+        long favoriteCount = bookFavoriteRepository.count();
+        if (favoriteCount > 0) {
+            List<com.library.model.BookFavorite> favorites = bookFavoriteRepository.findAll();
+            boolean hasFavorites = favorites.stream().anyMatch(f -> f.getBookId().equals(bookId));
+            if (hasFavorites) {
+                throw new IllegalArgumentException("该图书仍有收藏记录，无法删除。");
+            }
+        }
+
+        long readingStatusCount = readingStatusRecordRepository.count();
+        if (readingStatusCount > 0) {
+            List<com.library.model.ReadingStatusRecord> readingStatuses = readingStatusRecordRepository.findAll();
+            boolean hasReadingStatus = readingStatuses.stream().anyMatch(rs -> rs.getBookId().equals(bookId));
+            if (hasReadingStatus) {
+                throw new IllegalArgumentException("该图书仍有阅读状态记录，无法删除。");
+            }
+        }
+
+        if (!book.getAvailableCopies().equals(book.getTotalCopies())) {
+            log.warn("图书 {} 的可借数量({})与总数({})不一致", bookId, book.getAvailableCopies(), book.getTotalCopies());
+            throw new IllegalArgumentException("图书库存数据异常，无法删除。");
+        }
     }
 }
