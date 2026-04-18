@@ -126,4 +126,96 @@ public class BookFileParser {
             default -> "";
         };
     }
+
+    public static List<Book> parseCsv(MultipartFile file) throws IOException, CsvException {
+        List<Book> books = new ArrayList<>();
+
+        try (CSVReader csvReader = new CSVReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
+            List<String[]> allRows = csvReader.readAll();
+
+            if (allRows.size() < 2) {
+                throw new IllegalArgumentException("CSV文件至少需要包含表头和一行数据");
+            }
+
+            String[] headers = allRows.get(0);
+            validateCsvHeaders(headers);
+
+            for (int i = 1; i < allRows.size(); i++) {
+                String[] row = allRows.get(i);
+                if (isEmptyCsvRow(row)) {
+                    continue;
+                }
+
+                Book book = parseCsvRow(row);
+                books.add(book);
+            }
+        }
+
+        return books;
+    }
+
+    private static void validateCsvHeaders(String[] headers) {
+        if (headers == null || headers.length == 0) {
+            throw new IllegalArgumentException("CSV文件缺少表头行");
+        }
+
+        List<String> headerList = new ArrayList<>();
+        for (String header : headers) {
+            headerList.add(header.toLowerCase().trim());
+        }
+
+        for (String required : REQUIRED_HEADERS) {
+            if (!headerList.contains(required)) {
+                throw new IllegalArgumentException("CSV文件缺少必需列: " + required);
+            }
+        }
+    }
+
+    private static Book parseCsvRow(String[] row) {
+        Book book = new Book();
+
+        book.setTitle(getValueOrNull(row, 0));
+        book.setAuthor(getValueOrNull(row, 1));
+        book.setIsbn(getValueOrNull(row, 2));
+        book.setLocation(getValueOrNull(row, 3));
+
+        String circulationPolicy = getValueOrNull(row, 4);
+        book.setCirculationPolicy(circulationPolicy == null || circulationPolicy.isEmpty() ? "可借阅" : circulationPolicy);
+
+        String totalCopiesStr = getValueOrNull(row, 12);
+        if (totalCopiesStr != null && !totalCopiesStr.isEmpty()) {
+            try {
+                book.setTotalCopies(Integer.parseInt(totalCopiesStr));
+            } catch (NumberFormatException e) {
+                book.setTotalCopies(1);
+            }
+        } else {
+            book.setTotalCopies(1);
+        }
+        book.setAvailableCopies(book.getTotalCopies());
+        book.setBorrowedCount(0);
+
+        return book;
+    }
+
+    private static boolean isEmptyCsvRow(String[] row) {
+        if (row == null || row.length == 0) {
+            return true;
+        }
+
+        for (String value : row) {
+            if (value != null && !value.trim().isEmpty()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static String getValueOrNull(String[] row, int index) {
+        if (row == null || index < 0 || index >= row.length) {
+            return null;
+        }
+        String value = row[index];
+        return (value == null || value.trim().isEmpty()) ? null : value.trim();
+    }
 }
