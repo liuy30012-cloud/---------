@@ -2,6 +2,10 @@ package com.library.service;
 
 import com.library.model.Book;
 import com.library.repository.BookRepository;
+import com.library.repository.ReservationRecordRepository;
+import com.library.repository.BookReviewRepository;
+import com.library.repository.BookFavoriteRepository;
+import com.library.repository.ReadingStatusRecordRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -13,6 +17,10 @@ import org.springframework.transaction.annotation.Transactional;
 public class BookService {
 
     private final BookRepository bookRepository;
+    private final ReservationRecordRepository reservationRecordRepository;
+    private final BookReviewRepository bookReviewRepository;
+    private final BookFavoriteRepository bookFavoriteRepository;
+    private final ReadingStatusRecordRepository readingStatusRecordRepository;
 
     public Book getBookById(Long bookId) {
         return bookRepository.findById(bookId)
