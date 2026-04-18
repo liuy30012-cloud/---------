@@ -212,10 +212,10 @@ public class BookFileParser {
     }
 
     private static String getValueOrNull(String[] row, int index) {
-        if (row == null || index < 0 || index >= row.length) {
-            return null;
+        if (index >= row.length) {
+            return "";
         }
         String value = row[index];
-        return (value == null || value.trim().isEmpty()) ? null : value.trim();
+        return (value == null || value.trim().isEmpty()) ? "" : value.trim();
     }
 }
