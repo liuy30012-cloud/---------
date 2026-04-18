@@ -431,4 +431,56 @@ public class BookController {
         com.library.dto.BatchDeleteResponse response = bookService.batchDeleteBooks(request.getBookIds());
         return ApiResponse.ok(response);
     }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/import")
+    public ResponseEntity<ApiResponse<com.library.dto.ImportResponse>> importBooks(
+        @RequestParam("file") org.springframework.web.multipart.MultipartFile file
+    ) {
+        if (file.isEmpty()) {
+            return ApiResponse.error("文件不能为空", 400);
+        }
+
+        String filename = file.getOriginalFilename();
+        if (filename == null) {
+            return ApiResponse.error("文件名无效", 400);
+        }
+
+        try {
+            java.util.List<Book> books;
+            if (filename.endsWith(".xlsx") || filename.endsWith(".xls")) {
+                books = com.library.util.BookFileParser.parseExcel(file);
+            } else if (filename.endsWith(".csv")) {
+                books = com.library.util.BookFileParser.parseCsv(file);
+            } else {
+                return ApiResponse.error("不支持的文件格式，仅支持 .xlsx, .xls, .csv", 400);
+            }
+
+            com.library.dto.ImportResponse response = bookService.batchCreateBooks(books);
+            return ApiResponse.ok(response);
+        } catch (IllegalArgumentException e) {
+            return ApiResponse.error(e.getMessage(), 400);
+        } catch (java.io.IOException e) {
+            return ApiResponse.error("文件解析失败: " + e.getMessage(), 400);
+        }
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/import/template")
+    public ResponseEntity<org.springframework.core.io.Resource> downloadTemplate() {
+        try {
+            byte[] templateBytes = com.library.util.BookFileParser.generateTemplate();
+            org.springframework.core.io.ByteArrayResource resource =
+                new org.springframework.core.io.ByteArrayResource(templateBytes);
+
+            return ResponseEntity.ok()
+                .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION,
+                    "attachment; filename=book_import_template.xlsx")
+                .contentType(org.springframework.http.MediaType.APPLICATION_OCTET_STREAM)
+                .contentLength(templateBytes.length)
+                .body(resource);
+        } catch (java.io.IOException e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
 }
