@@ -6,12 +6,16 @@ import com.library.repository.ReservationRecordRepository;
 import com.library.repository.BookReviewRepository;
 import com.library.repository.BookFavoriteRepository;
 import com.library.repository.ReadingStatusRecordRepository;
+import com.library.dto.BatchDeleteResponse;
+import com.library.dto.BatchOperationFailure;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Propagation;
 
 import java.util.List;
+import java.util.ArrayList;
 
 @Slf4j
 @Service
@@ -172,10 +176,34 @@ public class BookService {
         updatedBook.setAvailableCopies(newAvailableCopies);
         updatedBook.setBorrowedCount(borrowedCount);
 
-        log.info("图书 {} 库存调整：总数 {} -> {}，可借 {} -> {}，已借 {}",
+        log.info("图书 {} 库存调整：总数 {} -> {}，可借  -> {}，已借 {}",
             existingBook.getId(),
             existingBook.getTotalCopies(), newTotalCopies,
             existingBook.getAvailableCopies(), newAvailableCopies,
             borrowedCount);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public BatchDeleteResponse batchDeleteBooks(List<Long> bookIds) {
+        int successCount = 0;
+        int failedCount = 0;
+        List<BatchOperationFailure> failures = new ArrayList<>();
+
+        log.info("开始批量删除图书，共 {} 本", bookIds.size());
+
+        for (Long bookId : bookIds) {
+            try {
+                checkRelatedData(bookId);
+                deleteBook(bookId);
+                successCount++;
+            } catch (Exception e) {
+                failedCount++;
+                failures.add(BatchOperationFailure.ofBookId(bookId, e.getMessage()));
+                log.warn("删除图书 {} 失败: {}", bookId, e.getMessage());
+            }
+        }
+
+        log.info("批量删除完成，成功 {} 本，失败 {} 本", successCount, failedCount);
+        return new BatchDeleteResponse(successCount, failedCount, failures);
     }
 }
