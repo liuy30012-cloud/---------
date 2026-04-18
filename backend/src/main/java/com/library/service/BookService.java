@@ -183,7 +183,7 @@ public class BookService {
             borrowedCount);
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public BatchDeleteResponse batchDeleteBooks(List<Long> bookIds) {
         int successCount = 0;
         int failedCount = 0;
