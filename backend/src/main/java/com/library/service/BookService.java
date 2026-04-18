@@ -8,6 +8,7 @@ import com.library.repository.BookFavoriteRepository;
 import com.library.repository.ReadingStatusRecordRepository;
 import com.library.dto.BatchDeleteResponse;
 import com.library.dto.BatchOperationFailure;
+import com.library.dto.ImportResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,8 @@ import org.springframework.transaction.annotation.Propagation;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Set;
+import java.util.HashSet;
 
 @Slf4j
 @Service
@@ -205,5 +208,51 @@ public class BookService {
 
         log.info("批量删除完成，成功 {} 本，失败 {} 本", successCount, failedCount);
         return new BatchDeleteResponse(successCount, failedCount, failures);
+    }
+
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    public ImportResponse batchCreateBooks(List<Book> books) {
+        int successCount = 0;
+        int failedCount = 0;
+        List<BatchOperationFailure> failures = new ArrayList<>();
+        Set<String> processedIsbns = new HashSet<>();
+
+        log.info("开始批量导入图书，共 {} 本", books.size());
+
+        for (int i = 0; i < books.size(); i++) {
+            Book book = books.get(i);
+            int rowNumber = i + 2; // 行号从 2 开始（第 1 行是表头）
+
+            try {
+                // 验证图书数据
+                validateBook(book);
+
+                // 检查当前批次中是否有重复的 ISBN
+                if (processedIsbns.contains(book.getIsbn())) {
+                    throw new IllegalArgumentException("ISBN 在当前批次中重复。");
+                }
+
+                // 检查数据库中是否已存在该 ISBN
+                if (bookRepository.findByIsbn(book.getIsbn()).isPresent()) {
+                    throw new IllegalArgumentException("ISBN 已存在于数据库中。");
+                }
+
+                // 设置初始库存状态
+                book.setAvailableCopies(book.getTotalCopies());
+                book.setBorrowedCount(0);
+
+                // 创建图书
+                createBook(book);
+                processedIsbns.add(book.getIsbn());
+                successCount++;
+            } catch (Exception e) {
+                failedCount++;
+                failures.add(BatchOperationFailure.ofRow(rowNumber, e.getMessage()));
+                log.warn("导入第 {} 行图书失败: {}", rowNumber, e.getMessage());
+            }
+        }
+
+        log.info("批量导入完成，成功 {} 本，失败 {} 本", successCount, failedCount);
+        return new ImportResponse(successCount, failedCount, failures);
     }
 }
