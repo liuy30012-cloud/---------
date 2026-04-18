@@ -72,7 +72,7 @@ public class BookFileParser {
         book.setLocation(getCellValueAsString(row.getCell(3)));
 
         String circulationPolicy = getCellValueAsString(row.getCell(4));
-        book.setCirculationPolicy(circulationPolicy.isEmpty() ? "可借阅" : circulationPolicy);
+        book.setCirculationPolicy(circulationPolicy.isEmpty() ? Book.CirculationPolicy.AUTO : Book.CirculationPolicy.valueOf(circulationPolicy));
 
         String totalCopiesStr = getCellValueAsString(row.getCell(12));
         if (totalCopiesStr != null && !totalCopiesStr.isEmpty()) {
@@ -180,7 +180,7 @@ public class BookFileParser {
         book.setLocation(getValueOrNull(row, 3));
 
         String circulationPolicy = getValueOrNull(row, 4);
-        book.setCirculationPolicy(circulationPolicy == null || circulationPolicy.isEmpty() ? "可借阅" : circulationPolicy);
+        book.setCirculationPolicy(circulationPolicy == null || circulationPolicy.isEmpty() ? Book.CirculationPolicy.AUTO : Book.CirculationPolicy.valueOf(circulationPolicy));
 
         String totalCopiesStr = getValueOrNull(row, 12);
         if (totalCopiesStr != null && !totalCopiesStr.isEmpty()) {
