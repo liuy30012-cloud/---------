@@ -155,4 +155,27 @@ public class BookService {
             throw new IllegalArgumentException("图书库存数据异常，无法删除。");
         }
     }
+
+    public void adjustCopiesOnUpdate(Book existingBook, Book updatedBook) {
+        if (updatedBook.getTotalCopies() == null) {
+            return;
+        }
+
+        Integer newTotalCopies = updatedBook.getTotalCopies();
+        Integer borrowedCount = existingBook.getBorrowedCount();
+
+        if (newTotalCopies < borrowedCount) {
+            throw new IllegalArgumentException("新的总副本数不能小于已借出数量。");
+        }
+
+        Integer newAvailableCopies = newTotalCopies - borrowedCount;
+        updatedBook.setAvailableCopies(newAvailableCopies);
+        updatedBook.setBorrowedCount(borrowedCount);
+
+        log.info("图书 {} 库存调整：总数 {} -> {}，可借 {} -> {}，已借 {}",
+            existingBook.getId(),
+            existingBook.getTotalCopies(), newTotalCopies,
+            existingBook.getAvailableCopies(), newAvailableCopies,
+            borrowedCount);
+    }
 }
