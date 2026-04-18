@@ -15,7 +15,7 @@ public class BookSyncListener {
 
     private static ElasticsearchSyncService syncService;
 
-    @Autowired
+    @Autowired(required = false)
     public void setSyncService(ElasticsearchSyncService syncService) {
         BookSyncListener.syncService = syncService;
     }
