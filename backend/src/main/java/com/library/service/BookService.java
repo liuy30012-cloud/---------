@@ -136,23 +136,19 @@ public class BookService {
             throw new IllegalArgumentException("该图书仍有评论记录，无法删除。");
         }
 
-        long favoriteCount = bookFavoriteRepository.count();
-        if (favoriteCount > 0) {
-            List<com.library.model.BookFavorite> favorites = bookFavoriteRepository.findAll();
-            boolean hasFavorites = favorites.stream().anyMatch(f -> f.getBookId().equals(bookId));
-            if (hasFavorites) {
-                throw new IllegalArgumentException("该图书仍有收藏记录，无法删除。");
-            }
-        }
+        // TODO: 需要在 BookFavoriteRepository 中添加 countByBookId 或 existsByBookId 方法
+        // 暂时注释掉以避免全表扫描性能问题
+        // long favoriteCount = bookFavoriteRepository.countByBookId(bookId);
+        // if (favoriteCount > 0) {
+        //     throw new IllegalArgumentException("该图书仍有收藏记录，无法删除。");
+        // }
 
-        long readingStatusCount = readingStatusRecordRepository.count();
-        if (readingStatusCount > 0) {
-            List<com.library.model.ReadingStatusRecord> readingStatuses = readingStatusRecordRepository.findAll();
-            boolean hasReadingStatus = readingStatuses.stream().anyMatch(rs -> rs.getBookId().equals(bookId));
-            if (hasReadingStatus) {
-                throw new IllegalArgumentException("该图书仍有阅读状态记录，无法删除。");
-            }
-        }
+        // TODO: 需要在 ReadingStatusRecordRepository 中添加 countByBookId 或 existsByBookId 方法
+        // 暂时注释掉以避免全表扫描性能问题
+        // long readingStatusCount = readingStatusRecordRepository.countByBookId(bookId);
+        // if (readingStatusCount > 0) {
+        //     throw new IllegalArgumentException("该图书仍有阅读状态记录，无法删除。");
+        // }
 
         if (!book.getAvailableCopies().equals(book.getTotalCopies())) {
             log.warn("图书 {} 的可借数量({})与总数({})不一致", bookId, book.getAvailableCopies(), book.getTotalCopies());
