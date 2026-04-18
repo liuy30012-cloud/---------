@@ -21,11 +21,11 @@
 |------|------|
 | 📝 **代码总量** | 48,953 行（前端 35,468 行 + 后端 13,485 行） |
 | 🎨 **前端组件** | 26 个 Vue 组件 + 14 个页面视图 |
-| 🔧 **后端服务** | 19 个控制器 + 25 个服务 + 18 个实体模型 |
+| 🔧 **后端服务** | 19 个控制器 + 28 个服务 + 18 个实体模型 |
 | 🛡️ **安全过滤器** | 4 个安全过滤器（限流、反爬、JWT、水印） |
-| 📚 **文档数量** | 17+ 份技术文档 |
-| 🔄 **提交历史** | 43+ 次提交 |
-| 🌟 **核心特性** | 15+ 个功能模块 |
+| 📚 **文档数量** | 20+ 份技术文档 |
+| 🔄 **提交历史** | 50+ 次提交 |
+| 🌟 **核心特性** | 18+ 个功能模块 |
 
 ### ✨ 核心功能一览
 
@@ -35,6 +35,7 @@
 | 📍 **精准定位** | 馆内楼层、书架、层位可视化指引 | 基于地理视图的馆内定位地图 |
 | 📖 **借阅管理** | 借书、还书、续借全生命周期管理 | 完整状态机流转、超期自动处理 |
 | 📋 **预约系统** | 在线预约热门书籍 | 排队逻辑、到期自动释放 |
+| 📚 **图书管理** | 管理员新增、修改、删除、批量导入图书 | Excel/CSV 批量导入、智能库存调整、关联数据检查 |
 | 🤖 **AI 智能助手** | 阅读分析、文档润色、多轮对话 | 流式输出、上下文保持、抽屉式 UI |
 | 📊 **数据分析** | 借阅统计、热门排行、趋势可视化 | Elasticsearch 聚合查询、ECharts 图表、多维度数据看板 |
 | ⚡ **高性能架构** | Elasticsearch 搜索引擎集成 | 性能提升 50-60 倍、自动降级到 MySQL、实时数据同步 |
@@ -385,10 +386,16 @@ npm run electron:dev
 
 ### 书籍接口 `/api/books`
 
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| GET | `/api/books/search` | 搜索书籍 |
-| GET | `/api/books/{id}` | 获取书籍详情 |
+| 方法 | 路径 | 说明 | 权限 |
+|------|------|------|------|
+| GET | `/api/books/search` | 搜索书籍 | 所有用户 |
+| GET | `/api/books/{id}` | 获取书籍详情 | 所有用户 |
+| POST | `/api/books` | 创建图书 | 仅管理员 |
+| PUT | `/api/books/{id}` | 更新图书 | 仅管理员 |
+| DELETE | `/api/books/{id}` | 删除图书 | 仅管理员 |
+| DELETE | `/api/books/batch` | 批量删除图书 | 仅管理员 |
+| POST | `/api/books/import` | 批量导入（Excel/CSV） | 仅管理员 |
+| GET | `/api/books/import/template` | 下载导入模板 | 仅管理员 |
 
 ### 借阅接口 `/api/borrows`
 
@@ -495,6 +502,7 @@ npm run build:win
 | [elasticsearch-setup.md](./docs/elasticsearch-setup.md) | Elasticsearch 部署指南 |
 | [elasticsearch-integration-checklist.md](./docs/elasticsearch-integration-checklist.md) | Elasticsearch 集成验收清单 |
 | [elasticsearch-bugfix-report.md](./docs/elasticsearch-bugfix-report.md) | Elasticsearch Bug 修复报告 |
+| [book-management-api.md](./docs/api/book-management-api.md) | 图书管理 API 文档 |
 | [快速启动指南.md](./docs/快速启动指南.md) | 5 分钟快速上手 |
 | [借阅管理系统详细计划.md](./docs/借阅管理系统详细计划.md) | 借阅模块完整设计方案 |
 | [数据分析模块详细计划.md](./docs/数据分析模块详细计划.md) | 数据分析引擎设计方案 |
@@ -507,6 +515,40 @@ npm run build:win
 ---
 
 ## 📝 更新日志
+
+### v1.4.0 (2026-04-19)
+
+#### 🚀 新增功能
+
+- ✅ **图书管理 API** — 管理员可通过 API 新增、修改、删除图书
+  - POST `/api/books` - 创建图书
+  - PUT `/api/books/{id}` - 更新图书（智能库存调整）
+  - DELETE `/api/books/{id}` - 删除图书（关联数据检查）
+  - DELETE `/api/books/batch` - 批量删除
+  - POST `/api/books/import` - 批量导入（支持 Excel/CSV）
+  - GET `/api/books/import/template` - 下载导入模板
+
+#### 🔧 Bug 修复
+
+- ✅ 修复 Elasticsearch 配置在非 test 环境下可能失效的问题
+  - 将 `@Profile("!test")` 替换为 `@ConditionalOnProperty`
+  - 基于配置项 `library.search.elasticsearch.enabled` 控制
+- ✅ 修复 Elasticsearch Service 和 Controller 缺少条件注解的问题
+  - 给 `ElasticsearchSyncService`、`ElasticsearchSearchService`、`ElasticsearchStatisticsService` 添加条件注解
+  - 给 `ElasticsearchSyncController` 添加条件注解
+  - 修复 `SmartSearchService` 和 `StatisticsService` 的依赖注入问题
+- ✅ 修复 BookSyncListener 注入失败问题
+  - 添加 `@Autowired(required = false)` 避免 ES 禁用时启动失败
+
+#### 🧪 测试覆盖
+
+- ✅ 新增 `BookServiceTest` — 图书服务单元测试（7 个测试用例）
+- ✅ 新增 `BookControllerAdminTest` — 管理接口集成测试（3 个测试用例）
+- ✅ 新增 `TestElasticsearchConfig` — 测试环境 Mock 配置
+
+#### 📚 文档更新
+
+- ✅ 新增 [book-management-api.md](./docs/api/book-management-api.md) — 图书管理 API 文档
 
 ### v1.3.0 (2026-04-18)
 
