@@ -393,8 +393,12 @@ public class BookController {
         }
 
         if (request.getTotalCopies() != null) {
-            existingBook.setTotalCopies(request.getTotalCopies());
-            bookService.adjustCopiesOnUpdate(existingBook, existingBook);
+            Book bookWithNewCopies = new Book();
+            bookWithNewCopies.setTotalCopies(request.getTotalCopies());
+            bookService.adjustCopiesOnUpdate(existingBook, bookWithNewCopies);
+            existingBook.setTotalCopies(bookWithNewCopies.getTotalCopies());
+            existingBook.setAvailableCopies(bookWithNewCopies.getAvailableCopies());
+            existingBook.setBorrowedCount(bookWithNewCopies.getBorrowedCount());
         }
 
         bookService.validateBook(existingBook);
