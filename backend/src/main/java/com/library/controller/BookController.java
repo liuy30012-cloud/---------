@@ -422,4 +422,13 @@ public class BookController {
             return ApiResponse.error(e.getMessage(), 409);
         }
     }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/batch")
+    public ResponseEntity<ApiResponse<com.library.dto.BatchDeleteResponse>> batchDeleteBooks(
+        @Valid @RequestBody com.library.dto.BatchDeleteRequest request
+    ) {
+        com.library.dto.BatchDeleteResponse response = bookService.batchDeleteBooks(request.getBookIds());
+        return ApiResponse.ok(response);
+    }
 }
