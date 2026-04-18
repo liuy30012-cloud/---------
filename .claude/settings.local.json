@@ -18,7 +18,12 @@
       "Bash(where mvn *)",
       "Bash(./mvnw.cmd clean *)",
       "Bash(mvn compile *)",
-      "Bash(awk '{print $9, $5}')"
+      "Bash(awk '{print $9, $5}')",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(./mvnw.cmd dependency:tree)",
+      "WebFetch(domain:central.sonatype.com)",
+      "Bash(mvn dependency:tree)"
     ]
   },
   "enabledPlugins": {
