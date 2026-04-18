@@ -223,11 +223,23 @@ public class BookFileParser {
         try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             Sheet sheet = workbook.createSheet("图书导入模板");
 
-            // 创建表头行
+            // 创建表头行 - 顺序与 parseExcelRow() 方法完全一致
             Row headerRow = sheet.createRow(0);
-            String[] headers = {"title", "author", "isbn", "location", "circulationPolicy",
-                              "publisher", "publishDate", "category", "description",
-                              "coverImage", "language", "pages", "totalCopies"};
+            String[] headers = {
+                "title",              // 索引 0
+                "author",             // 索引 1
+                "isbn",               // 索引 2
+                "location",           // 索引 3
+                "circulationPolicy",  // 索引 4
+                "",                   // 索引 5 (未使用)
+                "",                   // 索引 6 (未使用)
+                "",                   // 索引 7 (未使用)
+                "",                   // 索引 8 (未使用)
+                "",                   // 索引 9 (未使用)
+                "",                   // 索引 10 (未使用)
+                "",                   // 索引 11 (未使用)
+                "totalCopies"         // 索引 12
+            };
 
             CellStyle headerStyle = workbook.createCellStyle();
             Font headerFont = workbook.createFont();
@@ -241,22 +253,22 @@ public class BookFileParser {
                 sheet.setColumnWidth(i, 4000);
             }
 
-            // 创建示例数据行
+            // 创建示例数据行 - 与表头对应
             Row exampleRow = sheet.createRow(1);
             String[] exampleData = {
-                "Java编程思想",
-                "Bruce Eckel",
-                "978-0131872486",
-                "A区-1层-001",
-                "可借阅",
-                "机械工业出版社",
-                "2007-06-01",
-                "计算机科学",
-                "Java编程经典著作",
-                "",
-                "中文",
-                "880",
-                "5"
+                "Java编程思想",       // title
+                "Bruce Eckel",       // author
+                "978-0131872486",    // isbn
+                "A区-1层-001",       // location
+                "可借阅",            // circulationPolicy
+                "",                  // 未使用
+                "",                  // 未使用
+                "",                  // 未使用
+                "",                  // 未使用
+                "",                  // 未使用
+                "",                  // 未使用
+                "",                  // 未使用
+                "5"                  // totalCopies
             };
 
             for (int i = 0; i < exampleData.length; i++) {
