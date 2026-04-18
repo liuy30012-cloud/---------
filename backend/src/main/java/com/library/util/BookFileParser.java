@@ -218,4 +218,54 @@ public class BookFileParser {
         String value = row[index];
         return (value == null || value.trim().isEmpty()) ? "" : value.trim();
     }
+
+    public static byte[] generateTemplate() throws IOException {
+        try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            Sheet sheet = workbook.createSheet("图书导入模板");
+
+            // 创建表头行
+            Row headerRow = sheet.createRow(0);
+            String[] headers = {"title", "author", "isbn", "location", "circulationPolicy",
+                              "publisher", "publishDate", "category", "description",
+                              "coverImage", "language", "pages", "totalCopies"};
+
+            CellStyle headerStyle = workbook.createCellStyle();
+            Font headerFont = workbook.createFont();
+            headerFont.setBold(true);
+            headerStyle.setFont(headerFont);
+
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(headerStyle);
+                sheet.setColumnWidth(i, 4000);
+            }
+
+            // 创建示例数据行
+            Row exampleRow = sheet.createRow(1);
+            String[] exampleData = {
+                "Java编程思想",
+                "Bruce Eckel",
+                "978-0131872486",
+                "A区-1层-001",
+                "可借阅",
+                "机械工业出版社",
+                "2007-06-01",
+                "计算机科学",
+                "Java编程经典著作",
+                "",
+                "中文",
+                "880",
+                "5"
+            };
+
+            for (int i = 0; i < exampleData.length; i++) {
+                Cell cell = exampleRow.createCell(i);
+                cell.setCellValue(exampleData[i]);
+            }
+
+            workbook.write(out);
+            return out.toByteArray();
+        }
+    }
 }
