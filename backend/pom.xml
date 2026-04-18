@@ -114,6 +114,13 @@
             <version>5.2.5</version>
         </dependency>
 
+        <!-- OpenCSV for CSV parsing -->
+        <dependency>
+            <groupId>com.opencsv</groupId>
+            <artifactId>opencsv</artifactId>
+            <version>5.7.1</version>
+        </dependency>
+
         <!-- Spring Data Elasticsearch -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
