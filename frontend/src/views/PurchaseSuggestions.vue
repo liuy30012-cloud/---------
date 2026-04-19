@@ -7,26 +7,26 @@
     >
       <template #actions>
         <div class="page-actions">
-          <button class="page-action-btn page-action-btn--secondary" @click="loadBoard">
+          <LibraryButton type="secondary" @click="loadBoard">
             <span class="material-symbols-outlined">refresh</span>
             <span>{{ t('purchaseSuggestions.buttons.refresh') }}</span>
-          </button>
-          <button
+          </LibraryButton>
+          <LibraryButton
             v-if="isAdmin && suggestionSummary?.suggestions?.length"
-            class="page-action-btn page-action-btn--secondary"
+            type="secondary"
             @click="exportSuggestions"
           >
             <span class="material-symbols-outlined">download</span>
             <span>{{ t('purchaseSuggestions.buttons.exportSuggestions') }}</span>
-          </button>
-          <button
+          </LibraryButton>
+          <LibraryButton
             v-if="isAdmin"
-            class="page-action-btn page-action-btn--primary"
+            type="primary"
             @click="loadAdminData"
           >
             <span class="material-symbols-outlined">tune</span>
             <span>{{ t('purchaseSuggestions.buttons.refreshAdmin') }}</span>
-          </button>
+          </LibraryButton>
         </div>
       </template>
     </PageHeader>
@@ -112,10 +112,17 @@
                 :placeholder="t('purchaseSuggestions.form.reasonPlaceholder')"
               />
             </label>
-            <button class="submit-btn" type="submit" :disabled="submitting">
+            <LibraryButton
+              type="primary"
+              :loading="submitting"
+              loading-text="提交中..."
+              success-text="建议已提交"
+              error-text="提交失败"
+              @click="submitRequest"
+            >
               <span class="material-symbols-outlined">library_add</span>
               <span>{{ submitting ? t('purchaseSuggestions.form.submitting') : t('purchaseSuggestions.form.submit') }}</span>
-            </button>
+            </LibraryButton>
           </form>
         </div>
 
@@ -197,14 +204,16 @@
             </div>
 
             <div class="request-card__footer">
-              <button
-                class="vote-btn"
+              <LibraryButton
+                type="secondary"
+                size="small"
                 :disabled="!request.canVote || isVoting(request.id)"
+                :loading="isVoting(request.id)"
                 @click="voteForRequest(request.id)"
               >
                 <span class="material-symbols-outlined">how_to_vote</span>
                 <span>{{ voteButtonText(request) }}</span>
-              </button>
+              </LibraryButton>
               <span class="footer-note">{{ t('purchaseSuggestions.card.createdAt') }} {{ formatFullDate(request.createdAt) }}</span>
             </div>
 
@@ -228,14 +237,16 @@
                   />
                 </label>
               </div>
-              <button
-                class="admin-save-btn"
+              <LibraryButton
+                type="primary"
+                size="small"
                 :disabled="isSavingStatus(request.id)"
+                :loading="isSavingStatus(request.id)"
                 @click="saveStatus(request.id)"
               >
                 <span class="material-symbols-outlined">save</span>
                 <span>{{ isSavingStatus(request.id) ? t('purchaseSuggestions.admin.saving') : t('purchaseSuggestions.admin.save') }}</span>
-              </button>
+              </LibraryButton>
             </div>
           </article>
         </div>
@@ -343,6 +354,7 @@ import {
 } from '../api/purchaseRequestApi'
 import { statisticsApi, type PurchaseSuggestionSummary } from '../api/statisticsApi'
 import PageHeader from '../components/layout/PageHeader.vue'
+import LibraryButton from '@/components/common/LibraryButton.vue'
 import { useUserStore } from '../stores/user'
 import { sanitizeApiMessage } from '../utils/apiMessage'
 import { logger } from '../utils/logger'
@@ -869,60 +881,6 @@ function exportSuggestions() {
   box-shadow: 0 0 0 4px rgba(60, 110, 113, 0.12);
 }
 
-.submit-btn,
-.vote-btn,
-.admin-save-btn,
-.page-action-btn {
-  border: none;
-  border-radius: 999px;
-  font: inherit;
-  font-weight: 700;
-  cursor: pointer;
-  transition: transform 0.18s ease, opacity 0.18s ease, box-shadow 0.18s ease;
-}
-
-.submit-btn,
-.admin-save-btn,
-.page-action-btn--primary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.55rem;
-  background: linear-gradient(135deg, #335c67, #537072);
-  color: #fffdf5;
-  padding: 0.9rem 1.2rem;
-  box-shadow: 0 12px 26px rgba(51, 92, 103, 0.22);
-}
-
-.vote-btn,
-.page-action-btn--secondary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.55rem;
-  background: rgba(255, 255, 255, 0.9);
-  color: var(--hub-ink);
-  padding: 0.85rem 1.15rem;
-  border: 1px solid rgba(97, 113, 104, 0.18);
-}
-
-.submit-btn:disabled,
-.vote-btn:disabled,
-.admin-save-btn:disabled,
-.page-action-btn:disabled {
-  opacity: 0.58;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-
-.submit-btn:not(:disabled):hover,
-.vote-btn:not(:disabled):hover,
-.admin-save-btn:not(:disabled):hover,
-.page-action-btn:not(:disabled):hover {
-  transform: translateY(-1px);
-}
-
 .page-actions {
   display: flex;
   gap: var(--space-3);
@@ -1174,10 +1132,6 @@ function exportSuggestions() {
   flex-wrap: wrap;
 }
 
-.vote-btn {
-  min-width: 10rem;
-}
-
 .admin-control {
   margin-top: var(--space-4);
   padding-top: var(--space-4);
@@ -1193,10 +1147,6 @@ function exportSuggestions() {
   grid-template-columns: 180px minmax(0, 1fr);
   gap: var(--space-3);
   flex: 1;
-}
-
-.admin-save-btn {
-  min-width: 8.8rem;
 }
 
 .suggestion-list {
@@ -1291,10 +1241,6 @@ function exportSuggestions() {
   }
 
   .page-actions {
-    width: 100%;
-  }
-
-  .page-action-btn {
     width: 100%;
   }
 }
