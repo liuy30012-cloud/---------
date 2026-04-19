@@ -1,15 +1,15 @@
 <template>
   <div class="icon-btn-wrapper">
-    <button class="icon-btn" ref="historyBtnRef" @click="togglePanel">
+    <LibraryButton type="ghost" size="small" ref="historyBtnRef" @click="togglePanel">
       <span class="material-symbols-outlined">history</span>
-    </button>
+    </LibraryButton>
     <Transition name="popup">
       <div v-if="showPanel" ref="historyPanelRef" class="popup-panel history-panel">
         <div class="popup-header">
           <h4 class="popup-title">{{ $t('history.title') }}</h4>
-          <button v-if="searchHistory.length > 0" class="popup-action-btn" @click="$emit('clear-history')">
+          <LibraryButton v-if="searchHistory.length > 0" type="ghost" size="small" @click="$emit('clear-history')">
             {{ $t('history.clear') }}
-          </button>
+          </LibraryButton>
         </div>
         <div class="popup-body">
           <div v-if="searchHistory.length === 0" class="popup-empty">
@@ -38,6 +38,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
+import LibraryButton from '@/components/common/LibraryButton.vue'
 
 interface SearchHistoryItem {
   keyword: string
@@ -53,7 +54,7 @@ defineEmits(['clear-history', 're-search'])
 
 const { t } = useI18n()
 const showPanel = ref(false)
-const historyBtnRef = ref<HTMLElement>()
+const historyBtnRef = ref<InstanceType<typeof LibraryButton>>()
 const historyPanelRef = ref<HTMLElement>()
 
 const togglePanel = () => {
@@ -79,7 +80,7 @@ const handleClickOutside = (event: MouseEvent) => {
     historyPanelRef.value &&
     historyBtnRef.value &&
     !historyPanelRef.value.contains(event.target as Node) &&
-    !historyBtnRef.value.contains(event.target as Node)
+    !(historyBtnRef.value.$el as HTMLElement).contains(event.target as Node)
   ) {
     showPanel.value = false
   }
@@ -97,25 +98,6 @@ onUnmounted(() => {
 <style scoped>
 .icon-btn-wrapper {
   position: relative;
-}
-
-.icon-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: none;
-  background: transparent;
-  color: #4a5568;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
-}
-
-.icon-btn:hover {
-  background: rgba(102, 126, 234, 0.1);
-  color: #667eea;
 }
 
 .popup-panel {
@@ -144,22 +126,6 @@ onUnmounted(() => {
   font-weight: 600;
   color: #2d3748;
   margin: 0;
-}
-
-.popup-action-btn {
-  background: none;
-  border: none;
-  color: #667eea;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 4px;
-  transition: background 0.2s;
-}
-
-.popup-action-btn:hover {
-  background: rgba(102, 126, 234, 0.1);
 }
 
 .popup-body {

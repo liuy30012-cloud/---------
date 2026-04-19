@@ -6,8 +6,8 @@
         <p class="catalog-subtitle">{{ $t('catalog.featuredSub') }}</p>
       </div>
       <div class="view-toggles">
-        <button :class="['toggle-btn', { active: viewMode === 'grid' }]" @click="$emit('setViewMode', 'grid')"><span class="material-symbols-outlined">grid_view</span></button>
-        <button :class="['toggle-btn', { active: viewMode === 'list' }]" @click="$emit('setViewMode', 'list')"><span class="material-symbols-outlined">view_list</span></button>
+        <LibraryButton type="ghost" size="small" :class="{ 'is-active': viewMode === 'grid' }" @click="$emit('setViewMode', 'grid')"><span class="material-symbols-outlined">grid_view</span></LibraryButton>
+        <LibraryButton type="ghost" size="small" :class="{ 'is-active': viewMode === 'list' }" @click="$emit('setViewMode', 'list')"><span class="material-symbols-outlined">view_list</span></LibraryButton>
       </div>
     </div>
 
@@ -69,6 +69,7 @@
 <script setup lang="ts">
 import type { Book } from '../../composables/useBookSearch'
 import { handleImageError } from '../../utils/imageHelpers'
+import LibraryButton from '@/components/common/LibraryButton.vue'
 
 defineProps<{
   books: Book[]
@@ -85,3 +86,10 @@ defineEmits<{
 
 const onImgError = (e: Event) => handleImageError(e, '/logo-photo.jpg')
 </script>
+
+<style scoped>
+.is-active :deep(.el-button) {
+  background: rgba(0, 83, 219, 0.1) !important;
+  color: var(--primary) !important;
+}
+</style>

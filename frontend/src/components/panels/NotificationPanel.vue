@@ -1,16 +1,16 @@
 <template>
   <div class="icon-btn-wrapper">
-    <button class="icon-btn" ref="notifBtnRef" @click="togglePanel">
+    <LibraryButton type="ghost" size="small" ref="notifBtnRef" @click="togglePanel">
       <span class="material-symbols-outlined">notifications</span>
       <span v-if="unreadCount > 0" class="unread-badge">{{ unreadCount }}</span>
-    </button>
+    </LibraryButton>
     <Transition name="popup">
       <div v-if="showPanel" ref="notifPanelRef" class="popup-panel notif-panel">
         <div class="popup-header">
           <h4 class="popup-title">{{ $t('notifications.title') }}</h4>
-          <button v-if="unreadCount > 0" class="popup-action-btn" @click="$emit('mark-all-read')">
+          <LibraryButton v-if="unreadCount > 0" type="ghost" size="small" @click="$emit('mark-all-read')">
             {{ $t('notifications.markAllRead') }}
-          </button>
+          </LibraryButton>
         </div>
         <div class="popup-body">
           <div
@@ -36,6 +36,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
+import LibraryButton from '@/components/common/LibraryButton.vue'
 
 interface Notification {
   id: number
@@ -54,7 +55,7 @@ const emit = defineEmits(['mark-all-read', 'mark-one-read'])
 
 const { t } = useI18n()
 const showPanel = ref(false)
-const notifBtnRef = ref<HTMLElement>()
+const notifBtnRef = ref<InstanceType<typeof LibraryButton>>()
 const notifPanelRef = ref<HTMLElement>()
 
 const unreadCount = computed(() => {
@@ -92,7 +93,7 @@ const handleClickOutside = (event: MouseEvent) => {
     notifPanelRef.value &&
     notifBtnRef.value &&
     !notifPanelRef.value.contains(event.target as Node) &&
-    !notifBtnRef.value.contains(event.target as Node)
+    !(notifBtnRef.value.$el as HTMLElement).contains(event.target as Node)
   ) {
     showPanel.value = false
   }
@@ -110,26 +111,6 @@ onUnmounted(() => {
 <style scoped>
 .icon-btn-wrapper {
   position: relative;
-}
-
-.icon-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: none;
-  background: transparent;
-  color: #4a5568;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
-  position: relative;
-}
-
-.icon-btn:hover {
-  background: rgba(102, 126, 234, 0.1);
-  color: #667eea;
 }
 
 .unread-badge {
@@ -172,22 +153,6 @@ onUnmounted(() => {
   font-weight: 600;
   color: #2d3748;
   margin: 0;
-}
-
-.popup-action-btn {
-  background: none;
-  border: none;
-  color: #667eea;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 4px;
-  transition: background 0.2s;
-}
-
-.popup-action-btn:hover {
-  background: rgba(102, 126, 234, 0.1);
 }
 
 .popup-body {
