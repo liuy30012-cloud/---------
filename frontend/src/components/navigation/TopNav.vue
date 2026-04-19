@@ -27,36 +27,38 @@
 
       <div class="nav-right">
         <div ref="actionsRef" class="action-icons">
-          <button
-            class="icon-btn font-bold text-lg"
-            type="button"
+          <LibraryButton
+            type="ghost"
+            size="small"
+            class="font-bold text-lg"
             :aria-label="t('nav.switchLang')"
             @click="toggleLang"
           >
             {{ $t('nav.lang') }}
-          </button>
+          </LibraryButton>
 
-          <button
-            class="icon-btn theme-toggle-btn"
-            type="button"
+          <LibraryButton
+            type="ghost"
+            size="small"
+            class="theme-toggle-btn"
             :aria-label="theme.isDark.value ? t('nav.switchToLight') : t('nav.switchToDark')"
             :title="theme.isDark.value ? t('nav.switchToLight') : t('nav.switchToDark')"
             @click="theme.toggle"
           >
             <span class="material-symbols-outlined">{{ theme.isDark.value ? 'light_mode' : 'dark_mode' }}</span>
-          </button>
+          </LibraryButton>
 
           <div class="icon-btn-wrapper">
-            <button
-              class="icon-btn"
+            <LibraryButton
+              type="ghost"
+              size="small"
               ref="notifBtnRef"
-              type="button"
               :aria-label="t('nav.openNotifications')"
               @click="props.notif.toggleNotifPanel(closeHistoryPanel)"
             >
               <span class="material-symbols-outlined">notifications</span>
               <span v-if="props.notif.unreadCount.value > 0" class="unread-badge">{{ props.notif.unreadCount.value }}</span>
-            </button>
+            </LibraryButton>
             <Transition name="popup">
               <div
                 v-if="props.notif.showNotifPanel.value"
@@ -68,9 +70,9 @@
               >
                 <div class="popup-header">
                   <h4 class="popup-title">{{ $t('notifications.title') }}</h4>
-                  <button v-if="props.notif.unreadCount.value > 0" class="popup-action-btn" type="button" @click="props.notif.markAllRead()">
+                  <LibraryButton v-if="props.notif.unreadCount.value > 0" type="ghost" size="small" @click="props.notif.markAllRead()">
                     {{ $t('notifications.markAllRead') }}
-                  </button>
+                  </LibraryButton>
                 </div>
                 <div class="popup-body">
                   <button
@@ -95,15 +97,15 @@
           </div>
 
           <div class="icon-btn-wrapper">
-            <button
-              class="icon-btn"
+            <LibraryButton
+              type="ghost"
+              size="small"
               ref="historyBtnRef"
-              type="button"
               :aria-label="t('nav.openSearchHistory')"
               @click="props.history.toggleHistoryPanel(closeNotifPanel)"
             >
               <span class="material-symbols-outlined">history</span>
-            </button>
+            </LibraryButton>
             <Transition name="popup">
               <div
                 v-if="props.history.showHistoryPanel.value"
@@ -115,9 +117,9 @@
               >
                 <div class="popup-header">
                   <h4 class="popup-title">{{ $t('history.title') }}</h4>
-                  <button v-if="props.history.searchHistory.value.length > 0" class="popup-action-btn" type="button" @click="props.history.clearHistory()">
+                  <LibraryButton v-if="props.history.searchHistory.value.length > 0" type="ghost" size="small" @click="props.history.clearHistory()">
                     {{ $t('history.clear') }}
-                  </button>
+                  </LibraryButton>
                 </div>
                 <div class="popup-body">
                   <div v-if="props.history.searchHistory.value.length === 0" class="popup-empty">
@@ -150,15 +152,15 @@
         </div>
 
         <div ref="avatarRef" class="avatar-wrapper">
-          <button
+          <LibraryButton
             v-if="!userStore.isLoggedIn"
-            class="login-btn"
-            type="button"
+            type="primary"
+            size="small"
             :aria-label="t('nav.goToSignIn')"
             @click="goToLogin"
           >
             {{ t('nav.signIn') }}
-          </button>
+          </LibraryButton>
 
           <div v-else class="user-menu">
             <button
@@ -220,6 +222,7 @@ import { gsap, prefersReducedMotion } from '../../motion'
 import { useUserStore } from '../../stores/user'
 import { handleImageError } from '../../utils/imageHelpers'
 import { useTheme } from '../../composables/useTheme'
+import LibraryButton from '../common/LibraryButton.vue'
 
 const props = defineProps({
   notif: { type: Object, required: true },

@@ -177,12 +177,15 @@
             </div>
           </Transition>
 
-          <button
+          <LibraryButton
             ref="submitBtnRef"
-            type="submit"
-            class="submit-btn"
-            :disabled="props.isLoading"
+            type="primary"
+            size="large"
+            block
+            :loading="props.isLoading"
+            :loading-text="props.isLogin ? t('login.loggingIn') : t('login.submitting')"
             :style="props.magneticBtnStyle"
+            @click="emit('submit')"
             @mouseenter="emit('submit-hover')"
             @mouseleave="emit('submit-leave')"
             @mousemove="handleSubmitMouseMove"
@@ -191,11 +194,7 @@
               <span class="material-symbols-outlined btn-icon" aria-hidden="true">{{ props.isLogin ? 'login' : 'person_add' }}</span>
               {{ props.isLogin ? t('login.enterLibrary') : t('login.createAccount') }}
             </span>
-            <span v-else class="btn-loading">
-              <span class="spinner"></span>
-              {{ props.isLogin ? t('login.loggingIn') : t('login.submitting') }}
-            </span>
-          </button>
+          </LibraryButton>
 
           <div v-if="props.isLogin && !props.isLoading" class="keyboard-hint">
             <span class="kbd">Enter</span>
@@ -240,6 +239,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import FormInput from '../common/FormInput.vue'
+import LibraryButton from '../common/LibraryButton.vue'
 
 interface SocialButton {
   icon: string
@@ -299,7 +299,7 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 const loginCardRef = ref<HTMLDivElement | null>(null)
-const submitBtnRef = ref<HTMLButtonElement | null>(null)
+const submitBtnRef = ref<InstanceType<typeof LibraryButton> | null>(null)
 const router = useRouter()
 
 function toggleRememberMe() {
@@ -311,7 +311,7 @@ function handleCardMouseMove(event: MouseEvent) {
 }
 
 function handleSubmitMouseMove(event: MouseEvent) {
-  emit('submit-mouse-move', event, submitBtnRef.value)
+  emit('submit-mouse-move', event, submitBtnRef.value?.$el as HTMLButtonElement | null)
 }
 </script>
 
