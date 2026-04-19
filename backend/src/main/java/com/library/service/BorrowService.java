@@ -12,6 +12,8 @@ import com.library.service.borrow.BorrowNotificationHelper;
 import com.library.service.borrow.BorrowValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -238,6 +240,12 @@ public class BorrowService {
             .collect(Collectors.toList());
     }
 
+    public Page<BorrowResponse> getUserBorrowHistory(Long userId, Pageable pageable) {
+        Page<BorrowRecord> records = borrowRecordRepository
+            .findByUserIdOrderByBorrowTimeDesc(userId, pageable);
+        return records.map(converter::toResponse);
+    }
+
     public List<BorrowResponse> getUserCurrentBorrows(Long userId) {
         List<BorrowStatus> activeStatuses = Arrays.asList(
             BorrowStatus.PENDING,
@@ -250,10 +258,28 @@ public class BorrowService {
             .collect(Collectors.toList());
     }
 
+    public Page<BorrowResponse> getUserCurrentBorrows(Long userId, Pageable pageable) {
+        List<BorrowStatus> activeStatuses = Arrays.asList(
+            BorrowStatus.PENDING,
+            BorrowStatus.APPROVED,
+            BorrowStatus.BORROWED,
+            BorrowStatus.OVERDUE
+        );
+        Page<BorrowRecord> records = borrowRecordRepository
+            .findByUserIdAndStatusInOrderByBorrowTimeDesc(userId, activeStatuses, pageable);
+        return records.map(converter::toResponse);
+    }
+
     public List<BorrowResponse> getPendingBorrows() {
         return borrowRecordRepository.findByStatusOrderByCreatedAtAsc(BorrowStatus.PENDING).stream()
             .map(converter::toResponse)
             .collect(Collectors.toList());
+    }
+
+    public Page<BorrowResponse> getPendingBorrows(Pageable pageable) {
+        Page<BorrowRecord> records = borrowRecordRepository
+            .findByStatusOrderByApplyTimeAsc(BorrowStatus.PENDING, pageable);
+        return records.map(converter::toResponse);
     }
 
     /**
