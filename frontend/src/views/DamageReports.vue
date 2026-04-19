@@ -7,10 +7,10 @@
     >
       <template #actions>
         <div class="page-actions">
-          <button class="page-action-btn page-action-btn--secondary" @click="refresh">
+          <LibraryButton type="secondary" @click="refresh">
             <span class="material-symbols-outlined">refresh</span>
             <span>{{ t('damageReports.refresh') }}</span>
-          </button>
+          </LibraryButton>
         </div>
       </template>
     </PageHeader>
@@ -176,6 +176,7 @@ import { useUserStore } from '../stores/user'
 import { damageReportApi, type DamageReport, type DamageReportStatistics } from '../api/damageReportApi'
 import { API_CONFIG } from '../config'
 import PageHeader from '../components/layout/PageHeader.vue'
+import LibraryButton from '@/components/common/LibraryButton.vue'
 import { formatLocalDate as formatDate } from '../utils/timeHelpers'
 import { logger } from '../utils/logger'
 

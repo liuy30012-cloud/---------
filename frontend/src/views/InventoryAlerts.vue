@@ -6,9 +6,9 @@
       :description="t('inventoryAlerts.description')"
     >
       <template #actions>
-        <button class="page-action-btn page-action-btn--primary" @click="loadAlerts">
+        <LibraryButton type="primary" @click="loadAlerts">
           <span>{{ t('inventoryAlerts.refresh') }}</span>
-        </button>
+        </LibraryButton>
       </template>
     </PageHeader>
 
@@ -137,6 +137,7 @@ import { onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { statisticsApi, type InventoryAlertSummary } from '../api/statisticsApi'
 import PageHeader from '../components/layout/PageHeader.vue'
+import LibraryButton from '@/components/common/LibraryButton.vue'
 import { logger } from '../utils/logger'
 
 const { t } = useI18n()

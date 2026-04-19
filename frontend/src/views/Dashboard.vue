@@ -6,9 +6,9 @@
       :description="t('dashboard.description')"
     >
       <template #actions>
-        <button class="page-action-btn page-action-btn--primary" @click="loadData">
+        <LibraryButton type="primary" @click="loadData">
           <span>{{ t('dashboard.refresh') }}</span>
-        </button>
+        </LibraryButton>
       </template>
     </PageHeader>
 
@@ -103,6 +103,7 @@
 import { onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import PageHeader from '../components/layout/PageHeader.vue'
+import LibraryButton from '@/components/common/LibraryButton.vue'
 import { useDashboardCharts } from '../composables/useDashboardCharts'
 
 const { t } = useI18n()
