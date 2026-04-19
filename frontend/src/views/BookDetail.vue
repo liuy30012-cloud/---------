@@ -13,9 +13,7 @@
       >
         <template #actions>
           <div class="page-actions">
-            <button class="page-action-btn page-action-btn--secondary" type="button" @click="goBack">
-              {{ t('bookDetail.backToResults') }}
-            </button>
+            <LibraryButton type="ghost" @click="goBack">{{ t('bookDetail.backToResults') }}</LibraryButton>
           </div>
         </template>
       </PageHeader>
@@ -32,30 +30,27 @@
           </div>
 
           <div class="action-stack">
-            <button
-              class="page-action-btn page-action-btn--primary"
-              type="button"
+            <LibraryButton
+              type="primary"
               :disabled="isSubmitting || !book.availabilityContext.canBorrow"
               @click="requestBorrow"
             >
               {{ borrowButtonText }}
-            </button>
-            <button
-              class="page-action-btn page-action-btn--secondary"
-              type="button"
+            </LibraryButton>
+            <LibraryButton
+              type="secondary"
               :disabled="isSubmitting || !book.availabilityContext.canReserve"
               @click="requestReservation"
             >
               {{ t('bookDetail.joinQueue') }}
-            </button>
-            <button
+            </LibraryButton>
+            <LibraryButton
               v-if="userStore.isLoggedIn"
-              class="page-action-btn page-action-btn--damage"
-              type="button"
+              type="danger"
               @click="showDamageModal = true"
             >
               {{ t('bookDetail.reportDamage') }}
-            </button>
+            </LibraryButton>
           </div>
         </div>
 
@@ -200,9 +195,9 @@
           </div>
           <textarea v-model="reviewDraft.content" rows="4" :placeholder="t('bookDetail.reviews.placeholder')" />
           <div class="review-actions">
-            <button class="page-action-btn page-action-btn--primary" type="button" :disabled="isSubmitting" @click="submitReview">
+            <LibraryButton type="primary" :loading="isSubmitting" success-text="评论已提交" error-text="评论提交失败" @click="submitReview">
               {{ t('bookDetail.reviews.submit') }}
-            </button>
+            </LibraryButton>
           </div>
         </div>
         <div v-else class="review-guest-note">{{ t('bookDetail.reviews.guestNote') }}</div>
@@ -251,7 +246,7 @@
 
     <div v-else v-reveal="{ preset: 'section', once: true }" class="error-state surface-card">
       <p>{{ t('bookDetail.error.title') }}</p>
-      <button class="page-action-btn page-action-btn--secondary" type="button" @click="goBack">{{ t('bookDetail.error.back') }}</button>
+      <LibraryButton type="ghost" @click="goBack">{{ t('bookDetail.error.back') }}</LibraryButton>
     </div>
 
     <DamageReportModal
@@ -286,6 +281,7 @@ import ConfirmDialog from '../components/common/ConfirmDialog.vue'
 import FeedbackToast from '../components/common/FeedbackToast.vue'
 import PageHeader from '../components/layout/PageHeader.vue'
 import DamageReportModal from '../components/damage/DamageReportModal.vue'
+import LibraryButton from '@/components/common/LibraryButton.vue'
 import { useUserStore } from '../stores/user'
 import { handleImageError } from '../utils/imageHelpers'
 import { logger } from '../utils/logger'
@@ -920,16 +916,6 @@ async function saveNotes() {
 
 @keyframes spin {
   to { transform: rotate(360deg); }
-}
-
-.page-action-btn--damage {
-  background: rgba(184, 92, 56, 0.08);
-  border: 1px solid rgba(184, 92, 56, 0.2);
-  color: #8b482f;
-}
-
-.page-action-btn--damage:hover {
-  background: rgba(184, 92, 56, 0.14);
 }
 
 @media (max-width: 1024px) {
