@@ -7,12 +7,12 @@
     >
       <template #actions>
         <div class="page-actions">
-          <button class="page-action-btn page-action-btn--secondary" type="button" @click="resetFilters">
+          <LibraryButton type="secondary" @click="resetFilters">
             {{ t('bookSearch.resetFilters') }}
-          </button>
-          <button class="page-action-btn page-action-btn--primary" type="button" @click="saveCurrentSearch" :disabled="loading">
+          </LibraryButton>
+          <LibraryButton type="primary" :loading="loading" @click="saveCurrentSearch">
             {{ t('bookSearch.saveSearch') }}
-          </button>
+          </LibraryButton>
         </div>
       </template>
     </PageHeader>
@@ -233,27 +233,13 @@
         </div>
 
         <div v-if="pagination.totalPages > 1" v-reveal="{ preset: 'section', delay: 0.08, once: true }" class="pagination surface-card">
-          <button class="pagination-btn" type="button" :disabled="pagination.page <= 0" @click="goToPage(pagination.page - 1)">
-            {{ t('bookSearch.pagination.prev') }}
-          </button>
-          <button
-            v-for="pageNumber in visiblePages"
-            :key="pageNumber"
-            class="pagination-number"
-            :class="{ active: pageNumber === pagination.page }"
-            type="button"
-            @click="goToPage(pageNumber)"
-          >
-            {{ pageNumber + 1 }}
-          </button>
-          <button
-            class="pagination-btn"
-            type="button"
-            :disabled="pagination.page >= pagination.totalPages - 1"
-            @click="goToPage(pagination.page + 1)"
-          >
-            {{ t('bookSearch.pagination.next') }}
-          </button>
+          <el-pagination
+            :current-page="pagination.page + 1"
+            :page-size="form.size"
+            :total="totalResults"
+            layout="prev, pager, next"
+            @current-change="handlePageChange"
+          />
         </div>
       </section>
     </div>
@@ -269,6 +255,7 @@ import { useI18n } from 'vue-i18n'
 import { bookApi, type Book, type BookSearchParams, type SmartSearchResponse } from '../api/bookApi'
 import { favoriteApi } from '../api/favoriteApi'
 import FeedbackToast from '../components/common/FeedbackToast.vue'
+import LibraryButton from '../components/common/LibraryButton.vue'
 import PageHeader from '../components/layout/PageHeader.vue'
 import { logger } from '../utils/logger'
 import { useUserStore } from '../stores/user'
@@ -455,6 +442,10 @@ async function submitSearch() {
 
 async function goToPage(page: number) {
   router.push({ name: 'BookSearch', query: buildQuery(page) }).catch(() => {})
+}
+
+function handlePageChange(page: number) {
+  goToPage(page - 1)
 }
 
 function resetFilters() {
@@ -1177,36 +1168,10 @@ function circulationLabel(policy: string) {
   gap: 0.65rem;
 }
 
-.pagination-btn,
-.pagination-number {
-  min-width: 2.8rem;
-  min-height: 2.8rem;
-  padding: 0 0.85rem;
-  color: rgba(243, 233, 215, 0.92);
-  border: 1px solid rgba(199, 160, 103, 0.16);
-  border-radius: 999px;
-  background: linear-gradient(180deg, rgba(16, 12, 10, 0.88) 0%, rgba(10, 7, 5, 0.94) 100%);
-  cursor: pointer;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
-  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.pagination-btn:hover:not(:disabled),
-.pagination-number:hover:not(.active) {
-  transform: translateY(-2px);
-  border-color: rgba(215, 179, 122, 0.28);
-  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.22);
-}
-
-.pagination-btn:disabled {
-  opacity: 0.38;
-  cursor: not-allowed;
-}
-
-.pagination-number.active {
-  color: #1a130d;
-  background: linear-gradient(135deg, #d7b37a 0%, #ba8850 48%, #efd0a6 100%);
-  box-shadow: 0 16px 32px rgba(199, 160, 103, 0.26);
+:deep(.el-pagination) {
+  --el-pagination-button-bg-color: rgba(16, 12, 10, 0.88);
+  --el-pagination-button-color: rgba(243, 233, 215, 0.92);
+  --el-pagination-hover-color: var(--el-color-primary);
 }
 
 @media (max-width: 1024px) {
@@ -1228,10 +1193,6 @@ function circulationLabel(policy: string) {
   .results-toolbar {
     flex-direction: column;
     align-items: flex-start;
-  }
-
-  .pagination {
-    flex-wrap: wrap;
   }
 }
 

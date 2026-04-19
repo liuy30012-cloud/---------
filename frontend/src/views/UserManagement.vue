@@ -7,12 +7,12 @@
     >
       <template #actions>
         <div class="page-actions">
-          <button class="page-action-btn page-action-btn--secondary" type="button" @click="resetFilters">
-            <span>{{ t('userManagement.actions.reset') }}</span>
-          </button>
-          <button class="page-action-btn page-action-btn--primary" type="button" @click="refreshAll">
-            <span>{{ t('userManagement.actions.refresh') }}</span>
-          </button>
+          <LibraryButton type="secondary" @click="resetFilters">
+            {{ t('userManagement.actions.reset') }}
+          </LibraryButton>
+          <LibraryButton type="primary" @click="refreshAll">
+            {{ t('userManagement.actions.refresh') }}
+          </LibraryButton>
         </div>
       </template>
     </PageHeader>
@@ -79,9 +79,9 @@
         </label>
 
         <div class="filter-actions">
-          <button class="page-action-btn page-action-btn--primary" type="button" @click="applyFilters">
-            <span>{{ t('userManagement.actions.apply') }}</span>
-          </button>
+          <LibraryButton type="primary" @click="applyFilters">
+            {{ t('userManagement.actions.apply') }}
+          </LibraryButton>
         </div>
       </div>
     </section>
@@ -235,13 +235,13 @@
         </div>
 
         <div v-if="totalPages > 1" class="pagination">
-          <button class="pagination-btn" type="button" :disabled="page === 0" @click="goToPage(page - 1)">
-            {{ t('userManagement.pagination.prev') }}
-          </button>
-          <span class="pagination-info">{{ page + 1 }} / {{ totalPages }}</span>
-          <button class="pagination-btn" type="button" :disabled="page >= totalPages - 1" @click="goToPage(page + 1)">
-            {{ t('userManagement.pagination.next') }}
-          </button>
+          <el-pagination
+            :current-page="page + 1"
+            :page-size="size"
+            :total="total"
+            layout="prev, pager, next"
+            @current-change="handlePageChange"
+          />
         </div>
       </template>
     </section>
@@ -267,6 +267,7 @@ import { useI18n } from 'vue-i18n'
 import { userManagementApi, type ManagedUser, type ManagedUserRole, type UserManagementStatistics } from '../api/userManagementApi'
 import ConfirmDialog from '../components/common/ConfirmDialog.vue'
 import FeedbackToast from '../components/common/FeedbackToast.vue'
+import LibraryButton from '../components/common/LibraryButton.vue'
 import PageHeader from '../components/layout/PageHeader.vue'
 import { useConfirmDialog } from '../composables/useConfirmDialog'
 import { useToast } from '../composables/useToast'
@@ -384,6 +385,10 @@ function resetFilters() {
 function goToPage(nextPage: number) {
   page.value = nextPage
   void loadUsers()
+}
+
+function handlePageChange(newPage: number) {
+  goToPage(newPage - 1)
 }
 
 function isCurrentUser(user: ManagedUser) {
@@ -854,24 +859,10 @@ function resolveApiMessage(message: unknown, fallbackKey: string) {
   margin-top: 1.25rem;
 }
 
-.pagination-btn {
-  min-height: 2.7rem;
-  padding: 0.7rem 1rem;
-  border-radius: 999px;
-  border: 1px solid rgba(113, 124, 105, 0.16);
-  background: rgba(255, 255, 255, 0.9);
-  color: var(--home-ink);
-  font: inherit;
-  font-weight: 700;
-}
-
-.pagination-btn:disabled {
-  opacity: 0.45;
-}
-
-.pagination-info {
-  font-weight: 700;
-  color: var(--home-ink);
+:deep(.el-pagination) {
+  --el-pagination-button-bg-color: rgba(255, 255, 255, 0.9);
+  --el-pagination-button-color: var(--home-ink);
+  --el-pagination-hover-color: var(--el-color-primary);
 }
 
 @media (max-width: 1200px) {
@@ -917,8 +908,7 @@ function resolveApiMessage(message: unknown, fallbackKey: string) {
 
   .row-actions,
   .mobile-card__buttons,
-  .table-action,
-  .pagination-btn {
+  .table-action {
     width: 100%;
   }
 }
