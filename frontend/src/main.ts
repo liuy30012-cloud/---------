@@ -9,6 +9,7 @@ import { registerServiceWorker } from './utils/serviceWorker'
 import { offlineDB } from './utils/offlineDB'
 import './styles/variables.css'
 import './dizhi/dizhi.css'
+import './styles/element-theme.css'
 
 const app = createApp(App)
 const pinia = createPinia()

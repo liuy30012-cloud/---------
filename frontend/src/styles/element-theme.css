@@ -1,0 +1,85 @@
+/* Element Plus 竹院风主题覆盖 */
+:root {
+  /* 主色：竹院暖金 */
+  --el-color-primary: #c7a067;
+  --el-color-primary-light-3: #d4b98e;
+  --el-color-primary-light-5: #e0cfaa;
+  --el-color-primary-light-7: #ece4c7;
+  --el-color-primary-light-8: #f2ede0;
+  --el-color-primary-light-9: #f8f4ed;
+  --el-color-primary-dark-2: #8f6738;
+
+  /* 功能色 */
+  --el-color-success: #5b8c5a;
+  --el-color-success-light-3: #7ea87d;
+  --el-color-success-light-5: #a1c4a0;
+  --el-color-success-light-7: #c4dfc3;
+  --el-color-success-light-8: #d5e9d4;
+  --el-color-success-light-9: #e8f4e7;
+  --el-color-success-dark-2: #3d6b3c;
+
+  --el-color-warning: #c7956d;
+  --el-color-warning-light-9: #f8f0e8;
+
+  --el-color-danger: #b85c38;
+  --el-color-danger-light-3: #cb8060;
+  --el-color-danger-light-5: #dea588;
+  --el-color-danger-light-7: #efc9b5;
+  --el-color-danger-light-8: #f5dac9;
+  --el-color-danger-light-9: #fbece2;
+  --el-color-danger-dark-2: #8b3d22;
+
+  --el-color-info: #8a7863;
+  --el-color-info-light-9: #f2ede6;
+
+  /* 字体 */
+  --el-font-family: 'PingFang SC', 'Source Han Sans CN', 'Microsoft YaHei', sans-serif;
+  --el-font-size-base: 0.92rem;
+
+  /* 圆角 */
+  --el-border-radius-base: 0.75rem;
+  --el-border-radius-small: 0.5rem;
+  --el-border-radius-round: 9999px;
+
+  /* 过渡 */
+  --el-transition-duration: 0.24s;
+  --el-transition-duration-fast: 0.1s;
+
+  /* 阴影 */
+  --el-box-shadow: 0 12px 22px rgba(47, 58, 48, 0.12);
+  --el-box-shadow-light: 0 6px 16px rgba(47, 58, 48, 0.08);
+}
+
+/* 午夜档案馆主题覆盖 */
+[data-theme="midnight-archive"] {
+  --el-color-primary: #d7b37a;
+  --el-color-primary-light-3: #e0c496;
+  --el-color-primary-light-5: #e8d5b0;
+  --el-color-primary-light-7: #f0e3c8;
+  --el-color-primary-light-8: #f4ebd6;
+  --el-color-primary-light-9: #f9f3e8;
+  --el-color-primary-dark-2: #b8954f;
+  --el-bg-color: #090705;
+  --el-bg-color-overlay: #19120f;
+  --el-text-color-primary: #f3e9d7;
+  --el-text-color-regular: #b4a692;
+  --el-border-color: rgba(199, 160, 103, 0.18);
+  --el-fill-color-blank: #19120f;
+}
+
+/* 竹院主题覆盖 */
+[data-theme="bamboo-monastery"] {
+  --el-color-primary: #b8944f;
+  --el-color-primary-light-3: #ccaa6e;
+  --el-color-primary-light-5: #dcc08e;
+  --el-color-primary-light-7: #ead5ad;
+  --el-color-primary-light-8: #f0e0bc;
+  --el-color-primary-light-9: #f7efd7;
+  --el-color-primary-dark-2: #8f6738;
+  --el-bg-color: #f4f0e5;
+  --el-bg-color-overlay: #ffffff;
+  --el-text-color-primary: #1b2821;
+  --el-text-color-regular: #324338;
+  --el-border-color: rgba(88, 100, 81, 0.16);
+  --el-fill-color-blank: #ffffff;
+}
