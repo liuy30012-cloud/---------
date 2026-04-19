@@ -96,3 +96,6 @@ java_files.txt
 
 # Test output
 output/
+
+# Git worktrees
+.worktrees/
