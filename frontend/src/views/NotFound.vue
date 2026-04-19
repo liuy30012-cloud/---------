@@ -8,12 +8,12 @@
       <div class="not-found__title">{{ t('notFound.title') }}</div>
       <p class="not-found__desc">{{ t('notFound.description') }}</p>
       <div class="not-found__actions">
-        <button class="page-action-btn page-action-btn--primary" @click="goHome">
+        <LibraryButton type="primary" @click="goHome">
           {{ t('notFound.goHome') }}
-        </button>
-        <button class="page-action-btn page-action-btn--secondary" @click="goBack">
+        </LibraryButton>
+        <LibraryButton type="secondary" @click="goBack">
           {{ t('notFound.goBack') }}
-        </button>
+        </LibraryButton>
       </div>
     </div>
   </div>
@@ -22,6 +22,7 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import LibraryButton from '@/components/common/LibraryButton.vue'
 
 const router = useRouter()
 const { t } = useI18n()

@@ -29,9 +29,9 @@
     <div v-else-if="filteredItems.length === 0" class="state-card surface-card">
       <span class="material-symbols-outlined empty-icon">auto_stories</span>
       <p class="state-title">{{ emptyMessage }}</p>
-      <button class="page-action-btn page-action-btn--primary" type="button" @click="goToSearch">
+      <LibraryButton type="primary" @click="goToSearch">
         {{ t('myBookshelf.goDiscover') }}
-      </button>
+      </LibraryButton>
     </div>
 
     <div v-else class="shelf-grid">
@@ -103,6 +103,7 @@ import { readingStatusApi, type ReadingStatusEnum, type ReadingStatusInfo } from
 import ConfirmDialog from '../components/common/ConfirmDialog.vue'
 import FeedbackToast from '../components/common/FeedbackToast.vue'
 import PageHeader from '../components/layout/PageHeader.vue'
+import LibraryButton from '@/components/common/LibraryButton.vue'
 import { handleImageError } from '../utils/imageHelpers'
 import { useToast } from '../composables/useToast'
 
