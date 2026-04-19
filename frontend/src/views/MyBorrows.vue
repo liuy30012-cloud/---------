@@ -58,33 +58,30 @@
           </div>
 
           <div class="action-row">
-            <button
+            <LibraryButton
               v-if="borrow.nextAction === 'PICKUP'"
-              class="page-action-btn page-action-btn--primary"
-              type="button"
+              type="primary"
               :disabled="isSubmitting"
               @click="confirmAction('pickup', borrow)"
             >
               {{ t('myBorrows.buttons.confirmPickup') }}
-            </button>
-            <button
+            </LibraryButton>
+            <LibraryButton
               v-if="borrow.nextAction === 'RETURN_OR_RENEW'"
-              class="page-action-btn page-action-btn--secondary"
-              type="button"
+              type="secondary"
               :disabled="isSubmitting || !canRenew(borrow)"
               @click="confirmAction('renew', borrow)"
             >
               {{ t('myBorrows.buttons.renew') }}
-            </button>
-            <button
+            </LibraryButton>
+            <LibraryButton
               v-if="borrow.nextAction === 'RETURN_NOW' || borrow.nextAction === 'RETURN_OR_RENEW'"
-              class="page-action-btn page-action-btn--primary"
-              type="button"
+              type="primary"
               :disabled="isSubmitting"
               @click="confirmAction('return', borrow)"
             >
               {{ t('myBorrows.buttons.returnBook') }}
-            </button>
+            </LibraryButton>
           </div>
         </article>
       </div>
@@ -136,6 +133,7 @@ import { useI18n } from 'vue-i18n'
 import { borrowApi, type BorrowRecord } from '../api/borrowApi'
 import ConfirmDialog from '../components/common/ConfirmDialog.vue'
 import FeedbackToast from '../components/common/FeedbackToast.vue'
+import LibraryButton from '@/components/common/LibraryButton.vue'
 import PageHeader from '../components/layout/PageHeader.vue'
 import { logger } from '../utils/logger'
 import { useToast } from '../composables/useToast'

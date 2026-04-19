@@ -62,33 +62,30 @@
         </div>
 
         <div class="action-row">
-          <button
+          <LibraryButton
             v-if="reservation.status === 'WAITING'"
-            class="page-action-btn page-action-btn--secondary"
-            type="button"
+            type="secondary"
             :disabled="isSubmitting"
             @click="openDialog('cancel', reservation)"
           >
             {{ t('myReservations.buttons.cancel') }}
-          </button>
-          <button
+          </LibraryButton>
+          <LibraryButton
             v-if="reservation.status === 'AVAILABLE'"
-            class="page-action-btn page-action-btn--primary"
-            type="button"
+            type="primary"
             :disabled="isSubmitting"
             @click="openDialog('pickup', reservation)"
           >
             {{ t('myReservations.buttons.pickup') }}
-          </button>
-          <button
+          </LibraryButton>
+          <LibraryButton
             v-if="reservation.status === 'AVAILABLE' && reservation.canExtend"
-            class="page-action-btn page-action-btn--secondary"
-            type="button"
+            type="secondary"
             :disabled="isSubmitting"
             @click="openDialog('extend', reservation)"
           >
             {{ t('myReservations.buttons.extend') }}
-          </button>
+          </LibraryButton>
         </div>
       </article>
     </div>
@@ -114,6 +111,7 @@ import { useI18n } from 'vue-i18n'
 import { reservationApi, type ReservationRecord } from '../api/borrowApi'
 import ConfirmDialog from '../components/common/ConfirmDialog.vue'
 import FeedbackToast from '../components/common/FeedbackToast.vue'
+import LibraryButton from '@/components/common/LibraryButton.vue'
 import PageHeader from '../components/layout/PageHeader.vue'
 import { logger } from '../utils/logger'
 import { useToast } from '../composables/useToast'
