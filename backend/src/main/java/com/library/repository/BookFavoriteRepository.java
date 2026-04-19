@@ -1,6 +1,8 @@
 package com.library.repository;
 
 import com.library.model.BookFavorite;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -25,4 +27,6 @@ public interface BookFavoriteRepository extends JpaRepository<BookFavorite, Long
 
     @Query("SELECT bf.bookId FROM BookFavorite bf WHERE bf.userId = :userId AND bf.bookId IN :bookIds")
     Set<Long> findFavoritedBookIds(@Param("userId") Long userId, @Param("bookIds") List<Long> bookIds);
+
+    Page<BookFavorite> findByUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable);
 }
