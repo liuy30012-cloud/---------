@@ -7,6 +7,8 @@ import com.library.model.ReadingStatusRecord;
 import com.library.repository.BookRepository;
 import com.library.repository.ReadingStatusRecordRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -84,6 +86,21 @@ public class ReadingStatusService {
         return records.stream()
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());
+    }
+
+    public Page<ReadingStatusResponse> getUserReadingStatuses(
+        Long userId,
+        ReadingStatus status,
+        Pageable pageable
+    ) {
+        Page<ReadingStatusRecord> records;
+        if (status != null) {
+            records = readingStatusRecordRepository
+                    .findByUserIdAndStatusOrderByUpdatedAtDesc(userId, status, pageable);
+        } else {
+            records = readingStatusRecordRepository.findByUserIdOrderByUpdatedAtDesc(userId, pageable);
+        }
+        return records.map(this::convertToResponse);
     }
 
     public Map<String, Long> getStatusCounts(Long userId) {

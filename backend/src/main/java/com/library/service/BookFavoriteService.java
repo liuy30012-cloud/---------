@@ -7,6 +7,8 @@ import com.library.repository.BookFavoriteRepository;
 import com.library.repository.BookRepository;
 import com.library.repository.ReadingStatusRecordRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -56,6 +58,12 @@ public class BookFavoriteService {
         return favorites.stream()
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());
+    }
+
+    public Page<FavoriteResponse> getUserFavorites(Long userId, Pageable pageable) {
+        Page<BookFavorite> favorites = bookFavoriteRepository
+                .findByUserIdOrderByCreatedAtDesc(userId, pageable);
+        return favorites.map(this::convertToResponse);
     }
 
     public Set<Long> batchCheckFavorites(Long userId, List<Long> bookIds) {
