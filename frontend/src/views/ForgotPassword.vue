@@ -11,10 +11,10 @@
       </div>
 
       <div class="forgot-card">
-        <button type="button" class="back-btn" @click="goBack">
+        <LibraryButton type="ghost" @click="goBack">
           <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>
           {{ t('forgotPassword.backToLogin') }}
-        </button>
+        </LibraryButton>
 
         <h3 class="forgot-title">
           <span class="material-symbols-outlined title-icon" aria-hidden="true">lock_reset</span>
@@ -37,16 +37,10 @@
             />
           </div>
 
-          <button type="submit" class="query-btn" :disabled="isLoading || !studentId.trim()">
-            <span v-if="!isLoading" class="btn-content">
-              <span class="material-symbols-outlined btn-icon" aria-hidden="true">search</span>
-              {{ t('forgotPassword.queryBtn') }}
-            </span>
-            <span v-else class="btn-loading">
-              <span class="spinner"></span>
-              {{ t('forgotPassword.querying') }}
-            </span>
-          </button>
+          <LibraryButton type="primary" :loading="isLoading" :disabled="!studentId.trim()" block @click="handleQuery">
+            <span class="material-symbols-outlined" aria-hidden="true">search</span>
+            {{ t('forgotPassword.queryBtn') }}
+          </LibraryButton>
         </form>
 
         <Transition name="result-fade">
@@ -122,6 +116,7 @@ import { onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import baseHttp from '../api/baseHttp'
+import LibraryButton from '@/components/common/LibraryButton.vue'
 
 interface AccountStatus {
   exists: boolean
@@ -295,28 +290,6 @@ onUnmounted(() => {
     0 1px 0 rgba(255, 255, 255, 0.6) inset;
 }
 
-.back-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  background: none;
-  border: none;
-  color: rgba(127, 95, 55, 0.78);
-  font-size: 0.85rem;
-  cursor: pointer;
-  padding: 0.3rem 0;
-  margin-bottom: 1.2rem;
-  transition: color 0.2s;
-  font-family: inherit;
-}
-
-.back-btn:hover {
-  color: rgba(98, 123, 92, 0.92);
-}
-
-.back-btn .material-symbols-outlined {
-  font-size: 1.1rem;
-}
 
 .forgot-title {
   display: flex;
@@ -388,67 +361,6 @@ onUnmounted(() => {
   cursor: not-allowed;
 }
 
-.query-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.4rem;
-  width: 100%;
-  padding: 0.78rem;
-  border: none;
-  border-radius: 0.75rem;
-  background: linear-gradient(135deg, rgba(154, 179, 151, 0.85) 0%, rgba(127, 148, 124, 0.9) 100%);
-  color: #fff;
-  font-size: 0.95rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: transform 0.15s, box-shadow 0.25s, opacity 0.2s;
-  font-family: inherit;
-}
-
-.query-btn:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(127, 148, 124, 0.3);
-}
-
-.query-btn:active:not(:disabled) {
-  transform: translateY(0);
-}
-
-.query-btn:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
-}
-
-.btn-content {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
-.btn-icon {
-  font-size: 1.1rem;
-}
-
-.btn-loading {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.spinner {
-  display: inline-block;
-  width: 1rem;
-  height: 1rem;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: #fff;
-  border-radius: 50%;
-  animation: spin 0.6s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
 
 /* 结果区域 */
 .result-section {
