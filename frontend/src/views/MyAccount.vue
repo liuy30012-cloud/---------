@@ -71,9 +71,9 @@
             <span>{{ t('myAccount.password.confirmPassword') }}</span>
             <input v-model="passwordForm.confirmPassword" type="password" />
           </label>
-          <button class="page-action-btn page-action-btn--primary" type="button" :disabled="isSubmitting" @click="changePassword">
+          <LibraryButton type="primary" :loading="isSubmitting" @click="changePassword">
             {{ t('myAccount.password.update') }}
-          </button>
+          </LibraryButton>
         </div>
       </article>
 
@@ -101,9 +101,9 @@
             </div>
             <input v-model="preferences.dueReminders" type="checkbox" />
           </label>
-          <button class="page-action-btn page-action-btn--secondary" type="button" @click="savePreferences">
+          <LibraryButton type="secondary" @click="savePreferences">
             {{ t('myAccount.preferences.save') }}
-          </button>
+          </LibraryButton>
         </div>
       </article>
     </section>
@@ -113,18 +113,18 @@
         <h2>{{ t('myAccount.export.title') }}</h2>
         <p class="muted-copy">{{ t('myAccount.export.description') }}</p>
         <div class="export-actions">
-          <button class="page-action-btn page-action-btn--secondary" type="button" :disabled="isExporting" @click="exportBorrowHistory('excel')">
+          <LibraryButton type="secondary" :loading="isExporting" @click="exportBorrowHistory('excel')">
             {{ t('myAccount.export.borrowHistoryExcel') }}
-          </button>
-          <button class="page-action-btn page-action-btn--secondary" type="button" :disabled="isExporting" @click="exportBorrowHistory('json')">
+          </LibraryButton>
+          <LibraryButton type="secondary" :loading="isExporting" @click="exportBorrowHistory('json')">
             {{ t('myAccount.export.borrowHistoryJson') }}
-          </button>
-          <button class="page-action-btn page-action-btn--secondary" type="button" :disabled="isExporting" @click="exportBookReviews">
+          </LibraryButton>
+          <LibraryButton type="secondary" :loading="isExporting" @click="exportBookReviews">
             {{ t('myAccount.export.reviews') }}
-          </button>
-          <button class="page-action-btn page-action-btn--primary" type="button" :disabled="isExporting" @click="exportAllData">
+          </LibraryButton>
+          <LibraryButton type="primary" :loading="isExporting" @click="exportAllData">
             {{ t('myAccount.export.allData') }}
-          </button>
+          </LibraryButton>
         </div>
       </article>
     </section>
@@ -136,6 +136,7 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import LibraryButton from '@/components/common/LibraryButton.vue'
 import FeedbackToast from '../components/common/FeedbackToast.vue'
 import PageHeader from '../components/layout/PageHeader.vue'
 import { statisticsApi, type UserProfile } from '../api/statisticsApi'
