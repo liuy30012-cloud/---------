@@ -123,23 +123,6 @@ input, button, select {
   display: flex;
   gap: 1rem;
 }
-.icon-btn {
-  background: transparent;
-  border: none;
-  color: #64748b;
-  cursor: pointer;
-  padding: 0;
-  display: flex;
-  position: relative;
-}
-.icon-btn.font-bold {
-  font-weight: bold;
-}
-.icon-btn.text-lg {
-  font-size: 1.125rem;
-}
-.icon-btn:hover { color: var(--primary); }
-
 /* Icon Button Wrapper for Popup positioning */
 .icon-btn-wrapper {
   position: relative;
@@ -261,21 +244,6 @@ input, button, select {
   color: var(--on-surface);
   margin: 0;
 }
-.popup-action-btn {
-  background: none;
-  border: none;
-  color: var(--primary);
-  font-size: 0.75rem;
-  font-weight: 600;
-  cursor: pointer;
-  padding: 0.25rem 0.5rem;
-  border-radius: 0.375rem;
-  transition: background 0.15s;
-}
-.popup-action-btn:hover {
-  background: var(--primary-container);
-}
-
 /* Popup Body */
 .popup-body {
   overflow-y: auto;
@@ -1418,23 +1386,6 @@ input, button, select {
 .hover-icon:hover { color: var(--primary); }
 
 /* User Menu Styles */
-.login-btn {
-  padding: 8px 20px;
-  background: var(--primary);
-  color: white;
-  border: none;
-  border-radius: 20px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.login-btn:hover {
-  background: var(--primary-dim);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 83, 219, 0.3);
-}
-
 .user-menu {
   position: relative;
 }
@@ -1673,27 +1624,6 @@ input, button, select {
   border: 1px solid rgba(115, 124, 129, 0.12);
 }
 
-.toggle-btn {
-  width: 2.7rem;
-  height: 2.7rem;
-  border: none;
-  border-radius: 999px;
-  background: transparent;
-  color: var(--outline);
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
-}
-
-.toggle-btn.active,
-.toggle-btn:hover {
-  background: rgba(0, 83, 219, 0.1);
-  color: var(--primary);
-  transform: translateY(-1px);
-}
-
 .state-message {
   display: flex;
   flex-direction: column;
@@ -1771,37 +1701,6 @@ input, button, select {
   flex-wrap: wrap;
 }
 
-.page-action-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.45rem;
-  min-height: 2.85rem;
-  padding: 0.75rem 1.1rem;
-  border: none;
-  border-radius: var(--radius-pill);
-  font-size: 0.92rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-}
-
-.page-action-btn:hover {
-  transform: translateY(-1px);
-}
-
-.page-action-btn--primary {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dim) 100%);
-  color: white;
-  box-shadow: 0 12px 22px rgba(0, 83, 219, 0.18);
-}
-
-.page-action-btn--secondary {
-  background: rgba(255, 255, 255, 0.9);
-  color: var(--on-surface);
-  border: 1px solid rgba(115, 124, 129, 0.16);
-}
-
 @media (max-width: 1199px) {
   .book-grid {
     grid-template-columns: 1fr;
@@ -1861,10 +1760,6 @@ input, button, select {
   }
 
   .page-actions {
-    width: 100%;
-  }
-
-  .page-action-btn {
     width: 100%;
   }
 }
@@ -1951,14 +1846,6 @@ input, button, select {
   bottom: 0.45rem;
   height: 1px;
   background: linear-gradient(90deg, rgba(18, 59, 93, 0) 0%, rgba(18, 59, 93, 0.7) 50%, rgba(18, 59, 93, 0) 100%);
-}
-
-.icon-btn {
-  transition: color 0.2s ease, transform 0.2s ease;
-}
-
-.icon-btn:hover {
-  transform: translateY(-1px);
 }
 
 .popup-panel {
@@ -2222,18 +2109,6 @@ input, button, select {
   box-shadow: var(--shadow-soft);
 }
 
-.page-action-btn {
-  box-shadow: 0 12px 24px rgba(47, 48, 45, 0.08);
-}
-
-.page-action-btn--primary {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dim) 100%);
-}
-
-.page-action-btn--secondary {
-  background: rgba(255, 255, 255, 0.9);
-}
-
 @media (max-width: 1024px) {
   .related-volumes-section {
     padding: var(--space-6);
@@ -2409,32 +2284,9 @@ input, button, select {
   background: linear-gradient(90deg, rgba(199, 160, 103, 0.9), rgba(127, 149, 223, 0.72));
 }
 
-[data-theme="midnight-archive"] .icon-btn {
-  color: rgba(243, 233, 215, 0.66);
-}
-
-[data-theme="midnight-archive"] .icon-btn:hover {
-  color: #fff7ea;
-}
-
 [data-theme="midnight-archive"] .unread-badge {
   background: linear-gradient(135deg, #d45b53 0%, #9f2818 100%);
   box-shadow: 0 10px 18px rgba(159, 40, 24, 0.38);
-}
-
-[data-theme="midnight-archive"] .login-btn,
-[data-theme="midnight-archive"] .user-avatar-btn,
-[data-theme="midnight-archive"] .avatar-placeholder {
-  min-height: 2.8rem;
-  border-radius: var(--radius-pill);
-}
-
-[data-theme="midnight-archive"] .login-btn {
-  padding: 0 1.05rem;
-  border: 1px solid rgba(199, 160, 103, 0.18);
-  color: #fff1d9;
-  background: linear-gradient(135deg, rgba(199, 160, 103, 0.24) 0%, rgba(143, 103, 56, 0.28) 100%);
-  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.22);
 }
 
 [data-theme="midnight-archive"] .user-avatar-btn {
@@ -2479,14 +2331,6 @@ input, button, select {
 [data-theme="midnight-archive"] .notif-time,
 [data-theme="midnight-archive"] .history-meta {
   color: rgba(220, 206, 184, 0.7);
-}
-
-[data-theme="midnight-archive"] .popup-action-btn {
-  color: #f8e5bf;
-}
-
-[data-theme="midnight-archive"] .popup-action-btn:hover {
-  background: rgba(199, 160, 103, 0.12);
 }
 
 [data-theme="midnight-archive"] .notif-item:hover,
@@ -2561,31 +2405,6 @@ input, button, select {
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.035) 0%, transparent 35%),
     radial-gradient(circle at top right, rgba(127, 149, 223, 0.12) 0%, transparent 28%);
-}
-
-[data-theme="midnight-archive"] .page-action-btn {
-  position: relative;
-  min-height: 3rem;
-  border: 1px solid transparent;
-  font-family: var(--font-label);
-  letter-spacing: 0.04em;
-  box-shadow: 0 14px 26px rgba(0, 0, 0, 0.24);
-}
-
-[data-theme="midnight-archive"] .page-action-btn--primary {
-  color: #1a130d;
-  background: linear-gradient(135deg, #d7b37a 0%, #b8874f 48%, #f0d0a3 100%);
-  box-shadow: 0 14px 30px rgba(199, 160, 103, 0.24);
-}
-
-[data-theme="midnight-archive"] .page-action-btn--secondary {
-  color: #f1e3cc;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.025) 100%);
-  border-color: rgba(199, 160, 103, 0.18);
-}
-
-[data-theme="midnight-archive"] .page-action-btn:hover {
-  transform: translateY(-2px);
 }
 
 [data-theme="midnight-archive"] .scholarly-app .book-search .search-sidebar,
@@ -3004,36 +2823,15 @@ input, button, select {
   background: linear-gradient(90deg, rgba(202, 163, 111, 0.88), rgba(103, 132, 102, 0.7));
 }
 
-[data-theme="bamboo-monastery"] .scholarly-app.layout-home .icon-btn {
-  color: rgba(58, 69, 60, 0.72);
-}
-
-[data-theme="bamboo-monastery"] .scholarly-app.layout-home .icon-btn:hover {
-  color: var(--home-ink);
-}
-
 [data-theme="bamboo-monastery"] .scholarly-app.layout-home .unread-badge {
   background: linear-gradient(135deg, #be6c58 0%, #8d4334 100%);
   box-shadow: 0 10px 18px rgba(141, 67, 52, 0.26);
 }
 
-[data-theme="bamboo-monastery"] .scholarly-app.layout-home .login-btn,
 [data-theme="bamboo-monastery"] .scholarly-app.layout-home .user-avatar-btn,
 [data-theme="bamboo-monastery"] .scholarly-app.layout-home .avatar-placeholder {
   min-height: 2.8rem;
   border-radius: var(--radius-pill);
-}
-
-[data-theme="bamboo-monastery"] .scholarly-app.layout-home .login-btn {
-  padding: 0 1.05rem;
-  border: 1px solid rgba(111, 127, 108, 0.16);
-  color: #1d1a16;
-  background: linear-gradient(135deg, #dcc390 0%, #c49a61 55%, #efe1bf 100%);
-  box-shadow: 0 14px 28px rgba(113, 87, 55, 0.14);
-}
-
-[data-theme="bamboo-monastery"] .scholarly-app.layout-home .login-btn:hover {
-  box-shadow: 0 18px 32px rgba(113, 87, 55, 0.18);
 }
 
 [data-theme="bamboo-monastery"] .scholarly-app.layout-home .user-avatar-btn {
@@ -3079,14 +2877,12 @@ input, button, select {
   color: rgba(79, 89, 77, 0.68);
 }
 
-[data-theme="bamboo-monastery"] .scholarly-app.layout-home .popup-action-btn,
 [data-theme="bamboo-monastery"] .scholarly-app.layout-home .history-item-icon,
 [data-theme="bamboo-monastery"] .scholarly-app.layout-home .history-arrow,
 [data-theme="bamboo-monastery"] .scholarly-app.layout-home .notif-icon {
   color: rgba(113, 87, 55, 0.82);
 }
 
-[data-theme="bamboo-monastery"] .scholarly-app.layout-home .popup-action-btn:hover,
 [data-theme="bamboo-monastery"] .scholarly-app.layout-home .notif-item:hover,
 [data-theme="bamboo-monastery"] .scholarly-app.layout-home .history-item:hover,
 [data-theme="bamboo-monastery"] .scholarly-app.layout-home .dropdown-item:hover {
@@ -3264,7 +3060,7 @@ input, button, select {
   color: var(--home-ink);
 }
 
-[data-theme="bamboo-monastery"] .scholarly-app.layout-home :is(.nav-link, .login-btn, .icon-btn, .popup-action-btn, .dropdown-item, .nav-arrow, .search-btn, .tag-btn, .related-item, .footer-links a):focus-visible {
+[data-theme="bamboo-monastery"] .scholarly-app.layout-home :is(.nav-link, .dropdown-item, .nav-arrow, .search-btn, .tag-btn, .related-item, .footer-links a):focus-visible {
   outline: 2px solid var(--home-focus);
   outline-offset: 3px;
 }
@@ -3294,8 +3090,6 @@ input, button, select {
   [data-theme="bamboo-monastery"] .scholarly-app.layout-home .related-item,
   [data-theme="bamboo-monastery"] .scholarly-app.layout-home .related-img,
   [data-theme="bamboo-monastery"] .scholarly-app.layout-home .nav-link,
-  [data-theme="bamboo-monastery"] .scholarly-app.layout-home .login-btn,
-  [data-theme="bamboo-monastery"] .scholarly-app.layout-home .icon-btn,
   [data-theme="bamboo-monastery"] .scholarly-app.layout-home .nav-arrow {
     animation: none !important;
     transition: none !important;
@@ -3389,27 +3183,10 @@ input, button, select {
   background: linear-gradient(90deg, rgba(202, 163, 111, 0.9), rgba(103, 132, 102, 0.72));
 }
 
-[data-theme="bamboo-monastery"] .scholarly-app.layout-page .icon-btn {
-  color: rgba(58, 69, 60, 0.72);
-}
-
-[data-theme="bamboo-monastery"] .scholarly-app.layout-page .icon-btn:hover {
-  color: var(--home-ink);
-}
-
-[data-theme="bamboo-monastery"] .scholarly-app.layout-page .login-btn,
 [data-theme="bamboo-monastery"] .scholarly-app.layout-page .user-avatar-btn,
 [data-theme="bamboo-monastery"] .scholarly-app.layout-page .avatar-placeholder {
   min-height: 2.8rem;
   border-radius: var(--radius-pill);
-}
-
-[data-theme="bamboo-monastery"] .scholarly-app.layout-page .login-btn {
-  padding: 0 1.05rem;
-  border: 1px solid rgba(111, 127, 108, 0.16);
-  color: #1d1a16;
-  background: linear-gradient(135deg, #dcc390 0%, #c49a61 55%, #efe1bf 100%);
-  box-shadow: 0 14px 28px rgba(113, 87, 55, 0.14);
 }
 
 [data-theme="bamboo-monastery"] .scholarly-app.layout-page .user-avatar-btn {
@@ -3456,14 +3233,12 @@ input, button, select {
   color: rgba(79, 89, 77, 0.68);
 }
 
-[data-theme="bamboo-monastery"] .scholarly-app.layout-page .popup-action-btn,
 [data-theme="bamboo-monastery"] .scholarly-app.layout-page .history-item-icon,
 [data-theme="bamboo-monastery"] .scholarly-app.layout-page .history-arrow,
 [data-theme="bamboo-monastery"] .scholarly-app.layout-page .notif-icon {
   color: rgba(113, 87, 55, 0.82);
 }
 
-[data-theme="bamboo-monastery"] .scholarly-app.layout-page .popup-action-btn:hover,
 [data-theme="bamboo-monastery"] .scholarly-app.layout-page .notif-item:hover,
 [data-theme="bamboo-monastery"] .scholarly-app.layout-page .history-item:hover,
 [data-theme="bamboo-monastery"] .scholarly-app.layout-page .dropdown-item:hover {
@@ -3487,9 +3262,6 @@ input, button, select {
 [data-theme="bamboo-monastery"] .scholarly-app.layout-page .notif-item:focus-visible,
 [data-theme="bamboo-monastery"] .scholarly-app.layout-page .history-item:focus-visible,
 [data-theme="bamboo-monastery"] .scholarly-app.layout-page .dropdown-item:focus-visible,
-[data-theme="bamboo-monastery"] .scholarly-app.layout-page .popup-action-btn:focus-visible,
-[data-theme="bamboo-monastery"] .scholarly-app.layout-page .icon-btn:focus-visible,
-[data-theme="bamboo-monastery"] .scholarly-app.layout-page .login-btn:focus-visible,
 [data-theme="bamboo-monastery"] .scholarly-app.layout-page .user-avatar-btn:focus-visible {
   outline: 2px solid var(--home-focus);
   outline-offset: 3px;
@@ -3518,36 +3290,10 @@ input, button, select {
   flex-wrap: wrap;
 }
 
-[data-theme="bamboo-monastery"] .scholarly-app.layout-page .page-action-btn {
-  min-height: 3rem;
-  border-radius: var(--radius-pill);
-  font-family: var(--font-label);
-  letter-spacing: 0.04em;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-}
-
-[data-theme="bamboo-monastery"] .scholarly-app.layout-page .page-action-btn:hover {
-  transform: translateY(-1px);
-}
-
-[data-theme="bamboo-monastery"] .scholarly-app.layout-page .page-action-btn:focus-visible,
 [data-theme="bamboo-monastery"] .scholarly-app.layout-page .result-card:focus-visible,
 [data-theme="bamboo-monastery"] .scholarly-app.layout-page .related-card:focus-visible {
   outline: 2px solid var(--home-focus);
   outline-offset: 4px;
-}
-
-[data-theme="bamboo-monastery"] .scholarly-app.layout-page .page-action-btn--primary {
-  color: #1a130d;
-  background: linear-gradient(135deg, #d7b37a 0%, #ba8850 50%, #efd0a6 100%);
-  box-shadow: 0 14px 28px rgba(121, 93, 57, 0.18);
-}
-
-[data-theme="bamboo-monastery"] .scholarly-app.layout-page .page-action-btn--secondary {
-  color: var(--home-ink);
-  background: rgba(255, 255, 255, 0.48);
-  border: 1px solid rgba(108, 123, 102, 0.18);
-  box-shadow: 0 10px 20px rgba(43, 52, 44, 0.08);
 }
 
 [data-theme="bamboo-monastery"] .scholarly-app.layout-page .book-search,
@@ -3863,7 +3609,7 @@ input, button, select {
   color: inherit;
 }
 
-[data-theme="bamboo-monastery"] .scholarly-app.layout-page :is(.page-action-btn, .result-card, .related-card, .tabs button, .sidebar-submit, .pagination-btn, .pagination-number, .action-btn, .star-toggle):focus-visible {
+[data-theme="bamboo-monastery"] .scholarly-app.layout-page :is(.result-card, .related-card, .tabs button, .sidebar-submit, .pagination-btn, .pagination-number, .action-btn, .star-toggle):focus-visible {
   outline: 2px solid var(--home-focus);
   outline-offset: 3px;
 }
@@ -3958,38 +3704,15 @@ input, button, select {
   background: linear-gradient(90deg, rgba(202, 163, 111, 0.88), rgba(103, 132, 102, 0.72));
 }
 
-[data-theme="bamboo-monastery"] .scholarly-app:is(.layout-home, .layout-page) .icon-btn {
-  color: rgba(58, 69, 60, 0.72);
-}
-
-[data-theme="bamboo-monastery"] .scholarly-app:is(.layout-home, .layout-page) .icon-btn:hover {
-  color: var(--home-ink);
-}
-
 [data-theme="bamboo-monastery"] .scholarly-app:is(.layout-home, .layout-page) .unread-badge {
   background: linear-gradient(135deg, #c67462 0%, #94483b 100%);
   box-shadow: 0 10px 18px rgba(148, 72, 59, 0.24);
 }
 
-[data-theme="bamboo-monastery"] .scholarly-app:is(.layout-home, .layout-page) .login-btn,
 [data-theme="bamboo-monastery"] .scholarly-app:is(.layout-home, .layout-page) .user-avatar-btn,
 [data-theme="bamboo-monastery"] .scholarly-app:is(.layout-home, .layout-page) .avatar-placeholder {
   min-height: 2.8rem;
   border-radius: var(--radius-pill);
-}
-
-[data-theme="bamboo-monastery"] .scholarly-app:is(.layout-home, .layout-page) .login-btn {
-  padding: 0 1.05rem;
-  border: 1px solid rgba(111, 127, 108, 0.16);
-  color: #1d1a16;
-  background: linear-gradient(135deg, #dcc694 0%, #c59d66 56%, #f1e5c7 100%);
-  box-shadow: 0 14px 28px rgba(113, 87, 55, 0.14);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-[data-theme="bamboo-monastery"] .scholarly-app:is(.layout-home, .layout-page) .login-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 18px 32px rgba(113, 87, 55, 0.18);
 }
 
 [data-theme="bamboo-monastery"] .scholarly-app:is(.layout-home, .layout-page) .user-avatar-btn {
@@ -4040,11 +3763,10 @@ input, button, select {
   color: rgba(79, 89, 77, 0.68);
 }
 
-[data-theme="bamboo-monastery"] .scholarly-app:is(.layout-home, .layout-page) :is(.popup-action-btn, .history-item-icon, .history-arrow, .notif-icon) {
+[data-theme="bamboo-monastery"] .scholarly-app:is(.layout-home, .layout-page) :is(.history-item-icon, .history-arrow, .notif-icon) {
   color: rgba(113, 87, 55, 0.82);
 }
 
-[data-theme="bamboo-monastery"] .scholarly-app:is(.layout-home, .layout-page) .popup-action-btn:hover,
 [data-theme="bamboo-monastery"] .scholarly-app:is(.layout-home, .layout-page) .notif-item:hover,
 [data-theme="bamboo-monastery"] .scholarly-app:is(.layout-home, .layout-page) .history-item:hover,
 [data-theme="bamboo-monastery"] .scholarly-app:is(.layout-home, .layout-page) .dropdown-item:hover {
