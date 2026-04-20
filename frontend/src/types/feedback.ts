@@ -34,7 +34,7 @@ export interface ToastOptions {
   closable?: boolean  // 默认 true
   position?: ToastPosition  // 默认 'bottom-right'
   showProgress?: boolean  // 默认 false
-  actions?: ToastAction[]
+  actions?: readonly ToastAction[]
   icon?: string
 }
 

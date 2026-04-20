@@ -266,7 +266,7 @@
       @cancel="closeDialog"
       @confirm="runDialogAction"
     />
-    <FeedbackToast :message="toast.message" :type="toast.type" />
+    <FeedbackToast v-if="toast.message" :toast="toast" @close="toast.message = ''" />
   </div>
 </template>
 
@@ -288,11 +288,15 @@ import { logger } from '../utils/logger'
 import { formatLocalDate as formatDate } from '../utils/timeHelpers'
 import { useToast } from '../composables/useToast'
 import { useConfirmDialog } from '../composables/useConfirmDialog'
+import { useOffline } from '../composables/useOffline'
+import { toggleFavoriteOfflineAware } from '../composables/useFavoriteOffline'
+import { applyBorrowOfflineAware, reserveBookOfflineAware } from '../composables/useBorrowOffline'
 
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
 const { t } = useI18n()
+const { isOnline, enqueueOperation } = useOffline()
 
 const loading = ref(true)
 const book = ref<BookDetail | null>(null)
@@ -420,11 +424,20 @@ async function runDialogAction() {
   isSubmitting.value = true
   try {
     if (dialog.action === 'borrow') {
-      const response = await borrowApi.applyBorrow({ bookId: book.value.id, notes: '' })
-      showToast(response.data.message || t('bookDetail.toast.borrowSubmitted'), 'success')
+      await applyBorrowOfflineAware({
+        bookId: book.value.id,
+        notes: '',
+        isOnline,
+        enqueueOperation,
+      })
+      showToast(t('bookDetail.toast.borrowSubmitted'), 'success')
     } else {
-      const response = await reservationApi.reserveBook({ bookId: book.value.id })
-      showToast(response.data.message || t('bookDetail.toast.reserveSubmitted'), 'success')
+      await reserveBookOfflineAware({
+        bookId: book.value.id,
+        isOnline,
+        enqueueOperation,
+      })
+      showToast(t('bookDetail.toast.reserveSubmitted'), 'success')
     }
     closeDialog()
     await loadBookDetail()
@@ -488,15 +501,17 @@ function onDamageReportSubmitted() {
 async function toggleFavorite() {
   if (!book.value || !ensureAuth()) return
   try {
-    if (isFavorited.value) {
-      await favoriteApi.removeFavorite(book.value.id)
-      isFavorited.value = false
-      showToast(t('bookDetail.toast.favoriteRemoved'), 'info')
-    } else {
-      await favoriteApi.addFavorite(book.value.id)
-      isFavorited.value = true
-      showToast(t('bookDetail.toast.favoriteAdded'), 'success')
-    }
+    await toggleFavoriteOfflineAware({
+      bookId: book.value.id,
+      isFavorited: isFavorited.value,
+      isOnline,
+      enqueueOperation,
+    })
+    isFavorited.value = !isFavorited.value
+    showToast(
+      isFavorited.value ? t('bookDetail.toast.favoriteAdded') : t('bookDetail.toast.favoriteRemoved'),
+      isFavorited.value ? 'success' : 'info',
+    )
   } catch (error: any) {
     showToast(error.response?.data?.message || t('bookDetail.toast.operationFailed'), 'error')
   }

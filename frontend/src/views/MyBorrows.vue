@@ -123,7 +123,7 @@
       @cancel="closeDialog"
       @confirm="runAction"
     />
-    <FeedbackToast :message="toast.message" :type="toast.type" />
+    <FeedbackToast v-if="toast.message" :toast="toast" @close="toast.message = ''" />
   </div>
 </template>
 
@@ -139,8 +139,11 @@ import { logger } from '../utils/logger'
 import { useToast } from '../composables/useToast'
 import { useConfirmDialog } from '../composables/useConfirmDialog'
 import { formatLocalDate as formatDate } from '../utils/timeHelpers'
+import { useOffline } from '../composables/useOffline'
+import { pickupBorrowOfflineAware, returnBookOfflineAware, renewBorrowOfflineAware } from '../composables/useBorrowOffline'
 
 const { t } = useI18n()
+const { isOnline, enqueueOperation } = useOffline()
 
 const activeTab = ref<'current' | 'history'>('current')
 const currentBorrows = ref<BorrowRecord[]>([])
@@ -201,14 +204,26 @@ async function runAction() {
   isSubmitting.value = true
   try {
     if (dialog.action === 'pickup') {
-      const response = await borrowApi.pickupBorrow(pendingRecord.value.id)
-      showToast(response.data.message || t('myBorrows.toast.pickupConfirmed'), 'success')
+      await pickupBorrowOfflineAware({
+        recordId: pendingRecord.value.id,
+        isOnline,
+        enqueueOperation,
+      })
+      showToast(t('myBorrows.toast.pickupConfirmed'), 'success')
     } else if (dialog.action === 'renew') {
-      const response = await borrowApi.renewBorrow(pendingRecord.value.id)
-      showToast(response.data.message || t('myBorrows.toast.renewed'), 'success')
+      await renewBorrowOfflineAware({
+        recordId: pendingRecord.value.id,
+        isOnline,
+        enqueueOperation,
+      })
+      showToast(t('myBorrows.toast.renewed'), 'success')
     } else {
-      const response = await borrowApi.returnBook(pendingRecord.value.id)
-      showToast(response.data.message || t('myBorrows.toast.returned'), 'success')
+      await returnBookOfflineAware({
+        recordId: pendingRecord.value.id,
+        isOnline,
+        enqueueOperation,
+      })
+      showToast(t('myBorrows.toast.returned'), 'success')
     }
     closeDialog()
     await Promise.all([loadCurrentBorrows(), loadBorrowHistory()])

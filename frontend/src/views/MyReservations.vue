@@ -100,7 +100,7 @@
       @cancel="closeDialog"
       @confirm="runAction"
     />
-    <FeedbackToast :message="toast.message" :type="toast.type" />
+    <FeedbackToast v-if="toast.message" :toast="toast" @close="toast.message = ''" />
   </div>
 </template>
 
@@ -115,10 +115,13 @@ import LibraryButton from '@/components/common/LibraryButton.vue'
 import PageHeader from '../components/layout/PageHeader.vue'
 import { logger } from '../utils/logger'
 import { useToast } from '../composables/useToast'
+import { useOffline } from '../composables/useOffline'
+import { cancelReservationOfflineAware, pickupReservationOfflineAware, extendReservationOfflineAware } from '../composables/useBorrowOffline'
 
 const router = useRouter()
 const { t } = useI18n()
 const { toast, showToast } = useToast()
+const { isOnline, enqueueOperation } = useOffline()
 
 const reservations = ref<ReservationRecord[]>([])
 const isSubmitting = ref(false)
@@ -181,16 +184,28 @@ async function runAction() {
   isSubmitting.value = true
   try {
     if (dialog.action === 'cancel') {
-      const response = await reservationApi.cancelReservation(dialog.reservation.id)
-      showToast(response.data.message || t('myReservations.toast.cancelled'), 'success')
+      await cancelReservationOfflineAware({
+        reservationId: dialog.reservation.id,
+        isOnline,
+        enqueueOperation,
+      })
+      showToast(t('myReservations.toast.cancelled'), 'success')
       await loadReservations()
     } else if (dialog.action === 'pickup') {
-      const response = await reservationApi.pickupReservation(dialog.reservation.id)
-      showToast(response.data.message || t('myReservations.toast.convertedToBorrow'), 'success')
+      await pickupReservationOfflineAware({
+        reservationId: dialog.reservation.id,
+        isOnline,
+        enqueueOperation,
+      })
+      showToast(t('myReservations.toast.convertedToBorrow'), 'success')
       await router.push({ name: 'MyBorrows' })
     } else if (dialog.action === 'extend') {
-      const response = await reservationApi.extendReservation(dialog.reservation.id)
-      showToast(response.data.message || t('myReservations.toast.extended'), 'success')
+      await extendReservationOfflineAware({
+        reservationId: dialog.reservation.id,
+        isOnline,
+        enqueueOperation,
+      })
+      showToast(t('myReservations.toast.extended'), 'success')
       await loadReservations()
     }
     closeDialog()

@@ -90,7 +90,7 @@
       @cancel="removeDialog.open = false"
     />
 
-    <FeedbackToast :message="toast.message" :type="toast.type" />
+    <FeedbackToast v-if="toast.message" :toast="toast" @close="toast.message = ''" />
   </div>
 </template>
 
@@ -106,9 +106,12 @@ import PageHeader from '../components/layout/PageHeader.vue'
 import LibraryButton from '@/components/common/LibraryButton.vue'
 import { handleImageError } from '../utils/imageHelpers'
 import { useToast } from '../composables/useToast'
+import { useOffline } from '../composables/useOffline'
+import { toggleFavoriteOfflineAware } from '../composables/useFavoriteOffline'
 
 const router = useRouter()
 const { t } = useI18n()
+const { isOnline, enqueueOperation } = useOffline()
 
 interface ShelfItem {
   bookId: number
@@ -255,7 +258,12 @@ function confirmRemove(item: ShelfItem) {
 async function doRemove() {
   removeDialog.open = false
   try {
-    await favoriteApi.removeFavorite(removeDialog.bookId)
+    await toggleFavoriteOfflineAware({
+      bookId: removeDialog.bookId,
+      isFavorited: true,
+      isOnline,
+      enqueueOperation,
+    })
     showToast(t('myBookshelf.toast.removed'), 'info')
     await loadShelf()
   } catch (error: any) {

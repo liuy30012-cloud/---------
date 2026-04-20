@@ -41,7 +41,7 @@ export function useSearchHistory(locale: { value: string }) {
 
   const loadHistory = async () => {
     try {
-      const res = await httpClient.get<any[]>('/api/search-history')
+      const res = await httpClient.get<{ data: any[] }>('/api/search-history')
       searchHistory.value = res.data.data.map(normalizeHistoryItem)
     } catch {
       // keep local history

@@ -3,20 +3,20 @@
     <div
       v-if="visible"
       class="feedback-toast"
-      :class="[`feedback-toast--${toast.type}`, `feedback-toast--${toast.position}`]"
+      :class="[`feedback-toast--${normalizedToast.type}`, `feedback-toast--${normalizedToast.position}`]"
       role="status"
-      :aria-live="toast.type === 'error' ? 'assertive' : 'polite'"
+      :aria-live="normalizedToast.type === 'error' ? 'assertive' : 'polite'"
     >
       <span class="material-symbols-outlined toast-icon" aria-hidden="true">
         {{ getIcon() }}
       </span>
 
       <div class="toast-content">
-        <p class="toast-message">{{ toast.message }}</p>
+        <p class="toast-message">{{ normalizedToast.message }}</p>
 
-        <div v-if="toast.actions && toast.actions.length" class="toast-actions">
+        <div v-if="normalizedToast.actions && normalizedToast.actions.length" class="toast-actions">
           <button
-            v-for="(action, index) in toast.actions"
+            v-for="(action, index) in normalizedToast.actions"
             :key="index"
             class="toast-action-btn"
             @click="handleAction(action)"
@@ -27,7 +27,7 @@
       </div>
 
       <button
-        v-if="toast.closable"
+        v-if="normalizedToast.closable"
         class="toast-close"
         @click="handleClose"
         aria-label="关闭"
@@ -36,20 +36,25 @@
       </button>
 
       <div
-        v-if="toast.showProgress && toast.duration > 0"
+        v-if="normalizedToast.showProgress && (normalizedToast.duration ?? 0) > 0"
         class="toast-progress"
-        :style="{ animationDuration: `${toast.duration}ms` }"
+        :style="{ animationDuration: `${normalizedToast.duration ?? 0}ms` }"
       ></div>
     </div>
   </Transition>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
-import type { Toast, ToastAction } from '@/types/feedback'
+import { computed, onMounted, ref } from 'vue'
+import type { Toast, ToastAction, ToastType } from '@/types/feedback'
+
+type LegacyToast = {
+  message: string
+  type: Exclude<ToastType, 'warning' | 'loading'>
+}
 
 const props = defineProps<{
-  toast: Toast
+  toast: Toast | LegacyToast
 }>()
 
 const emit = defineEmits<{
@@ -58,27 +63,39 @@ const emit = defineEmits<{
 
 const visible = ref(false)
 const animation = ref('slide')
+const normalizedToast = computed((): Toast => ({
+  id: 'id' in props.toast ? props.toast.id : 'legacy-toast',
+  createdAt: 'createdAt' in props.toast ? props.toast.createdAt : 0,
+  duration: 'duration' in props.toast ? props.toast.duration : 2600,
+  closable: 'closable' in props.toast ? props.toast.closable : true,
+  position: 'position' in props.toast ? props.toast.position : 'bottom-right',
+  showProgress: 'showProgress' in props.toast ? props.toast.showProgress : false,
+  actions: 'actions' in props.toast ? props.toast.actions : undefined,
+  icon: 'icon' in props.toast ? props.toast.icon : undefined,
+  message: props.toast.message,
+  type: props.toast.type,
+}))
 
 onMounted(() => {
   visible.value = true
 })
 
 const getIcon = () => {
-  if (props.toast.icon) return props.toast.icon
+  if (normalizedToast.value.icon) return normalizedToast.value.icon
 
   const icons = {
     success: 'check_circle',
     error: 'error',
     warning: 'warning',
     info: 'info',
-    loading: 'progress_activity'
+    loading: 'progress_activity',
   }
-  return icons[props.toast.type]
+  return icons[normalizedToast.value.type]
 }
 
 const handleClose = () => {
   visible.value = false
-  setTimeout(() => emit('close', props.toast.id), 300)
+  setTimeout(() => emit('close', normalizedToast.value.id), 300)
 }
 
 const handleAction = (action: ToastAction) => {

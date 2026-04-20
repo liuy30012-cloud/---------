@@ -7,6 +7,7 @@ class ErrorCenter {
   private logs: ErrorLog[] = []
   private maxLogs = 100
   private errorHandlers: Map<ErrorType, ErrorHandler> = new Map()
+  private activeError: ErrorLog | null = null
 
   private constructor() {
     this.initializeHandlers()
@@ -30,7 +31,7 @@ class ErrorCenter {
     this.errorHandlers.set('UnknownError', this.handleUnknownError.bind(this))
   }
 
-  handle(error: Error, context?: ErrorContext): void {
+  handle(error: Error, context?: ErrorContext): ErrorLog {
     const errorType = this.classifyError(error)
     const handler = this.errorHandlers.get(errorType)
 
@@ -38,10 +39,22 @@ class ErrorCenter {
       handler(error, context)
     }
 
-    this.log(error, { ...context, type: errorType })
+    return this.log(error, { ...context, type: errorType })
   }
 
-  private classifyError(error: any): ErrorType {
+  capture(error: Error, context?: ErrorContext): ErrorLog {
+    return this.handle(error, context)
+  }
+
+  clearActive(): void {
+    this.activeError = null
+  }
+
+  getActive(): ErrorLog | null {
+    return this.activeError
+  }
+
+  private classifyError(error: Error & { response?: { status?: number }; code?: string }): ErrorType {
     if (error.message?.includes('Network') || error.message?.includes('fetch')) {
       return 'NetworkError'
     }
@@ -64,19 +77,19 @@ class ErrorCenter {
     return 'UnknownError'
   }
 
-  private handleNetworkError(error: Error, context?: ErrorContext): void {
+  private handleNetworkError(): void {
     feedbackManager.error(ERROR_MESSAGES.NETWORK_ERROR)
   }
 
-  private handleAPIError(error: any, context?: ErrorContext): void {
+  private handleAPIError(error: Error & { response?: { status?: number } }): void {
     const status = error.response?.status
-    const message = ERROR_MESSAGES[status] || ERROR_MESSAGES.DEFAULT
+    const message = ERROR_MESSAGES[status ?? 'DEFAULT'] || ERROR_MESSAGES.DEFAULT
     feedbackManager.error(message)
   }
 
-  private handleAuthError(error: any, context?: ErrorContext): void {
+  private handleAuthError(error: Error & { response?: { status?: number } }): void {
     const status = error.response?.status
-    const message = ERROR_MESSAGES[status] || ERROR_MESSAGES[401]
+    const message = ERROR_MESSAGES[status ?? 401] || ERROR_MESSAGES[401]
     feedbackManager.error(message)
 
     setTimeout(() => {
@@ -84,41 +97,45 @@ class ErrorCenter {
     }, 1500)
   }
 
-  private handleValidationError(error: Error, context?: ErrorContext): void {
+  private handleValidationError(error: Error): void {
     feedbackManager.warning(error.message || '输入验证失败')
   }
 
-  private handleBusinessError(error: any, context?: ErrorContext): void {
-    const message = ERROR_MESSAGES[error.code] || error.message || ERROR_MESSAGES.DEFAULT
+  private handleBusinessError(error: Error & { code?: string }): void {
+    const message = ERROR_MESSAGES[error.code ?? 'DEFAULT'] || error.message || ERROR_MESSAGES.DEFAULT
     feedbackManager.warning(message)
   }
 
-  private handleComponentError(error: Error, context?: ErrorContext): void {
+  private handleComponentError(error: Error): void {
     console.error('Component Error:', error)
     feedbackManager.error('页面加载失败，请刷新重试')
   }
 
-  private handleUnknownError(error: Error, context?: ErrorContext): void {
+  private handleUnknownError(error: Error): void {
     console.error('Unknown Error:', error)
     feedbackManager.error(ERROR_MESSAGES.DEFAULT)
   }
 
-  log(error: Error, context?: ErrorContext): void {
+  log(error: Error, context?: ErrorContext): ErrorLog {
     const timestamp = Date.now()
     const log: ErrorLog = {
       id: `error-${timestamp}-${Math.random().toString(36).slice(2, 11)}`,
-      type: this.classifyError(error),
-      message: error.message,
+      type: (context?.type as ErrorType) || this.classifyError(error as Error & { response?: { status?: number }; code?: string }),
+      title: context?.component || context?.page || 'Application error',
+      message: error.message || ERROR_MESSAGES.DEFAULT,
+      details: context?.info || context?.url,
       stack: error.stack,
       context: {
         ...context,
         timestamp,
         userAgent: navigator.userAgent,
-        url: window.location.href
+        url: window.location.href,
       },
-      timestamp
+      timestamp,
+      retryable: context?.retryable ?? false,
     }
 
+    this.activeError = log
     this.logs.push(log)
 
     if (this.logs.length > this.maxLogs) {
@@ -126,6 +143,7 @@ class ErrorCenter {
     }
 
     this.saveLogs()
+    return log
   }
 
   getLogs(): ErrorLog[] {
@@ -139,7 +157,7 @@ class ErrorCenter {
 
   async retry<T>(
     fn: () => Promise<T>,
-    options: RetryOptions = {}
+    options: RetryOptions = {},
   ): Promise<T> {
     const maxRetries = options.maxRetries ?? 3
     const backoff = options.backoff ?? 'exponential'

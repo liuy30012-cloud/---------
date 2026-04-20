@@ -60,8 +60,8 @@ class FeedbackManager {
     this.notifyListeners()
 
     // 自动移除并存储定时器
-    if (toast.duration > 0 && toast.type !== 'loading') {
-      const timer = window.setTimeout(() => this.hide(id), toast.duration)
+    if ((toast.duration ?? 0) > 0 && toast.type !== 'loading') {
+      const timer = window.setTimeout(() => this.hide(id), toast.duration ?? 0)
       this.timers.set(id, timer)
     }
 

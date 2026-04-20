@@ -26,6 +26,7 @@ import quickActions from './modules/quickActions'
 import offlineIndicator from './modules/offlineIndicator'
 import cacheManagement from './modules/cacheManagement'
 import captcha from './modules/captcha'
+import errorCenter from './modules/errorCenter'
 
 function merge(modules: Record<string, any>[]) {
   const result: Record<string, any> = {}
@@ -46,7 +47,7 @@ const messages = merge([
   history, footer, notFound, forgotPassword, login, bookSearch,
   bookDetail, dashboard, myBorrows, myReservations, myBookshelf,
   myAccount, damageReports, purchaseSuggestions, inventoryAlerts, userManagement,
-  quickActions, offlineIndicator, cacheManagement, captcha,
+  quickActions, offlineIndicator, cacheManagement, captcha, errorCenter,
 ])
 
 export default messages

@@ -257,7 +257,7 @@
       @cancel="closeDialog"
     />
 
-    <FeedbackToast :message="toast.message" :type="toast.type" />
+    <FeedbackToast v-if="toast.message" :toast="toast" @close="toast.message = ''" />
   </div>
 </template>
 

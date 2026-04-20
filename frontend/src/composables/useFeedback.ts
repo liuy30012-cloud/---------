@@ -2,10 +2,10 @@
 import { ref, readonly, onUnmounted } from 'vue'
 import { feedbackManager } from '@/services/FeedbackManager'
 import type { Toast, ToastOptions } from '@/types/feedback'
-import type { Ref } from 'vue'
+import type { DeepReadonly, Ref } from 'vue'
 
 export function useFeedback(): {
-  toasts: Readonly<Ref<Toast[]>>
+  toasts: Readonly<Ref<DeepReadonly<Toast[]>>>
   show: (options: ToastOptions) => string
   success: (message: string) => string
   error: (message: string) => string

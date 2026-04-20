@@ -244,7 +244,7 @@
       </section>
     </div>
 
-    <FeedbackToast :message="toast.message" :type="toast.type" />
+    <FeedbackToast v-if="toast.message" :toast="toast" @close="toast.message = ''" />
   </div>
 </template>
 
@@ -261,6 +261,8 @@ import { logger } from '../utils/logger'
 import { useUserStore } from '../stores/user'
 import { useToast } from '../composables/useToast'
 import { useSearchAutocomplete } from '../composables/useSearchAutocomplete'
+import { useOffline } from '../composables/useOffline'
+import { toggleFavoriteOfflineAware } from '../composables/useFavoriteOffline'
 
 const { t, locale } = useI18n()
 
@@ -268,6 +270,7 @@ const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
 const history = inject<any>('searchHistoryController', null)
+const { isOnline, enqueueOperation } = useOffline()
 const keywordComboboxRef = ref<HTMLElement | null>(null)
 const {
   listId: keywordAutocompleteListId,
@@ -646,14 +649,18 @@ async function toggleFavoriteFromSearch(bookId: number) {
     return
   }
   try {
-    if (favoritedBookIds.value.has(bookId)) {
-      await favoriteApi.removeFavorite(bookId)
+    const isFavorited = favoritedBookIds.value.has(bookId)
+    await toggleFavoriteOfflineAware({
+      bookId,
+      isFavorited,
+      isOnline,
+      enqueueOperation,
+    })
+    if (isFavorited) {
       favoritedBookIds.value.delete(bookId)
     } else {
-      await favoriteApi.addFavorite(bookId)
       favoritedBookIds.value.add(bookId)
     }
-    // 触发响应式更新
     favoritedBookIds.value = new Set(favoritedBookIds.value)
   } catch (error: any) {
     showToast(error.response?.data?.message || t('bookSearch.toast.operationFailed'), 'error')

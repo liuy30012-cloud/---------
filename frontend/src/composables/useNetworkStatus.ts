@@ -3,162 +3,227 @@
  * 提供在线/离线状态检测和自动更新功能
  */
 
-import { ref, onMounted, onUnmounted } from 'vue';
-import { offlineDB } from '@/utils/offlineDB';
-import { logger } from '../utils/logger';
+import { ref, onMounted, onUnmounted } from 'vue'
+import { offlineDB } from '@/utils/offlineDB'
+import { offlineManager } from '@/services/OfflineManager'
+import { logger } from '../utils/logger'
+import { syncOfflineOperation } from './useOfflineSync'
+import type { OfflineOperation } from '@/types/offline'
 
 export function useNetworkStatus() {
-  const isOnline = ref(navigator.onLine);
-  const showOfflineNotice = ref(false);
-  const lastOnlineTime = ref<number>(Date.now());
+  const isOnline = ref(typeof navigator !== 'undefined' ? navigator.onLine : true)
+  const showOfflineNotice = ref(false)
+  const lastOnlineTime = ref<number>(Date.now())
 
-  // 网络状态变化处理
+  let unsubscribeOfflineManager: (() => void) | null = null
+
   const handleOnline = async () => {
-    isOnline.value = true;
-    showOfflineNotice.value = false;
+    isOnline.value = true
+    showOfflineNotice.value = false
+    await offlineManager.markSyncState({ isSyncing: false, lastSyncError: null })
 
-    logger.log('[Network] 网络已恢复');
+    logger.log('[Network] 网络已恢复')
 
-    // 自动更新热门书籍缓存
     try {
-      await updateHotBooksCache();
-      logger.log('[Network] 热门书籍缓存已更新');
+      await updateHotBooksCache()
+      logger.log('[Network] 热门书籍缓存已更新')
     } catch (error) {
-      logger.error('[Network] 更新缓存失败:', error);
+      logger.error('[Network] 更新缓存失败:', error)
     }
 
-    lastOnlineTime.value = Date.now();
-  };
+    // 同步离线队列
+    try {
+      await syncOfflineQueue()
+      logger.log('[Network] 离线队列同步完成')
+    } catch (error) {
+      logger.error('[Network] 离线队列同步失败:', error)
+    }
+
+    lastOnlineTime.value = Date.now()
+  }
 
   const handleOffline = () => {
-    isOnline.value = false;
-    logger.log('[Network] 网络已断开');
-  };
+    isOnline.value = false
+    offlineManager.markSyncState({ isSyncing: false }).catch((error) => {
+      logger.error('[Network] 更新离线同步状态失败:', error)
+    })
+    logger.log('[Network] 网络已断开')
+  }
 
-  // 更新热门书籍缓存
   const updateHotBooksCache = async (): Promise<void> => {
     if (!('serviceWorker' in navigator)) {
-      return;
+      return
     }
 
-    const registration = await navigator.serviceWorker.ready;
-    const activeWorker = registration.active;
+    const registration = await navigator.serviceWorker.ready
+    const activeWorker = registration.active
     if (!activeWorker) {
-      return;
+      return
     }
+
+    await offlineManager.markSyncState({ isSyncing: true, lastSyncError: null })
 
     return new Promise((resolve, reject) => {
-      const messageChannel = new MessageChannel();
+      const messageChannel = new MessageChannel()
 
       messageChannel.port1.onmessage = (event) => {
         if (event.data.success) {
-          resolve();
+          offlineManager.markSyncState({
+            isSyncing: false,
+            lastSyncAt: Date.now(),
+            lastSyncError: null,
+          }).catch((error) => {
+            logger.error('[Network] 更新同步状态失败:', error)
+          })
+          offlineManager.refreshCacheStats().catch((error) => {
+            logger.error('[Network] 刷新缓存统计失败:', error)
+          })
+          resolve()
         } else {
-          reject(new Error(event.data.error));
-        }
-      };
-
-      activeWorker.postMessage(
-        { type: 'UPDATE_CACHE' },
-        [messageChannel.port2]
-      );
-    });
-  };
-
-  // 手动触发缓存更新
-  const manualUpdateCache = async (): Promise<boolean> => {
-    if (!isOnline.value) {
-      return false;
-    }
-
-    try {
-      await updateHotBooksCache();
-      return true;
-    } catch (error) {
-      logger.error('[Network] 手动更新缓存失败:', error);
-      return false;
-    }
-  };
-
-  // 清空所有缓存
-  const clearAllCache = async (): Promise<boolean> => {
-    try {
-      // 清空 IndexedDB
-      await offlineDB.clearAllCache();
-
-      // 清空 Service Worker 缓存
-      if ('serviceWorker' in navigator) {
-        const registration = await navigator.serviceWorker.ready;
-        const activeWorker = registration.active;
-        if (activeWorker) {
-          return new Promise((resolve) => {
-            const messageChannel = new MessageChannel();
-
-            messageChannel.port1.onmessage = (event) => {
-              resolve(event.data.success);
-            };
-
-            activeWorker.postMessage(
-              { type: 'CLEAR_CACHE' },
-              [messageChannel.port2]
-            );
-          });
+          const nextError = event.data.error || '缓存更新失败'
+          offlineManager.markSyncState({
+            isSyncing: false,
+            lastSyncError: nextError,
+          }).catch((error) => {
+            logger.error('[Network] 更新同步状态失败:', error)
+          })
+          reject(new Error(nextError))
         }
       }
 
-      return true;
-    } catch (error) {
-      logger.error('[Network] 清空缓存失败:', error);
-      return false;
-    }
-  };
+      activeWorker.postMessage(
+        { type: 'UPDATE_CACHE' },
+        [messageChannel.port2],
+      )
+    })
+  }
 
-  // 检查是否需要显示离线提示
+  const manualUpdateCache = async (): Promise<boolean> => {
+    if (!isOnline.value) {
+      return false
+    }
+
+    try {
+      await updateHotBooksCache()
+      return true
+    } catch (error) {
+      logger.error('[Network] 手动更新缓存失败:', error)
+      return false
+    }
+  }
+
+  const clearAllCache = async (): Promise<boolean> => {
+    try {
+      await offlineDB.clearAllCache()
+      await offlineManager.clearQueue()
+      await offlineManager.refreshCacheStats()
+
+      if ('serviceWorker' in navigator) {
+        const registration = await navigator.serviceWorker.ready
+        const activeWorker = registration.active
+        if (activeWorker) {
+          return new Promise((resolve) => {
+            const messageChannel = new MessageChannel()
+
+            messageChannel.port1.onmessage = (event) => {
+              resolve(event.data.success)
+            }
+
+            activeWorker.postMessage(
+              { type: 'CLEAR_CACHE' },
+              [messageChannel.port2],
+            )
+          })
+        }
+      }
+
+      return true
+    } catch (error) {
+      logger.error('[Network] 清空缓存失败:', error)
+      return false
+    }
+  }
+
   const checkOfflineAction = (actionName: string): boolean => {
     if (!isOnline.value) {
-      showOfflineNotice.value = true;
-      logger.warn(`[Network] 操作 "${actionName}" 需要网络连接`);
-      return false;
+      showOfflineNotice.value = true
+      logger.warn(`[Network] 操作 "${actionName}" 需要网络连接`)
+      return false
     }
-    return true;
-  };
+    return true
+  }
 
-  // 获取缓存统计信息
   const getCacheStats = async () => {
     try {
-      const stats = await offlineDB.getCacheStats();
-      const lastUpdate = await offlineDB.getMetadata('hot_books_last_update');
-
-      return {
-        ...stats,
-        lastUpdate: lastUpdate || null
-      };
+      return await offlineManager.refreshCacheStats()
     } catch (error) {
-      logger.error('[Network] 获取缓存统计失败:', error);
+      logger.error('[Network] 获取缓存统计失败:', error)
       return {
         bookCount: 0,
         hotBookCount: 0,
         cacheSize: 0,
-        lastUpdate: null
-      };
+        lastUpdate: null,
+      }
     }
-  };
+  }
 
-  // 生命周期钩子
+  const syncOfflineQueue = async (): Promise<void> => {
+    const snapshot = offlineManager.getSnapshot()
+    const pendingOps = snapshot.queue.filter((op: OfflineOperation) => op.status === 'pending')
+
+    if (pendingOps.length === 0) {
+      logger.log('[Network] 离线队列为空，无需同步')
+      return
+    }
+
+    logger.log(`[Network] 开始同步 ${pendingOps.length} 个离线操作`)
+    await offlineManager.markSyncState({ isSyncing: true, lastSyncError: null })
+
+    let successCount = 0
+    let failCount = 0
+
+    for (const op of pendingOps) {
+      try {
+        await syncOfflineOperation(op)
+        await offlineManager.markOperationCompleted(op.id)
+        successCount++
+        logger.log(`[Network] 操作 ${op.id} (${op.type}) 同步成功`)
+      } catch (error) {
+        failCount++
+        const errorMsg = error instanceof Error ? error.message : '未知错误'
+        await offlineManager.markOperationFailed(op.id, errorMsg)
+        logger.error(`[Network] 操作 ${op.id} (${op.type}) 同步失败:`, error)
+      }
+    }
+
+    await offlineManager.markSyncState({
+      isSyncing: false,
+      lastSyncAt: Date.now(),
+      lastSyncError: failCount > 0 ? `${failCount} 个操作同步失败` : null,
+    })
+
+    logger.log(`[Network] 队列同步完成: 成功 ${successCount}, 失败 ${failCount}`)
+  }
+
   onMounted(() => {
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
+    unsubscribeOfflineManager = offlineManager.subscribe((snapshot) => {
+      isOnline.value = snapshot.isOnline
+    })
 
-    // 初始化时如果在线,更新缓存
+    window.addEventListener('online', handleOnline)
+    window.addEventListener('offline', handleOffline)
+
     if (isOnline.value) {
-      updateHotBooksCache().catch(e => logger.error('[Network] initial cache update failed:', e));
+      updateHotBooksCache().catch((e) => logger.error('[Network] initial cache update failed:', e))
     }
-  });
+  })
 
   onUnmounted(() => {
-    window.removeEventListener('online', handleOnline);
-    window.removeEventListener('offline', handleOffline);
-  });
+    window.removeEventListener('online', handleOnline)
+    window.removeEventListener('offline', handleOffline)
+    unsubscribeOfflineManager?.()
+    unsubscribeOfflineManager = null
+  })
 
   return {
     isOnline,
@@ -167,6 +232,6 @@ export function useNetworkStatus() {
     checkOfflineAction,
     manualUpdateCache,
     clearAllCache,
-    getCacheStats
-  };
+    getCacheStats,
+  }
 }

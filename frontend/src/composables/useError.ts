@@ -1,14 +1,25 @@
+import { computed } from 'vue'
 import { errorCenter } from '@/services/ErrorCenter'
-import type { ErrorContext, RetryOptions } from '@/types/error'
+import type { ErrorContext, ErrorLog, RetryOptions } from '@/types/error'
+
+export function captureError(error: Error, context?: ErrorContext): ErrorLog {
+  return errorCenter.capture(error, context)
+}
+
+export function clearActiveError(): void {
+  errorCenter.clearActive()
+}
 
 export function useError() {
+  const activeError = computed(() => errorCenter.getActive())
+
   const handle = (error: Error, context?: ErrorContext) => {
-    errorCenter.handle(error, context)
+    return errorCenter.handle(error, context)
   }
 
   const retry = async <T>(
     fn: () => Promise<T>,
-    options?: RetryOptions
+    options?: RetryOptions,
   ): Promise<T> => {
     return errorCenter.retry(fn, options)
   }
@@ -17,9 +28,11 @@ export function useError() {
   const clearLogs = () => errorCenter.clearLogs()
 
   return {
+    activeError,
     handle,
     retry,
     getLogs,
-    clearLogs
+    clearLogs,
+    clearActiveError,
   }
 }
