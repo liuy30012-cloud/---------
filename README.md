@@ -19,13 +19,14 @@
 
 | 指标 | 数据 |
 |------|------|
-| 📝 **代码总量** | 49,500+ 行（前端 35,468 行 + 后端 14,000+ 行） |
-| 🎨 **前端组件** | 26 个 Vue 组件 + 14 个页面视图 |
+| 📝 **代码总量** | 54,000+ 行（前端 40,000+ 行 + 后端 14,000+ 行） |
+| 🎨 **前端组件** | 32 个 Vue 组件 + 14 个页面视图 |
 | 🔧 **后端服务** | 19 个控制器 + 28 个服务 + 18 个实体模型 |
 | 🛡️ **安全过滤器** | 4 个安全过滤器（限流、反爬、JWT、水印） |
 | 📚 **文档数量** | 22+ 份技术文档 |
-| 🔄 **提交历史** | 60+ 次提交 |
-| 🌟 **核心特性** | 19+ 个功能模块 |
+| 🔄 **提交历史** | 75+ 次提交 |
+| 🌟 **核心特性** | 21+ 个功能模块 |
+| 🧪 **测试覆盖** | 完整的单元测试套件（Vitest） |
 
 ### ✨ 核心功能一览
 
@@ -48,6 +49,8 @@
 | 🕐 **十二地支时钟** | 中国传统时辰展示模块 | 独立地支时钟组件 |
 | 🌍 **多语言** | 中/英文界面一键切换 | Vue I18n 深度集成 |
 | 💻 **跨平台** | Web 端 + Windows 桌面端 | Electron 打包免安装绿色版 + NSIS 安装包 |
+| 📴 **离线支持** | 离线借阅、收藏、数据同步 | Service Worker 缓存、IndexedDB 本地存储、自动同步队列 |
+| 🛡️ **错误处理** | 智能错误恢复与重试机制 | 统一错误中心、自动重试、用户友好提示、错误边界 |
 
 ---
 
@@ -233,6 +236,8 @@ npm run electron:dev
 | 图表 | ECharts 6 |
 | 国际化 | Vue I18n |
 | 构建 | Vite 5 |
+| 离线支持 | Service Worker + IndexedDB |
+| 测试 | Vitest + Vue Test Utils |
 
 ---
 
@@ -289,6 +294,7 @@ npm run electron:dev
 │       │   ├── statisticsApi.ts    #   统计接口
 │       │   └── antiCrawler.ts      #   前端反爬策略
 │       ├── components/             # UI 组件库
+│       │   ├── common/             #   通用组件 (ErrorBoundary, LoadingOverlay, SyncStatus 等)
 │       │   ├── hero/               #   首页英雄区
 │       │   ├── home/               #   首页组件 (BookGrid, SidebarFilters, SuperButton 等)
 │       │   ├── login/              #   登录页水墨组件 (山水/云雾/竹/墨)
@@ -296,6 +302,18 @@ npm run electron:dev
 │       │   └── panels/             #   通知面板 + 搜索历史面板
 │       ├── data/                   # 数据资源
 │       │   └── poemLibrary.ts      #   10,000 首古典诗词库 (~1.2MB)
+│       ├── composables/            # Vue 组合式函数
+│       │   ├── useError.ts         #   错误处理
+│       │   ├── useFeedback.ts      #   用户反馈
+│       │   ├── useNetworkStatus.ts #   网络状态监控
+│       │   ├── useOffline.ts       #   离线功能
+│       │   ├── useOfflineSync.ts   #   离线同步
+│       │   ├── useBorrowOffline.ts #   离线借阅
+│       │   └── useFavoriteOffline.ts # 离线收藏
+│       ├── services/               # 业务服务层
+│       │   ├── ErrorCenter.ts      #   错误中心
+│       │   ├── FeedbackManager.ts  #   反馈管理器
+│       │   └── OfflineManager.ts   #   离线管理器
 │       ├── dizhi/                  # 十二地支时钟模块
 │       ├── locales/                # 国际化语料 (中/英)
 │       ├── pet/                    # 桌面宠物交互体系
@@ -304,6 +322,13 @@ npm run electron:dev
 │       │   └── data/               #   宠物状态数据
 │       ├── router/                 # Vue Router 路由配置
 │       ├── stores/                 # Pinia 状态管理
+│       ├── test/                   # 单元测试
+│       │   ├── setup.ts            #   测试环境配置
+│       │   ├── components/         #   组件测试
+│       │   └── composables/        #   组合式函数测试
+│       ├── utils/                  # 工具函数
+│       │   ├── serviceWorker.ts    #   Service Worker 管理
+│       │   └── errorHelpers.ts     #   错误处理辅助
 │       └── views/                  # 页面视图
 │           ├── Login.vue           #   沉浸式水墨登录页 (~54KB, 1286行)
 │           ├── Dashboard.vue       #   数据分析仪表盘
@@ -332,6 +357,121 @@ npm run electron:dev
 │   └── ...                         #   更多总结与报告
 │
 └── test-api.bat / test-api.sh      # API 测试脚本
+```
+
+---
+
+## 📴 离线功能与错误处理
+
+### 离线支持
+
+系统提供完整的离线功能支持，确保在网络不稳定或断网情况下仍能正常使用：
+
+#### 核心特性
+
+- ✅ **Service Worker 缓存策略** — 智能缓存静态资源和 API 响应
+- ✅ **IndexedDB 本地存储** — 离线数据持久化存储
+- ✅ **自动同步队列** — 网络恢复后自动同步离线操作
+- ✅ **离线借阅支持** — 离线状态下可申请借阅，联网后自动提交
+- ✅ **离线收藏支持** — 离线添加/取消收藏，自动同步
+- ✅ **网络状态监控** — 实时监测网络状态并提供视觉反馈
+- ✅ **同步状态指示** — 显示待同步操作数量和同步进度
+
+#### 技术实现
+
+```typescript
+// 离线管理器架构
+OfflineManager
+├── 数据缓存 (IndexedDB)
+│   ├── 书籍数据缓存
+│   ├── 用户数据缓存
+│   └── 搜索结果缓存
+├── 操作队列
+│   ├── 借阅操作队列
+│   ├── 收藏操作队列
+│   └── 其他操作队列
+└── 同步引擎
+    ├── 网络状态监听
+    ├── 自动重试机制
+    └── 冲突解决策略
+```
+
+#### 组合式函数
+
+- `useOffline()` — 离线状态管理
+- `useOfflineSync()` — 离线同步控制
+- `useBorrowOffline()` — 离线借阅功能
+- `useFavoriteOffline()` — 离线收藏功能
+- `useNetworkStatus()` — 网络状态监控
+
+### 错误处理系统
+
+构建了统一的错误处理中心，提供智能错误恢复和用户友好的错误提示：
+
+#### 核心特性
+
+- ✅ **统一错误中心 (ErrorCenter)** — 集中管理所有错误类型
+- ✅ **智能重试机制** — 自动识别可重试错误并执行重试
+- ✅ **错误分类** — 网络错误、业务错误、系统错误分类处理
+- ✅ **用户友好提示** — 根据错误类型提供清晰的解决建议
+- ✅ **错误边界组件** — 捕获组件树中的错误并优雅降级
+- ✅ **错误日志记录** — 完整的错误追踪和日志记录
+
+#### 错误处理流程
+
+```typescript
+// 错误处理架构
+ErrorCenter
+├── 错误捕获
+│   ├── HTTP 请求拦截
+│   ├── 全局错误监听
+│   └── 组件错误边界
+├── 错误分类
+│   ├── NetworkError (网络错误)
+│   ├── BusinessError (业务错误)
+│   ├── AuthError (认证错误)
+│   └── SystemError (系统错误)
+├── 错误处理
+│   ├── 自动重试 (可配置次数和延迟)
+│   ├── 降级处理
+│   └── 用户提示
+└── 错误恢复
+    ├── 重新加载
+    ├── 返回上一页
+    └── 跳转到错误页面
+```
+
+#### 组件与工具
+
+- `ErrorBoundary.vue` — 错误边界组件
+- `ErrorPage.vue` — 错误页面
+- `ErrorRetry.vue` — 错误重试组件
+- `useError()` — 错误处理组合式函数
+- `errorHelpers.ts` — 错误处理辅助函数
+
+### 用户反馈系统
+
+- ✅ **FeedbackManager** — 统一反馈管理器
+- ✅ **Toast 通知** — 轻量级消息提示
+- ✅ **加载状态** — 全局加载遮罩
+- ✅ **操作确认** — 重要操作二次确认
+
+### 测试覆盖
+
+完整的单元测试套件确保功能稳定性：
+
+- ✅ **Vitest 测试框架** — 快速的单元测试
+- ✅ **Vue Test Utils** — Vue 组件测试
+- ✅ **组件测试** — 覆盖所有关键组件
+- ✅ **组合式函数测试** — 覆盖所有业务逻辑
+
+```bash
+# 运行测试
+cd frontend
+npm run test
+
+# 测试覆盖率
+npm run test:coverage
 ```
 
 ---
