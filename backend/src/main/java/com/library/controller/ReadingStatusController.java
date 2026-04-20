@@ -6,8 +6,11 @@ import com.library.dto.ReadingStatusResponse;
 import com.library.model.ReadingStatus;
 import com.library.service.ReadingStatusService;
 import com.library.util.JwtUtil;
+import com.library.util.PageableHelper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -43,11 +46,16 @@ public class ReadingStatusController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<ReadingStatusResponse>>> getUserReadingStatuses(
+    public ResponseEntity<ApiResponse<Page<ReadingStatusResponse>>> getUserReadingStatuses(
             Authentication authentication,
-            @RequestParam(required = false) ReadingStatus status) {
+            @RequestParam(required = false) ReadingStatus status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "updatedAt,desc") String[] sort) {
         Long userId = getUserIdFromAuth(authentication);
-        List<ReadingStatusResponse> statuses = readingStatusService.getUserReadingStatuses(userId, status);
+        Pageable pageable = PageableHelper.createPageable(page, size, 20, sort);
+        Page<ReadingStatusResponse> statuses = readingStatusService
+                .getUserReadingStatuses(userId, status, pageable);
         return ResponseEntity.ok(ApiResponse.success(statuses, "获取阅读状态列表成功"));
     }
 

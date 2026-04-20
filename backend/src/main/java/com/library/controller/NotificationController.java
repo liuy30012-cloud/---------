@@ -4,13 +4,17 @@ import com.library.dto.ApiResponse;
 import com.library.model.NotificationRecord;
 import com.library.service.NotificationService;
 import com.library.util.JwtUtil;
+import com.library.util.PageableHelper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -25,9 +29,15 @@ public class NotificationController {
     private final JwtUtil jwtUtil;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<NotificationRecord>>> getAllNotifications(Authentication authentication) {
+    public ResponseEntity<ApiResponse<Page<NotificationRecord>>> getAllNotifications(
+        Authentication authentication,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "20") int size,
+        @RequestParam(defaultValue = "createdAt,desc") String[] sort
+    ) {
         Long userId = getUserIdFromAuth(authentication);
-        List<NotificationRecord> notifications = notificationService.getUserNotifications(userId);
+        Pageable pageable = PageableHelper.createPageable(page, size, 20, sort);
+        Page<NotificationRecord> notifications = notificationService.getUserNotifications(userId, pageable);
         return ApiResponse.ok(notifications);
     }
 
