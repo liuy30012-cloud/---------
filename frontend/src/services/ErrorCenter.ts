@@ -1,19 +1,12 @@
-import type { ErrorContext, ErrorHandler, ErrorLog, ErrorType, RetryOptions } from '@/types/error'
+import type { ErrorType, ErrorLog, ErrorContext, RetryOptions, ErrorHandler } from '@/types/error'
 import { ERROR_MESSAGES } from '@/types/error'
 import { feedbackManager } from './FeedbackManager'
-import { logger } from '@/utils/logger'
-import { safeGetJSON, safeRemoveItem, safeSetJSON } from '@/utils/storageHelpers'
-
-const ERROR_LOG_STORAGE_KEY = 'error-logs'
-const LOGIN_REDIRECT_DELAY = 1500
 
 class ErrorCenter {
   private static instance: ErrorCenter
   private logs: ErrorLog[] = []
-  private readonly maxLogs = 100
-  private readonly errorHandlers: Map<ErrorType, ErrorHandler> = new Map()
-  private readonly retryOptions: RetryOptions | null = null
-  private authRedirectTimer: ReturnType<typeof setTimeout> | null = null
+  private maxLogs = 100
+  private errorHandlers: Map<ErrorType, ErrorHandler> = new Map()
 
   private constructor() {
     this.initializeHandlers()
@@ -91,16 +84,11 @@ class ErrorCenter {
     const message = this.getErrorMessage(status, ERROR_MESSAGES[401])
     feedbackManager.error(message)
 
-    if (this.authRedirectTimer !== null) {
-      clearTimeout(this.authRedirectTimer)
-    }
-
-    this.authRedirectTimer = setTimeout(() => {
-      this.authRedirectTimer = null
+    setTimeout(() => {
       if (typeof window !== 'undefined') {
         window.location.href = '/login'
       }
-    }, LOGIN_REDIRECT_DELAY)
+    }, 1500)
   }
 
   private handleValidationError(error: Error, _context?: ErrorContext): void {
@@ -114,12 +102,12 @@ class ErrorCenter {
   }
 
   private handleComponentError(error: Error, _context?: ErrorContext): void {
-    logger.error('Component Error:', error)
+    console.error('Component Error:', error)
     feedbackManager.error('页面加载失败，请刷新重试')
   }
 
   private handleUnknownError(error: Error, _context?: ErrorContext): void {
-    logger.error('Unknown Error:', error)
+    console.error('Unknown Error:', error)
     feedbackManager.error(ERROR_MESSAGES.DEFAULT)
   }
 
@@ -155,25 +143,17 @@ class ErrorCenter {
 
   clearLogs(): void {
     this.logs = []
-    safeRemoveItem(ERROR_LOG_STORAGE_KEY)
+    localStorage.removeItem('error-logs')
   }
 
   private saveLogs(): void {
-    const saved = safeSetJSON(ERROR_LOG_STORAGE_KEY, this.logs)
-    if (!saved) {
-      logger.error('Failed to save error logs.')
-    }
+    localStorage.setItem('error-logs', JSON.stringify(this.logs))
   }
 
   private loadLogs(): void {
-    const savedLogs = safeGetJSON<ErrorLog[]>(ERROR_LOG_STORAGE_KEY)
-    if (Array.isArray(savedLogs)) {
-      this.logs = savedLogs.slice(-this.maxLogs)
-      return
-    }
-
-    if (savedLogs !== null) {
-      logger.error('Failed to load error logs: invalid storage format.')
+    const savedLogs = localStorage.getItem('error-logs')
+    if (savedLogs) {
+      this.logs = JSON.parse(savedLogs).slice(-this.maxLogs)
     }
   }
 
