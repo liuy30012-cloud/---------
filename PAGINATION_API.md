@@ -37,17 +37,17 @@
 ### 1. 借阅历史
 **接口**: `GET /api/borrow/history`
 
-**默认分页**: 15条/页，按借阅时间倒序
+**默认分页**: 15条/页，按创建时间倒序
 
 **示例**:
 ```
-GET /api/borrow/history?page=0&size=20&sort=borrowTime,desc
+GET /api/borrow/history?page=0&size=20&sort=createdAt,desc
 ```
 
 ### 2. 当前借阅
 **接口**: `GET /api/borrow/current`
 
-**默认分页**: 10条/页，按借阅时间倒序
+**默认分页**: 10条/页，按创建时间倒序
 
 **示例**:
 ```
@@ -57,11 +57,11 @@ GET /api/borrow/current?page=0&size=10
 ### 3. 待审批借阅（管理员）
 **接口**: `GET /api/borrow/admin/pending`
 
-**默认分页**: 20条/页，按申请时间正序
+**默认分页**: 20条/页，按创建时间正序
 
 **示例**:
 ```
-GET /api/borrow/admin/pending?page=0&size=20&sort=applyTime,asc
+GET /api/borrow/admin/pending?page=0&size=20&sort=createdAt,asc
 ```
 
 ### 4. 通知列表

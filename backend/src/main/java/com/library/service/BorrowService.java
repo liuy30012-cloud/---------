@@ -242,7 +242,7 @@ public class BorrowService {
 
     public Page<BorrowResponse> getUserBorrowHistory(Long userId, Pageable pageable) {
         Page<BorrowRecord> records = borrowRecordRepository
-            .findByUserIdOrderByBorrowTimeDesc(userId, pageable);
+            .findByUserIdOrderByCreatedAtDesc(userId, pageable);
         return records.map(converter::toResponse);
     }
 
@@ -266,7 +266,7 @@ public class BorrowService {
             BorrowStatus.OVERDUE
         );
         Page<BorrowRecord> records = borrowRecordRepository
-            .findByUserIdAndStatusInOrderByBorrowTimeDesc(userId, activeStatuses, pageable);
+            .findByUserIdAndStatusInOrderByCreatedAtDesc(userId, activeStatuses, pageable);
         return records.map(converter::toResponse);
     }
 
@@ -278,7 +278,7 @@ public class BorrowService {
 
     public Page<BorrowResponse> getPendingBorrows(Pageable pageable) {
         Page<BorrowRecord> records = borrowRecordRepository
-            .findByStatusOrderByApplyTimeAsc(BorrowStatus.PENDING, pageable);
+            .findByStatusOrderByCreatedAtAsc(BorrowStatus.PENDING, pageable);
         return records.map(converter::toResponse);
     }
 

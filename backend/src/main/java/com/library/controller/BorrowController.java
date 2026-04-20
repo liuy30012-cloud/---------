@@ -68,7 +68,7 @@ public class BorrowController {
         Authentication authentication,
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "15") int size,
-        @RequestParam(defaultValue = "borrowTime,desc") String[] sort
+        @RequestParam(defaultValue = "createdAt,desc") String[] sort
     ) {
         Long userId = getUserIdFromAuth(authentication);
         Pageable pageable = PageableHelper.createPageable(page, size, 15, sort);
@@ -81,7 +81,7 @@ public class BorrowController {
         Authentication authentication,
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "10") int size,
-        @RequestParam(defaultValue = "borrowTime,desc") String[] sort
+        @RequestParam(defaultValue = "createdAt,desc") String[] sort
     ) {
         Long userId = getUserIdFromAuth(authentication);
         Pageable pageable = PageableHelper.createPageable(page, size, 10, sort);
@@ -94,7 +94,7 @@ public class BorrowController {
     public ResponseEntity<ApiResponse<Page<BorrowResponse>>> getPendingBorrows(
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "20") int size,
-        @RequestParam(defaultValue = "applyTime,asc") String[] sort
+        @RequestParam(defaultValue = "createdAt,asc") String[] sort
     ) {
         Pageable pageable = PageableHelper.createPageable(page, size, 20, sort);
         return ApiResponse.ok(borrowService.getPendingBorrows(pageable));

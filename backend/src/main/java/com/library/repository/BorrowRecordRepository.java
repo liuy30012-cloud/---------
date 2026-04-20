@@ -67,13 +67,13 @@ public interface BorrowRecordRepository extends JpaRepository<BorrowRecord, Long
 
     long countByStatus(BorrowStatus status);
 
-    Page<BorrowRecord> findByUserIdOrderByBorrowTimeDesc(Long userId, Pageable pageable);
+    Page<BorrowRecord> findByUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable);
 
-    Page<BorrowRecord> findByUserIdAndStatusInOrderByBorrowTimeDesc(
+    Page<BorrowRecord> findByUserIdAndStatusInOrderByCreatedAtDesc(
         Long userId,
         List<BorrowStatus> statuses,
         Pageable pageable
     );
 
-    Page<BorrowRecord> findByStatusOrderByApplyTimeAsc(BorrowStatus status, Pageable pageable);
+    Page<BorrowRecord> findByStatusOrderByCreatedAtAsc(BorrowStatus status, Pageable pageable);
 }
