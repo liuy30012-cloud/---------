@@ -133,11 +133,12 @@ const handleAction = (action: ToastAction) => {
   left: 1.5rem;
 }
 
-.feedback-toast--top-right {
+.feedback-toast--top-center {
   top: 1.5rem;
-  right: 1.5rem;
+  right: 50%;
   bottom: auto;
   left: auto;
+  transform: translateX(50%);
 }
 
 .feedback-toast--bottom-left {
@@ -146,10 +147,11 @@ const handleAction = (action: ToastAction) => {
   left: 1.5rem;
 }
 
-.feedback-toast--bottom-right {
-  right: 1.5rem;
+.feedback-toast--bottom-center {
+  right: 50%;
   bottom: 1.5rem;
   left: auto;
+  transform: translateX(50%);
 }
 
 .toast-icon {
@@ -255,8 +257,10 @@ const handleAction = (action: ToastAction) => {
 @media (max-width: 767px) {
   .feedback-toast,
   .feedback-toast--top-left,
+  .feedback-toast--top-center,
   .feedback-toast--top-right,
   .feedback-toast--bottom-left,
+  .feedback-toast--bottom-center,
   .feedback-toast--bottom-right {
     right: 1rem;
     left: 1rem;
@@ -271,6 +275,7 @@ const handleAction = (action: ToastAction) => {
   }
 
   .feedback-toast--top-left,
+  .feedback-toast--top-center,
   .feedback-toast--top-right {
     top: 1rem;
     bottom: auto;
