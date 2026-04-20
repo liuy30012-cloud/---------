@@ -3,11 +3,15 @@ package com.library.performance;
 import com.library.dto.BorrowRequest;
 import com.library.dto.LoginRequest;
 import com.library.dto.RegisterRequest;
+import com.library.dto.ReservationRequest;
 import com.library.model.Book;
 import com.library.model.BorrowRecord.BorrowStatus;
+import com.library.model.ReservationRecord;
 import com.library.repository.BookRepository;
 import com.library.repository.BorrowRecordRepository;
+import com.library.repository.ReservationRecordRepository;
 import com.library.service.BorrowService;
+import com.library.service.ReservationService;
 import com.library.service.UserService;
 import com.library.testsupport.BorrowTestApplication;
 import org.junit.jupiter.api.Assumptions;
@@ -77,6 +81,12 @@ class ConcurrencyStressTest {
     @Autowired
     private BorrowRecordRepository borrowRecordRepository;
 
+    @Autowired
+    private ReservationService reservationService;
+
+    @Autowired
+    private ReservationRecordRepository reservationRecordRepository;
+
     private final List<Long> userIds = new ArrayList<>();
     private Long bookId;
     private int runNumber;
@@ -145,6 +155,47 @@ class ConcurrencyStressTest {
                 List.of(BorrowStatus.PENDING, BorrowStatus.APPROVED, BorrowStatus.BORROWED, BorrowStatus.OVERDUE)
             ).size()
         );
+    }
+
+    @Test
+    @DisplayName("Concurrent reservations should keep queue positions unique and sequential")
+    void testConcurrentReservationQueuePositionUniqueness() throws Exception {
+        int reserveUsers = Math.min(10, userIds.size());
+
+        Book reservedBook = new Book();
+        reservedBook.setTitle("Reservation Race Book " + runNumber);
+        reservedBook.setAuthor("Reservation Author");
+        reservedBook.setIsbn(String.format("977-%010d", runNumber));
+        reservedBook.setCategory("Technology");
+        reservedBook.setTotalCopies(1);
+        reservedBook.setAvailableCopies(0);
+        reservedBook.setLocation("B-01-001");
+        reservedBook = bookRepository.save(reservedBook);
+
+        Long reservedBookId = reservedBook.getId();
+
+        runConcurrently(reserveUsers, reserveUsers, index -> {
+            ReservationRequest request = new ReservationRequest();
+            request.setBookId(reservedBookId);
+            reservationService.reserveBook(userIds.get(index), request);
+            return true;
+        });
+
+        List<ReservationRecord> waitingQueue = reservationRecordRepository
+            .findByBookIdAndStatusOrderByCreatedAtAsc(reservedBookId, ReservationRecord.ReservationStatus.WAITING);
+
+        assertEquals(reserveUsers, waitingQueue.size(), "all concurrent reservations should be saved");
+
+        List<Integer> actualPositions = waitingQueue.stream()
+            .map(ReservationRecord::getQueuePosition)
+            .sorted()
+            .toList();
+
+        List<Integer> expectedPositions = java.util.stream.IntStream.rangeClosed(1, reserveUsers)
+            .boxed()
+            .toList();
+
+        assertEquals(expectedPositions, actualPositions, "queue positions should be unique and sequential");
     }
 
     @Test

@@ -9,6 +9,7 @@ import com.library.model.BorrowRecord.BorrowStatus;
 import com.library.model.ReservationRecord;
 import com.library.model.ReservationRecord.ReservationStatus;
 import com.library.model.User;
+import com.library.repository.BookRepository;
 import com.library.repository.BorrowRecordRepository;
 import com.library.repository.ReservationRecordRepository;
 import com.library.service.borrow.BorrowConverter;
@@ -38,6 +39,7 @@ public class ReservationService {
     );
 
     private final ReservationRecordRepository reservationRecordRepository;
+    private final BookRepository bookRepository;
     private final BookService bookService;
     private final UserService userService;
     private final NotificationService notificationService;
@@ -56,7 +58,8 @@ public class ReservationService {
             throw new IllegalArgumentException("用户不存在。");
         }
 
-        Book book = bookService.getBookById(request.getBookId());
+        Book book = bookRepository.findByIdWithLock(request.getBookId())
+            .orElse(null);
         if (book == null) {
             throw new IllegalArgumentException("图书不存在。");
         }
