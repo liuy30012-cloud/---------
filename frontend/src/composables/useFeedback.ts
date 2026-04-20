@@ -1,24 +1,33 @@
 // frontend/src/composables/useFeedback.ts
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, readonly, onUnmounted } from 'vue'
 import { feedbackManager } from '@/services/FeedbackManager'
 import type { Toast, ToastOptions } from '@/types/feedback'
+import type { Ref } from 'vue'
 
-export function useFeedback() {
+export function useFeedback(): {
+  toasts: Readonly<Ref<Toast[]>>
+  show: (options: ToastOptions) => string
+  success: (message: string) => string
+  error: (message: string) => string
+  warning: (message: string) => string
+  info: (message: string) => string
+  loading: (message: string) => string
+  hide: (id: string) => void
+  clear: () => void
+} {
   const toasts = ref<Toast[]>([])
 
-  let unsubscribe: (() => void) | null = null
-
-  onMounted(() => {
-    unsubscribe = feedbackManager.subscribe((newToasts) => {
-      toasts.value = newToasts
-    })
-    toasts.value = feedbackManager.getToasts()
+  // 立即订阅，不要等到 onMounted
+  const unsubscribe = feedbackManager.subscribe((newToasts) => {
+    toasts.value = newToasts
   })
 
+  // 立即获取初始状态
+  toasts.value = feedbackManager.getToasts()
+
+  // 组件卸载时取消订阅
   onUnmounted(() => {
-    if (unsubscribe) {
-      unsubscribe()
-    }
+    unsubscribe()
   })
 
   const show = (options: ToastOptions) => feedbackManager.show(options)
@@ -31,7 +40,7 @@ export function useFeedback() {
   const clear = () => feedbackManager.clear()
 
   return {
-    toasts,
+    toasts: readonly(toasts),
     show,
     success,
     error,
