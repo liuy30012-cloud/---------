@@ -7,6 +7,8 @@ class FeedbackManager {
   private maxToasts = 5
   private listeners: Set<(toasts: Toast[]) => void> = new Set()
   private priority = { error: 4, warning: 3, success: 2, info: 1, loading: 0 }
+  private timers: Map<string, number> = new Map()
+  private idCounter = 0
 
   private constructor() {}
 
@@ -18,7 +20,7 @@ class FeedbackManager {
   }
 
   show(options: ToastOptions): string {
-    const id = `toast-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+    const id = `toast-${Date.now()}-${++this.idCounter}`
     const toast: Toast = {
       ...options,
       id,
@@ -29,10 +31,18 @@ class FeedbackManager {
       showProgress: options.showProgress ?? false
     }
 
-    // 检查是否有相同消息（去重）
+    // 检查是否有相同消息（去重并重置定时器）
     const duplicate = this.toasts.find(t => t.message === toast.message && t.type === toast.type)
     if (duplicate) {
-      return duplicate.id
+      // 清理旧定时器
+      const oldTimer = this.timers.get(duplicate.id)
+      if (oldTimer) {
+        clearTimeout(oldTimer)
+        this.timers.delete(duplicate.id)
+      }
+      // 移除旧 toast
+      this.toasts = this.toasts.filter(t => t.id !== duplicate.id)
+      // 继续添加新 toast（会设置新定时器）
     }
 
     // 添加到队列
@@ -49,9 +59,10 @@ class FeedbackManager {
     // 通知监听器
     this.notifyListeners()
 
-    // 自动移除
+    // 自动移除并存储定时器
     if (toast.duration > 0 && toast.type !== 'loading') {
-      setTimeout(() => this.hide(id), toast.duration)
+      const timer = window.setTimeout(() => this.hide(id), toast.duration)
+      this.timers.set(id, timer)
     }
 
     return id
@@ -78,11 +89,22 @@ class FeedbackManager {
   }
 
   hide(id: string): void {
+    // 清理定时器
+    const timer = this.timers.get(id)
+    if (timer) {
+      clearTimeout(timer)
+      this.timers.delete(id)
+    }
+    // 移除 toast
     this.toasts = this.toasts.filter(t => t.id !== id)
     this.notifyListeners()
   }
 
   clear(): void {
+    // 清理所有定时器
+    this.timers.forEach(timer => clearTimeout(timer))
+    this.timers.clear()
+    // 清空 toasts
     this.toasts = []
     this.notifyListeners()
   }
@@ -97,7 +119,14 @@ class FeedbackManager {
   }
 
   private notifyListeners(): void {
-    this.listeners.forEach(listener => listener(this.getToasts()))
+    const toasts = this.getToasts()
+    this.listeners.forEach(listener => {
+      try {
+        listener(toasts)
+      } catch (error) {
+        console.error('FeedbackManager: Listener error:', error)
+      }
+    })
   }
 }
 
