@@ -59,9 +59,7 @@ export interface RetryOptions {
 /**
  * 错误处理函数类型
  */
-export interface ErrorHandler {
-  (error: Error, context?: ErrorContext): void
-}
+export type ErrorHandler = (error: Error, context?: ErrorContext) => void
 
 /**
  * 预定义错误消息映射表
