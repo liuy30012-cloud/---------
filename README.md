@@ -24,15 +24,15 @@
 | 🔧 **后端服务** | 19 个控制器 + 28 个服务 + 18 个实体模型 |
 | 🛡️ **安全过滤器** | 4 个安全过滤器（限流、反爬、JWT、水印） |
 | 📚 **文档数量** | 22+ 份技术文档 |
-| 🔄 **提交历史** | 75+ 次提交 |
-| 🌟 **核心特性** | 21+ 个功能模块 |
-| 🧪 **测试覆盖** | 完整的单元测试套件（Vitest） |
+| 🔄 **提交历史** | 95+ 次提交 |
+| 🌟 **核心特性** | 23+ 个功能模块 |
+| 🧪 **测试覆盖** | 完整的单元测试套件（JUnit + Vitest） |
 
 ### ✨ 核心功能一览
 
 | 模块 | 功能 | 亮点 |
 |------|------|------|
-| 🔍 **智能搜索** | 书名、作者、ISBN 多维度检索 | Elasticsearch 全文搜索、中文分词、实时搜索建议 |
+| 🔍 **智能搜索** | 书名、作者、ISBN 多维度检索 | Elasticsearch 全文搜索、中文分词、实时搜索建议、智能搜索优化 |
 | 📍 **精准定位** | 馆内楼层、书架、层位可视化指引 | 基于地理视图的馆内定位地图 |
 | 📖 **借阅管理** | 借书、还书、续借全生命周期管理 | 完整状态机流转、超期自动处理、分页查询 |
 | 📋 **预约系统** | 在线预约热门书籍 | 排队逻辑、到期自动释放、数据库锁防并发 |
@@ -51,6 +51,7 @@
 | 💻 **跨平台** | Web 端 + Windows 桌面端 | Electron 打包免安装绿色版 + NSIS 安装包 |
 | 📴 **离线支持** | 离线借阅、收藏、数据同步 | Service Worker 缓存、IndexedDB 本地存储、自动同步队列 |
 | 🛡️ **错误处理** | 智能错误恢复与重试机制 | 统一错误中心、自动重试、用户友好提示、错误边界 |
+| 🎭 **演示数据** | 一键初始化演示数据集 | 自动导入中文经典书籍、支持 Docker Compose 快速启动 |
 
 ---
 
@@ -74,7 +75,7 @@
   - 🏛️ **朝代分布**: 先秦至隋 73首 | 唐代 9,593首 | 宋代 2首
   - 👤 **作者分类**: 唐代按645位作者精细分类，支持按作者按需加载
   - ⚡ **性能优化**: 诗词数据按朝代和作者分片，按需加载，减少初始加载体积
-- **飘落诗页** — 随机抽取诗词以竖排书页形式飘落，自适应尺寸排版
+- **飘落诗页** — 随机抽取诗词以竖排书页形式飘落，自适应尺寸排版，诗页渲染优化
 - **墨点溅射** — 不规则形态墨点随机分布
 
 #### 微交互动效
@@ -134,6 +135,20 @@ npm run dev
 
 #### 3️⃣ （可选）启动 Elasticsearch
 
+**方式一：使用 Docker Compose（推荐，含 IK 分词器）**
+
+```bash
+cd backend
+
+# 启动 Elasticsearch + IK 分词器
+docker-compose -f docker-compose.demo.yml up -d elasticsearch
+
+# 查看日志确认启动成功
+docker logs -f elasticsearch
+```
+
+**方式二：手动启动**
+
 ```bash
 # 使用 Docker 启动 Elasticsearch
 docker run -d \
@@ -154,7 +169,24 @@ docker restart elasticsearch
 
 > **注意：** Elasticsearch 是可选的。如果不安装，系统会自动降级到 MySQL 进行搜索和统计，核心功能不受影响。
 
-#### 4️⃣ 访问系统（二选一）
+#### 4️⃣ （可选）启动演示数据
+
+系统支持一键初始化演示数据集，包含 50+ 本中文经典书籍：
+
+```bash
+# 方式一：使用 Docker Compose（推荐）
+cd backend
+docker-compose -f docker-compose.demo.yml up -d
+
+# 方式二：手动启动演示数据初始化
+# 在 application.yml 中添加：
+# demo-books.enabled: true
+# demo-books.auto-import: true
+```
+
+演示数据包括：《红楼梦》《西游记》《水浒传》《三国演义》《围城》《活着》《百年孤独》等经典著作。
+
+#### 5️⃣ 访问系统（二选一）
 
 **选项 A — Web 浏览器端**
 打开浏览器访问：http://localhost:5173
@@ -225,6 +257,7 @@ npm run electron:dev
 | 调度 | ShedLock 分布式任务调度 |
 | 监控 | Spring Actuator + Micrometer + Prometheus |
 | 熔断降级 | Resilience4j Circuit Breaker |
+| 数据初始化 | 演示数据自动导入 (DemoBookSeederService) |
 | 简化 | Lombok |
 
 ### 前端技术栈
@@ -242,7 +275,7 @@ npm run electron:dev
 | 构建 | Vite 5 |
 | 离线支持 | Service Worker + IndexedDB |
 | 测试 | Vitest + Vue Test Utils |
-| 诗词数据 | 10,000首古典诗词，按朝代和作者分类，按需加载 |
+| 诗词数据 | 10,000首古典诗词，按朝代和作者分类，按需加载，诗页渲染优化 |
 
 ---
 
@@ -279,14 +312,15 @@ npm run electron:dev
 │       │   ├── BorrowService       #   借阅状态机
 │       │   ├── ReservationService  #   预约排队
 │       │   ├── StatisticsService   #   数据分析引擎（ES + MySQL 双引擎）
-│       │   ├── SmartSearchService  #   智能搜索服务（ES + MySQL 双引擎）
+│       │   ├── SmartSearchService  #   智能搜索服务（ES + MySQL 双引擎，智能优化）
+│       │   ├── DemoBookSeederService # 演示数据初始化服务
 │       │   ├── NotificationService #   通知推送
 │       │   ├── LoginFailureTracker #   登录失败追踪
 │       │   ├── RequestPatternAnalyzer # 行为模式分析
 │       │   └── elasticsearch/      #   Elasticsearch 服务层
 │       │       ├── ElasticsearchSyncService      # 数据同步服务
 │       │       ├── ElasticsearchStatisticsService # ES 统计服务
-│       │       ├── ElasticsearchSearchService     # ES 搜索服务
+│       │       ├── ElasticsearchSearchService     # ES 搜索服务（智能优化）
 │       │       └── MysqlStatisticsService         # MySQL 降级服务
 │       └── util/                   # 工具类 (JWT, 加密等)
 │
@@ -656,8 +690,9 @@ npm run build:win
 | **前后端联调 CORS 报错** | 确认 Spring Boot 已运行且 SecurityConfig 中 CORS 配置正确；检查 Axios `baseURL` |
 | **Electron 打包下载慢** | 配置 npm 镜像源或 `ELECTRON_MIRROR` 环境变量指向国内镜像 |
 | **诗词库加载慢** | `poemLibrary.ts` 约 1.2MB，生产环境已配置 Vite 代码分割 + 动态导入 |
+| **演示数据导入失败** | 检查 `application-demo.yml` 配置是否正确、CSV 文件路径是否存在 |
 
-详见 [快速启动指南.md](./docs/快速启动指南.md)
+详见 [快速启动指南.md](./docs/快速启动指南.md) 和 [DEMO_DATASET.md](./backend/DEMO_DATASET.md)
 
 ---
 
@@ -678,12 +713,47 @@ npm run build:win
 | [开发完成总结.md](./docs/开发完成总结.md) | 项目核心业务总结 |
 | [离线功能使用说明.md](./docs/离线功能使用说明.md) | 离线模式功能说明 |
 | [SECURITY_CONFIGURATION_NOTES.md](./docs/SECURITY_CONFIGURATION_NOTES.md) | 安全配置说明 |
+| [DEMO_DATASET.md](./backend/DEMO_DATASET.md) | 演示数据集说明与使用指南 |
 | [DDoS 防御方案](./ddos-defense/README.md) | DDoS 防御体系文档 |
 | [test-api.bat](./test-api.bat) / [test-api.sh](./test-api.sh) | API 接口测试脚本 |
 
 ---
 
 ## 📝 更新日志
+
+### v1.6.0 (2026-04-22)
+
+#### 🚀 新增功能
+
+- ✅ **智能搜索优化** — 重构 SmartSearchService，提升搜索准确性和性能
+  - 优化搜索算法，支持多维度智能匹配
+  - 改进 Elasticsearch 搜索服务，增强中文分词支持
+  - 新增搜索服务单元测试覆盖
+- ✅ **演示数据支持** — 一键初始化演示数据集
+  - `DemoBookSeederService` — 自动导入 50+ 本中文经典书籍
+  - `DemoBooksInitializer` — 启动时自动检测并初始化
+  - Docker Compose 支持一键启动完整演示环境
+  - 支持 application-demo.yml 配置切换
+- ✅ **诗词系统增强** — 登录页诗词掉落效果优化
+  - 诗页渲染优化，支持竖排书页自适应排版
+  - 诗词库按作者分类，支持更精细的按需加载
+  - 新增诗页样式和动画效果
+- ✅ **导航栏动画** — TopNav 组件添加流畅动画效果
+- ✅ **新增测试覆盖**
+  - `SmartSearchServiceTest` — 智能搜索服务单元测试
+  - `ElasticsearchSearchServiceTest` — ES 搜索服务单元测试
+  - `BookFileParserTest` — 文件解析工具类单元测试
+
+#### 🔧 优化改进
+
+- ✅ **BookFileParser 增强** — 支持更多文件格式和编码
+- ✅ **BookImportSupport** — 新增导入辅助工具类
+- ✅ **导航栏交互** — 优化移动端和桌面端导航体验
+
+#### 📚 文档更新
+
+- ✅ 新增 [DEMO_DATASET.md](./backend/DEMO_DATASET.md) — 演示数据集完整说明
+- ✅ 更新 README.md — 添加演示数据使用指南
 
 ### v1.5.0 (2026-04-20)
 
