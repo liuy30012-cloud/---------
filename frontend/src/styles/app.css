@@ -52,7 +52,9 @@ input, button, select {
   min-width: 0;
   display: flex;
   align-items: center;
-  gap: 2rem;
+  gap: 1rem;
+  flex: 1;
+  overflow: hidden;
 }
 .brand-link {
   min-width: 0;
@@ -90,7 +92,14 @@ input, button, select {
   display: none;
   align-items: center;
   gap: var(--space-2);
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  min-width: 0;
+  max-width: 100%;
 }
+.nav-links::-webkit-scrollbar { display: none; }
 @media (min-width: 768px) {
   .nav-links {
     display: flex;
@@ -106,6 +115,8 @@ input, button, select {
   text-decoration: none;
   letter-spacing: -0.025em;
   transition: color 0.2s, background 0.2s, box-shadow 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .nav-link:hover { color: var(--primary); }
 .nav-link.active {
