@@ -1,19 +1,10 @@
 import { ref } from 'vue'
+import { poemLoader } from '../data/poemLoader'
 
 interface Particle { id: number; style: Record<string, string> }
 interface BookPage { id: number; title: string; author: string; poem: string; style: Record<string, string> }
 interface InkDot { id: number; style: Record<string, string> }
 interface PoemEntry { title: string; author: string; poem: string }
-
-let poemLibraryPromise: Promise<PoemEntry[]> | null = null
-
-function loadPoemLibrary() {
-  if (!poemLibraryPromise) {
-    poemLibraryPromise = import('../data/poemLibrary').then(({ poemLibrary }) => poemLibrary)
-  }
-
-  return poemLibraryPromise
-}
 
 export function useLoginParticles() {
   // ===== Mouse tracking =====
@@ -146,7 +137,7 @@ export function useLoginParticles() {
   }
 
   async function loadBookPages() {
-    const poemData = await loadPoemLibrary()
+    const poemData = await poemLoader.loadRandomDynasty()
     const targetCount = Math.min(18, poemData.length)
 
     if (targetCount === 0) {
