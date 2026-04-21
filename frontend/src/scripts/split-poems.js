@@ -36,4 +36,36 @@ const authorDynastyMap = {
   '范仲淹': 'song', '晏殊': 'song', '晏几道': 'song', '姜夔': 'song',
   '杨万里': 'song', '范成大': 'song', '文天祥': 'song', '岳飞': 'song',
   '宋徽宗': 'song', '宋太宗': 'song',
+
+  // 元代 (1271-1368)
+  '关汉卿': 'yuan', '马致远': 'yuan', '白朴': 'yuan', '郑光祖': 'yuan',
+  '王实甫': 'yuan', '张养浩': 'yuan', '睢景臣': 'yuan',
+
+  // 明代 (1368-1644)
+  '唐寅': 'ming', '文征明': 'ming', '徐渭': 'ming', '杨慎': 'ming',
+  '于谦': 'ming', '高启': 'ming', '刘基': 'ming', '宋濂': 'ming',
+
+  // 清代 (1644-1912)
+  '纳兰性德': 'qing', '曹雪芹': 'qing', '龚自珍': 'qing', '郑燮': 'qing',
+  '袁枚': 'qing', '黄景仁': 'qing', '顾炎武': 'qing', '王士祯': 'qing',
+
+  // 近现代 (1912-)
+  '鲁迅': 'modern', '毛泽东': 'modern', '郭沫若': 'modern'
 };
+
+// 根据作者名识别朝代
+function identifyDynasty(author) {
+  // 策略1: 精确匹配
+  if (authorDynastyMap[author]) {
+    return authorDynastyMap[author];
+  }
+
+  // 策略2: 模糊匹配 - 皇帝类
+  if (author.includes('太宗') || author.includes('高祖')) return 'tang';
+  if (author.includes('宋') && author.includes('宗')) return 'song';
+  if (author.includes('明') && author.includes('宗')) return 'ming';
+  if (author.includes('清') && author.includes('帝')) return 'qing';
+
+  // 策略3: 无法识别
+  return 'unknown';
+}
