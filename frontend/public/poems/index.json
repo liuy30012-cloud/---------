@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "totalCount": 9040,
+  "totalCount": 9668,
   "dynasties": [
     {
       "id": "pre-tang",
@@ -11,7 +11,7 @@
     {
       "id": "tang",
       "name": "唐代",
-      "count": 8965,
+      "count": 9593,
       "file": "tang.json"
     },
     {
