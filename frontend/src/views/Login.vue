@@ -130,6 +130,7 @@ onMounted(() => {
     showVisualLayer.value = true
     particles.createInkDots()
     particles.createAmbientParticles()
+    particles.loadBookPages()
     canvas.initInkCanvas()
     canvas.initBrushCanvas()
   }, 180)
