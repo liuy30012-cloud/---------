@@ -137,44 +137,52 @@ export function useLoginParticles() {
   }
 
   async function loadBookPages() {
-    const poemData = await poemLoader.loadRandomDynasty()
-    const targetCount = Math.min(18, poemData.length)
+    try {
+      console.log('开始加载诗词...')
+      const poemData = await poemLoader.loadRandomDynasty()
+      console.log('诗词加载成功:', poemData.length, '首')
+      const targetCount = Math.min(18, poemData.length)
 
-    if (targetCount === 0) {
-      bookPages.value = []
-      return
-    }
+      if (targetCount === 0) {
+        console.warn('没有诗词数据')
+        bookPages.value = []
+        return
+      }
 
-    const picked = new Set<number>()
-    while (picked.size < targetCount) {
-      picked.add(Math.floor(Math.random() * poemData.length))
+      const picked = new Set<number>()
+      while (picked.size < targetCount) {
+        picked.add(Math.floor(Math.random() * poemData.length))
+      }
+      const selectedPoems = [...picked].map(i => poemData[i])
+      const pages: BookPage[] = []
+      for (let i = 0; i < targetCount; i++) {
+        const left = 3 + Math.random() * 88
+        const duration = 22 + Math.random() * 16
+        const delay = Math.random() * 24
+        const rotStart = Math.random() * 20 - 10
+        const p = selectedPoems[i]
+        const lines = p.poem.split('\n').length
+        const maxChars = Math.max(...p.poem.split('\n').map(l => l.length))
+        const colWidth = 24
+        const charHeight = 20
+        const w = Math.max(110, lines * colWidth + 60)
+        const h = Math.max(140, maxChars * charHeight + 90)
+        const fontSize = maxChars > 8 ? 9 : maxChars > 6 ? 10 : 11
+        pages.push({
+          id: i, title: p.title, author: p.author, poem: p.poem,
+          style: {
+            left: `${left}%`, width: `${w}px`, height: `${h}px`,
+            animationDuration: `${duration}s`, animationDelay: `${delay}s`,
+            '--rot-start': `${rotStart}deg`, '--rot-mid': `${rotStart + 180}deg`, '--rot-end': `${rotStart + 360}deg`,
+            '--sway': `${20 + Math.random() * 30}px`, '--poem-font-size': `${fontSize}px`,
+          } as any
+        })
+      }
+      bookPages.value = pages
+      console.log('诗页创建完成:', pages.length, '个')
+    } catch (error) {
+      console.error('加载诗词失败:', error)
     }
-    const selectedPoems = [...picked].map(i => poemData[i])
-    const pages: BookPage[] = []
-    for (let i = 0; i < targetCount; i++) {
-      const left = 3 + Math.random() * 88
-      const duration = 22 + Math.random() * 16
-      const delay = Math.random() * 24
-      const rotStart = Math.random() * 20 - 10
-      const p = selectedPoems[i]
-      const lines = p.poem.split('\n').length
-      const maxChars = Math.max(...p.poem.split('\n').map(l => l.length))
-      const colWidth = 24
-      const charHeight = 20
-      const w = Math.max(110, lines * colWidth + 60)
-      const h = Math.max(140, maxChars * charHeight + 90)
-      const fontSize = maxChars > 8 ? 9 : maxChars > 6 ? 10 : 11
-      pages.push({
-        id: i, title: p.title, author: p.author, poem: p.poem,
-        style: {
-          left: `${left}%`, width: `${w}px`, height: `${h}px`,
-          animationDuration: `${duration}s`, animationDelay: `${delay}s`,
-          '--rot-start': `${rotStart}deg`, '--rot-mid': `${rotStart + 180}deg`, '--rot-end': `${rotStart + 360}deg`,
-          '--sway': `${20 + Math.random() * 30}px`, '--poem-font-size': `${fontSize}px`,
-        } as any
-      })
-    }
-    bookPages.value = pages
   }
 
   function createInkDots() {
