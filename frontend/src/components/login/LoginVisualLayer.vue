@@ -52,6 +52,19 @@
     class="celebration-particle"
     :style="particle.style"
   ></span>
+
+  <div class="book-pages">
+    <div
+      v-for="page in props.bookPages"
+      :key="page.id"
+      class="book-page"
+      :style="page.style"
+    >
+      <div class="page-title">{{ page.title }}</div>
+      <div class="page-author">{{ page.author }}</div>
+      <div class="page-poem">{{ page.poem }}</div>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -86,7 +99,6 @@ const props = defineProps<{
 }>()
 
 void props.floatingIcons
-void props.bookPages
 </script>
 
 <style scoped>
@@ -273,6 +285,82 @@ void props.bookPages
   100% {
     opacity: 0;
     transform: translate(-50%, -50%) translate(var(--dx, 80px), var(--dy, -80px)) scale(0);
+  }
+}
+
+/* 诗页样式 */
+.book-pages {
+  position: fixed;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.book-page {
+  position: absolute;
+  top: -20%;
+  background: linear-gradient(135deg, rgba(250, 245, 235, 0.95) 0%, rgba(245, 238, 220, 0.92) 100%);
+  border: 1px solid rgba(180, 160, 130, 0.3);
+  border-radius: 4px;
+  padding: 16px 12px;
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  font-family: 'KaiTi', 'STKaiti', serif;
+  animation: bookPageFall var(--duration, 30s) linear var(--delay, 0s) forwards;
+  transform: rotate(var(--rot-start, 0deg));
+  will-change: transform, top;
+}
+
+.page-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(100, 80, 60, 0.9);
+  margin-bottom: 8px;
+  letter-spacing: 2px;
+}
+
+.page-author {
+  font-size: 9px;
+  color: rgba(120, 100, 80, 0.75);
+  margin-bottom: 12px;
+  letter-spacing: 1px;
+}
+
+.page-poem {
+  font-size: var(--poem-font-size, 10px);
+  line-height: 1.8;
+  color: rgba(80, 70, 60, 0.85);
+  letter-spacing: 1px;
+  white-space: pre-line;
+}
+
+@keyframes bookPageFall {
+  0% {
+    top: -20%;
+    transform: rotate(var(--rot-start, 0deg)) translateX(0);
+    opacity: 0;
+  }
+
+  5% {
+    opacity: 1;
+  }
+
+  50% {
+    transform: rotate(var(--rot-mid, 180deg)) translateX(var(--sway, 30px));
+  }
+
+  95% {
+    opacity: 1;
+  }
+
+  100% {
+    top: 120%;
+    transform: rotate(var(--rot-end, 360deg)) translateX(0);
+    opacity: 0;
   }
 }
 </style>
