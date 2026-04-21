@@ -1,0 +1,48 @@
+{
+  "version": "1.0.0",
+  "totalCount": 3399,
+  "dynasties": [
+    {
+      "id": "pre-tang",
+      "name": "先秦至隋",
+      "count": 0,
+      "file": "pre-tang.json"
+    },
+    {
+      "id": "tang",
+      "name": "唐代",
+      "count": 3399,
+      "file": "tang.json"
+    },
+    {
+      "id": "song",
+      "name": "宋代",
+      "count": 0,
+      "file": "song.json"
+    },
+    {
+      "id": "yuan",
+      "name": "元代",
+      "count": 0,
+      "file": "yuan.json"
+    },
+    {
+      "id": "ming",
+      "name": "明代",
+      "count": 0,
+      "file": "ming.json"
+    },
+    {
+      "id": "qing",
+      "name": "清代",
+      "count": 0,
+      "file": "qing.json"
+    },
+    {
+      "id": "modern",
+      "name": "近现代",
+      "count": 0,
+      "file": "modern.json"
+    }
+  ]
+}
