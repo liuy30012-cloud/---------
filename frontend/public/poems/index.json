@@ -1,23 +1,23 @@
 {
   "version": "1.0.0",
-  "totalCount": 3399,
+  "totalCount": 9040,
   "dynasties": [
     {
       "id": "pre-tang",
       "name": "先秦至隋",
-      "count": 0,
+      "count": 73,
       "file": "pre-tang.json"
     },
     {
       "id": "tang",
       "name": "唐代",
-      "count": 3399,
+      "count": 8965,
       "file": "tang.json"
     },
     {
       "id": "song",
       "name": "宋代",
-      "count": 0,
+      "count": 2,
       "file": "song.json"
     },
     {
