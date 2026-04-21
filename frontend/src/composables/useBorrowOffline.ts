@@ -1,6 +1,7 @@
 import type { Ref } from 'vue'
 import { borrowApi, reservationApi } from '@/api/borrowApi'
 import type { QueueOperationInput } from '@/types/offline'
+import { OFFLINE_OPERATION_TYPES } from '@/constants/offlineOperations'
 
 interface BorrowOfflineParams {
   bookId: number
@@ -33,7 +34,7 @@ export async function applyBorrowOfflineAware(params: BorrowOfflineParams): Prom
 
   if (!isOnline.value) {
     await enqueueOperation({
-      type: 'borrow_apply',
+      type: OFFLINE_OPERATION_TYPES.BORROW_APPLY,
       payload: { bookId, notes },
     })
     return
@@ -47,7 +48,7 @@ export async function pickupBorrowOfflineAware(params: BorrowActionOfflineParams
 
   if (!isOnline.value) {
     await enqueueOperation({
-      type: 'borrow_pickup',
+      type: OFFLINE_OPERATION_TYPES.BORROW_PICKUP,
       payload: { recordId },
     })
     return
@@ -61,7 +62,7 @@ export async function returnBookOfflineAware(params: BorrowActionOfflineParams):
 
   if (!isOnline.value) {
     await enqueueOperation({
-      type: 'borrow_return',
+      type: OFFLINE_OPERATION_TYPES.BORROW_RETURN,
       payload: { recordId },
     })
     return
@@ -75,7 +76,7 @@ export async function renewBorrowOfflineAware(params: BorrowActionOfflineParams)
 
   if (!isOnline.value) {
     await enqueueOperation({
-      type: 'borrow_renew',
+      type: OFFLINE_OPERATION_TYPES.BORROW_RENEW,
       payload: { recordId },
     })
     return
@@ -89,7 +90,7 @@ export async function reserveBookOfflineAware(params: ReservationOfflineParams):
 
   if (!isOnline.value) {
     await enqueueOperation({
-      type: 'reservation_create',
+      type: OFFLINE_OPERATION_TYPES.RESERVATION_RESERVE,
       payload: { bookId },
     })
     return
@@ -103,7 +104,7 @@ export async function cancelReservationOfflineAware(params: ReservationActionOff
 
   if (!isOnline.value) {
     await enqueueOperation({
-      type: 'reservation_cancel',
+      type: OFFLINE_OPERATION_TYPES.RESERVATION_CANCEL,
       payload: { reservationId, reason },
     })
     return
@@ -117,7 +118,7 @@ export async function pickupReservationOfflineAware(params: ReservationActionOff
 
   if (!isOnline.value) {
     await enqueueOperation({
-      type: 'reservation_pickup',
+      type: OFFLINE_OPERATION_TYPES.RESERVATION_PICKUP,
       payload: { reservationId },
     })
     return
@@ -131,7 +132,7 @@ export async function extendReservationOfflineAware(params: ReservationActionOff
 
   if (!isOnline.value) {
     await enqueueOperation({
-      type: 'reservation_extend',
+      type: OFFLINE_OPERATION_TYPES.RESERVATION_EXTEND,
       payload: { reservationId },
     })
     return

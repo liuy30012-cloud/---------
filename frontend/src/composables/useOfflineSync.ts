@@ -1,6 +1,7 @@
 import { favoriteApi } from '@/api/favoriteApi'
 import { borrowApi, reservationApi } from '@/api/borrowApi'
 import type { OfflineOperation } from '@/types/offline'
+import { OFFLINE_OPERATION_TYPES } from '@/constants/offlineOperations'
 
 export async function syncOfflineOperation(operation: OfflineOperation): Promise<void> {
   const { type, payload } = operation
@@ -10,49 +11,49 @@ export async function syncOfflineOperation(operation: OfflineOperation): Promise
   }
 
   switch (type) {
-    case 'favorite_add':
+    case OFFLINE_OPERATION_TYPES.FAVORITE_ADD:
       await favoriteApi.addFavorite(payload.bookId as number)
       break
 
-    case 'favorite_remove':
+    case OFFLINE_OPERATION_TYPES.FAVORITE_REMOVE:
       await favoriteApi.removeFavorite(payload.bookId as number)
       break
 
-    case 'borrow_apply':
+    case OFFLINE_OPERATION_TYPES.BORROW_APPLY:
       await borrowApi.applyBorrow({
         bookId: payload.bookId as number,
         notes: (payload.notes as string) || '',
       })
       break
 
-    case 'borrow_pickup':
+    case OFFLINE_OPERATION_TYPES.BORROW_PICKUP:
       await borrowApi.pickupBorrow(payload.recordId as number)
       break
 
-    case 'borrow_return':
+    case OFFLINE_OPERATION_TYPES.BORROW_RETURN:
       await borrowApi.returnBook(payload.recordId as number)
       break
 
-    case 'borrow_renew':
+    case OFFLINE_OPERATION_TYPES.BORROW_RENEW:
       await borrowApi.renewBorrow(payload.recordId as number)
       break
 
-    case 'reservation_create':
+    case OFFLINE_OPERATION_TYPES.RESERVATION_RESERVE:
       await reservationApi.reserveBook({ bookId: payload.bookId as number })
       break
 
-    case 'reservation_cancel':
+    case OFFLINE_OPERATION_TYPES.RESERVATION_CANCEL:
       await reservationApi.cancelReservation(
         payload.reservationId as number,
         payload.reason as string | undefined,
       )
       break
 
-    case 'reservation_pickup':
+    case OFFLINE_OPERATION_TYPES.RESERVATION_PICKUP:
       await reservationApi.pickupReservation(payload.reservationId as number)
       break
 
-    case 'reservation_extend':
+    case OFFLINE_OPERATION_TYPES.RESERVATION_EXTEND:
       await reservationApi.extendReservation(payload.reservationId as number)
       break
 

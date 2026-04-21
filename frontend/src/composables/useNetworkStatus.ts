@@ -1,13 +1,9 @@
-/**
- * 网络状态监听 Composable
- * 提供在线/离线状态检测和自动更新功能
- */
-
 import { ref, onMounted, onUnmounted } from 'vue'
 import { offlineDB } from '@/utils/offlineDB'
 import { offlineManager } from '@/services/OfflineManager'
 import { logger } from '../utils/logger'
 import { syncOfflineOperation } from './useOfflineSync'
+import { getErrorMessage } from '@/utils/errorHelpers'
 import type { OfflineOperation } from '@/types/offline'
 
 export function useNetworkStatus() {
@@ -182,19 +178,21 @@ export function useNetworkStatus() {
     let successCount = 0
     let failCount = 0
 
-    for (const op of pendingOps) {
-      try {
-        await syncOfflineOperation(op)
-        await offlineManager.markOperationCompleted(op.id)
-        successCount++
-        logger.log(`[Network] 操作 ${op.id} (${op.type}) 同步成功`)
-      } catch (error) {
-        failCount++
-        const errorMsg = error instanceof Error ? error.message : '未知错误'
-        await offlineManager.markOperationFailed(op.id, errorMsg)
-        logger.error(`[Network] 操作 ${op.id} (${op.type}) 同步失败:`, error)
-      }
-    }
+    await Promise.allSettled(
+      pendingOps.map(async (op) => {
+        try {
+          await syncOfflineOperation(op)
+          await offlineManager.markOperationCompleted(op.id)
+          successCount++
+          logger.log(`[Network] 操作 ${op.id} (${op.type}) 同步成功`)
+        } catch (error) {
+          failCount++
+          const errorMsg = getErrorMessage(error, '未知错误')
+          await offlineManager.markOperationFailed(op.id, errorMsg)
+          logger.error(`[Network] 操作 ${op.id} (${op.type}) 同步失败:`, error)
+        }
+      })
+    )
 
     await offlineManager.markSyncState({
       isSyncing: false,

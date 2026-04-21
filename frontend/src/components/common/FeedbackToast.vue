@@ -1,5 +1,5 @@
 <template>
-  <Transition :name="`toast-${animation}`">
+  <Transition name="toast-slide">
     <div
       v-if="visible"
       class="feedback-toast"
@@ -47,6 +47,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import type { Toast, ToastAction, ToastType } from '@/types/feedback'
+import { TOAST_ICONS, TOAST_TRANSITION_DURATION } from '@/constants/toastIcons'
 
 type LegacyToast = {
   message: string
@@ -62,7 +63,6 @@ const emit = defineEmits<{
 }>()
 
 const visible = ref(false)
-const animation = ref('slide')
 const normalizedToast = computed((): Toast => ({
   id: 'id' in props.toast ? props.toast.id : 'legacy-toast',
   createdAt: 'createdAt' in props.toast ? props.toast.createdAt : 0,
@@ -82,20 +82,12 @@ onMounted(() => {
 
 const getIcon = () => {
   if (normalizedToast.value.icon) return normalizedToast.value.icon
-
-  const icons = {
-    success: 'check_circle',
-    error: 'error',
-    warning: 'warning',
-    info: 'info',
-    loading: 'progress_activity',
-  }
-  return icons[normalizedToast.value.type]
+  return TOAST_ICONS[normalizedToast.value.type]
 }
 
 const handleClose = () => {
   visible.value = false
-  setTimeout(() => emit('close', normalizedToast.value.id), 300)
+  setTimeout(() => emit('close', normalizedToast.value.id), TOAST_TRANSITION_DURATION)
 }
 
 const handleAction = (action: ToastAction) => {

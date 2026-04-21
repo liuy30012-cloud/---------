@@ -8,6 +8,7 @@ import {
 import { requestCaptchaChallenge } from '../state/securityChallenge'
 import { errorCenter } from '../services/ErrorCenter'
 import { getErrorMessage } from '../utils/errorHelpers'
+import { safeGetItem } from '../utils/storageHelpers'
 
 export const httpClient = axios.create({
   baseURL: API_CONFIG.baseURL,
@@ -31,7 +32,7 @@ const UNEXPECTED_ERROR_MESSAGE = '出现未预期错误，请稍后再试。'
 
 httpClient.interceptors.request.use((config) => {
   const headers = AxiosHeaders.from(config.headers ?? {})
-  const token = typeof window !== 'undefined' ? window.localStorage.getItem('token') : null
+  const token = safeGetItem('token')
 
   if (token) {
     headers.set('Authorization', `Bearer ${token}`)

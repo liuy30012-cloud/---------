@@ -1,6 +1,7 @@
 import type { Ref } from 'vue'
 import { favoriteApi } from '@/api/favoriteApi'
 import type { QueueOperationInput } from '@/types/offline'
+import { OFFLINE_OPERATION_TYPES } from '@/constants/offlineOperations'
 
 interface ToggleFavoriteOfflineParams {
   bookId: number
@@ -14,7 +15,7 @@ export async function toggleFavoriteOfflineAware(params: ToggleFavoriteOfflinePa
 
   if (!isOnline.value) {
     await enqueueOperation({
-      type: isFavorited ? 'favorite_remove' : 'favorite_add',
+      type: isFavorited ? OFFLINE_OPERATION_TYPES.FAVORITE_REMOVE : OFFLINE_OPERATION_TYPES.FAVORITE_ADD,
       payload: { bookId },
     })
     return

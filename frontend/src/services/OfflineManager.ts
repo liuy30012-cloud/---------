@@ -237,13 +237,18 @@ class OfflineManager {
   async markSyncState(patch: Partial<OfflineSyncState>): Promise<OfflineSyncState> {
     await this.init()
 
+    const newPendingCount = this.snapshot.queue.filter((operation) => operation.status === 'pending' || operation.status === 'failed').length
+    const pendingCountChanged = this.snapshot.syncState.pendingCount !== newPendingCount
+
     this.snapshot.syncState = {
       ...this.snapshot.syncState,
       ...patch,
-      pendingCount: this.snapshot.queue.filter((operation) => operation.status === 'pending' || operation.status === 'failed').length,
+      pendingCount: newPendingCount,
     }
 
-    await this.persistSyncState()
+    if (pendingCountChanged || Object.keys(patch).length > 0) {
+      await this.persistSyncState()
+    }
     this.emit()
     return this.snapshot.syncState
   }
@@ -300,10 +305,13 @@ class OfflineManager {
   }
 
   private updatePendingCount(): void {
-    this.snapshot.syncState.pendingCount = this.snapshot.queue.filter((operation) => operation.status === 'pending' || operation.status === 'failed').length
-    this.persistSyncState().catch((error) => {
-      logger.error('[OfflineManager] 持久化同步状态失败:', error)
-    })
+    const newPendingCount = this.snapshot.queue.filter((operation) => operation.status === 'pending' || operation.status === 'failed').length
+    if (this.snapshot.syncState.pendingCount !== newPendingCount) {
+      this.snapshot.syncState.pendingCount = newPendingCount
+      this.persistSyncState().catch((error) => {
+        logger.error('[OfflineManager] 持久化同步状态失败:', error)
+      })
+    }
   }
 
   private async updateOperation(
