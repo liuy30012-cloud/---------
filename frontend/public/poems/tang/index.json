@@ -1,0 +1,160 @@
+{
+  "version": "1.0.0",
+  "dynasty": "tang",
+  "totalCount": 9593,
+  "totalAuthors": 645,
+  "majorAuthors": [
+    {
+      "author": "李白",
+      "count": 1133,
+      "file": "李白.json"
+    },
+    {
+      "author": "韦应物",
+      "count": 573,
+      "file": "韦应物.json"
+    },
+    {
+      "author": "刘长卿",
+      "count": 520,
+      "file": "刘长卿.json"
+    },
+    {
+      "author": "岑参",
+      "count": 406,
+      "file": "岑参.json"
+    },
+    {
+      "author": "张说",
+      "count": 400,
+      "file": "张说.json"
+    },
+    {
+      "author": "王维",
+      "count": 393,
+      "file": "王维.json"
+    },
+    {
+      "author": "孟浩然",
+      "count": 269,
+      "file": "孟浩然.json"
+    },
+    {
+      "author": "储光羲",
+      "count": 229,
+      "file": "储光羲.json"
+    },
+    {
+      "author": "张九龄",
+      "count": 219,
+      "file": "张九龄.json"
+    },
+    {
+      "author": "李峤",
+      "count": 213,
+      "file": "李峤.json"
+    },
+    {
+      "author": "王昌龄",
+      "count": 200,
+      "file": "王昌龄.json"
+    },
+    {
+      "author": "宋之问",
+      "count": 194,
+      "file": "宋之问.json"
+    },
+    {
+      "author": "沈佺期",
+      "count": 175,
+      "file": "沈佺期.json"
+    },
+    {
+      "author": "陈子昂",
+      "count": 129,
+      "file": "陈子昂.json"
+    },
+    {
+      "author": "李颀",
+      "count": 127,
+      "file": "李颀.json"
+    },
+    {
+      "author": "骆宾王",
+      "count": 126,
+      "file": "骆宾王.json"
+    },
+    {
+      "author": "卢照邻",
+      "count": 117,
+      "file": "卢照邻.json"
+    },
+    {
+      "author": "王勃",
+      "count": 104,
+      "file": "王勃.json"
+    },
+    {
+      "author": "苏颋",
+      "count": 103,
+      "file": "苏颋.json"
+    },
+    {
+      "author": "太宗皇帝",
+      "count": 100,
+      "file": "太宗皇帝.json"
+    }
+  ],
+  "minorAuthors": {
+    "file": "minor-authors.json",
+    "count": 588,
+    "authorCount": 10,
+    "authors": [
+      {
+        "author": "李嘉祐",
+        "count": 73
+      },
+      {
+        "author": "明皇帝",
+        "count": 63
+      },
+      {
+        "author": "孙逖",
+        "count": 62
+      },
+      {
+        "author": "褚亮",
+        "count": 59
+      },
+      {
+        "author": "常建",
+        "count": 57
+      },
+      {
+        "author": "崔国辅",
+        "count": 56
+      },
+      {
+        "author": "刘禹锡",
+        "count": 56
+      },
+      {
+        "author": "王绩",
+        "count": 55
+      },
+      {
+        "author": "魏征",
+        "count": 54
+      },
+      {
+        "author": "崔颢",
+        "count": 53
+      }
+    ]
+  },
+  "others": {
+    "file": "others.json",
+    "count": 3275,
+    "authorCount": 615
+  }
+}

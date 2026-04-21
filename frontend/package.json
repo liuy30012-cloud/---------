@@ -26,7 +26,8 @@
     "preview": "vite preview",
     "test": "vitest",
     "test:run": "vitest run",
-    "split-poems": "node src/scripts/split-poems.cjs"
+    "split-poems": "node src/scripts/split-poems.cjs",
+    "split-tang-authors": "node src/scripts/split-tang-by-author.cjs"
   },
   "dependencies": {
     "axios": "^1.6.8",
