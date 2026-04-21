@@ -35,7 +35,7 @@ export class PoemLoader {
     }
 
     this.indexCache = await response.json()
-    return this.indexCache.dynasties
+    return this.indexCache!.dynasties
   }
 
   async loadDynasty(dynastyId: string): Promise<PoemEntry[]> {
