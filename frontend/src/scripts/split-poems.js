@@ -69,3 +69,110 @@ function identifyDynasty(author) {
   // 策略3: 无法识别
   return 'unknown';
 }
+
+// 解析 poemLibrary.ts 文件
+function parsePoemLibrary() {
+  const content = fs.readFileSync(POEM_LIBRARY_PATH, 'utf-8');
+  const arrayMatch = content.match(/export const poemLibrary: PoemEntry\[\] = \[([\s\S]*)\]/);
+  if (!arrayMatch) throw new Error('无法解析 poemLibrary.ts 文件');
+
+  const arrayContent = arrayMatch[1];
+  const poems = [];
+  const poemRegex = /\{\s*title:\s*'([^']+)',\s*author:\s*'([^']+)',\s*poem:\s*'([^']+)'\s*\}/g;
+  let match;
+
+  while ((match = poemRegex.exec(arrayContent)) !== null) {
+    poems.push({ title: match[1], author: match[2], poem: match[3] });
+  }
+
+  console.log(`✓ 成功解析 ${poems.length} 首诗词`);
+  return poems;
+}
+
+// 将诗词按朝代分类
+function classifyPoems(poems) {
+  const classified = {};
+  const unknown = [];
+
+  DYNASTIES.forEach(d => { classified[d.id] = []; });
+
+  poems.forEach(poem => {
+    const dynasty = identifyDynasty(poem.author);
+    if (dynasty === 'unknown') {
+      unknown.push(poem);
+    } else {
+      classified[dynasty].push(poem);
+    }
+  });
+
+  return { classified, unknown };
+}
+
+// 生成并保存JSON文件
+function generateJSONFiles(classified) {
+  const index = { version: '1.0.0', totalCount: 0, dynasties: [] };
+
+  DYNASTIES.forEach(dynasty => {
+    const poems = classified[dynasty.id] || [];
+    const count = poems.length;
+
+    if (count > 0) {
+      const dynastyData = { dynasty: dynasty.id, poems: poems };
+      const filePath = path.join(OUTPUT_DIR, dynasty.file);
+      fs.writeFileSync(filePath, JSON.stringify(dynastyData, null, 2), 'utf-8');
+      console.log(`✓ 生成 ${dynasty.file}: ${count} 首`);
+    }
+
+    index.dynasties.push({ id: dynasty.id, name: dynasty.name, count: count, file: dynasty.file });
+    index.totalCount += count;
+  });
+
+  const indexPath = path.join(OUTPUT_DIR, 'index.json');
+  fs.writeFileSync(indexPath, JSON.stringify(index, null, 2), 'utf-8');
+  console.log(`✓ 生成 index.json`);
+
+  return index;
+}
+
+// 生成分类报告
+function generateReport(index, unknown) {
+  const totalClassified = index.totalCount;
+  const totalUnknown = unknown.length;
+  const totalPoems = totalClassified + totalUnknown;
+  const classifiedPercent = ((totalClassified / totalPoems) * 100).toFixed(1);
+
+  let report = '诗词分类报告\n=============\n';
+  report += `生成时间: ${new Date().toLocaleString('zh-CN')}\n`;
+  report += `总计: ${totalPoems} 首\n\n`;
+  report += `已分类: ${totalClassified} 首 (${classifiedPercent}%)\n`;
+
+  index.dynasties.forEach(d => {
+    if (d.count > 0) report += `  - ${d.name}: ${d.count} 首\n`;
+  });
+
+  report += `\n待审核: ${totalUnknown} 首 (${((totalUnknown / totalPoems) * 100).toFixed(1)}%)\n`;
+
+  fs.writeFileSync(REPORT_PATH, report, 'utf-8');
+  console.log(`\n${report}`);
+
+  if (totalUnknown > 0) {
+    const unknownAuthors = {};
+    unknown.forEach(poem => {
+      if (!unknownAuthors[poem.author]) unknownAuthors[poem.author] = [];
+      unknownAuthors[poem.author].push(poem.title);
+    });
+    fs.writeFileSync(UNKNOWN_AUTHORS_PATH, JSON.stringify(unknownAuthors, null, 2), 'utf-8');
+  }
+}
+
+// 主函数
+function main() {
+  console.log('开始分类诗词...\n');
+  const poems = parsePoemLibrary();
+  const { classified, unknown } = classifyPoems(poems);
+  const index = generateJSONFiles(classified);
+  generateReport(index, unknown);
+  console.log('\n✓ 分类完成!');
+}
+
+main();
