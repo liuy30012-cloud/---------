@@ -1,0 +1,26 @@
+title,author,isbn,location,coverUrl,status,year,description,languageCode,availability,category,circulationPolicy,totalCopies
+Distributed Systems Primer,Alice Zhang,9780000000001,A区>1层>计算机>001,https://covers.openlibrary.org/b/olid/OL1M-M.jpg?default=false,AVAILABLE,2020,Primer on distributed systems,en,Available,计算机,AUTO,3
+算法导论示例版,王明,9780000000002,A区>1层>计算机>002,https://covers.openlibrary.org/b/olid/OL2M-M.jpg?default=false,AVAILABLE,2019,用于测试的中文计算机图书,zh,Available,计算机,AUTO,4
+Library Maps and Wayfinding,Sophia Turner,9780000000003,A区>2层>设计>003,https://covers.openlibrary.org/b/olid/OL3M-M.jpg?default=false,AVAILABLE,2018,Guide to navigation design,en,Available,艺术设计,AUTO,2
+现代文学讲义,李青,9780000000004,B区>3层>文学>004,https://covers.openlibrary.org/b/olid/OL4M-M.jpg?default=false,AVAILABLE,2017,中文文学课程讲义,zh,Available,文学,AUTO,5
+Data Warehousing Handbook,Chris Miller,9780000000005,A区>1层>计算机>005,https://covers.openlibrary.org/b/olid/OL5M-M.jpg?default=false,AVAILABLE,2016,Reference for analytics systems,en,Available,计算机,AUTO,6
+世界历史速览,周河,9780000000006,C区>2层>历史>006,https://covers.openlibrary.org/b/olid/OL6M-M.jpg?default=false,AVAILABLE,2015,历史入门教材,zh,Available,历史,AUTO,2
+Applied Machine Learning,Emma Brooks,9780000000007,A区>1层>计算机>007,https://covers.openlibrary.org/b/olid/OL7M-M.jpg?default=false,AVAILABLE,2021,Machine learning overview,en,Available,计算机,AUTO,4
+教育心理学概论,陈思,9780000000008,D区>4层>教育>008,https://covers.openlibrary.org/b/olid/OL8M-M.jpg?default=false,AVAILABLE,2014,教育心理学基础,zh,Available,教育,AUTO,3
+The Art of Catalog Search,Noah Wilson,9780000000009,A区>2层>信息检索>009,https://covers.openlibrary.org/b/olid/OL9M-M.jpg?default=false,AVAILABLE,2013,Search techniques for catalogs,en,Available,社会科学,AUTO,2
+中国哲学简史,赵宁,9780000000010,E区>5层>哲学>010,https://covers.openlibrary.org/b/olid/OL10M-M.jpg?default=false,AVAILABLE,2012,中国哲学概览,zh,Available,哲学,AUTO,4
+Cloud Native Foundations,Olivia Scott,9780000000011,A区>1层>计算机>011,https://covers.openlibrary.org/b/olid/OL11M-M.jpg?default=false,AVAILABLE,2022,Cloud native concepts,en,Available,计算机,AUTO,5
+少儿阅读引导,高琳,9780000000012,F区>2层>儿童>012,https://covers.openlibrary.org/b/olid/OL12M-M.jpg?default=false,AVAILABLE,2020,儿童阅读方法,zh,Available,儿童读物,AUTO,2
+Practical Statistics,Daniel Reed,9780000000013,C区>1层>科学>013,https://covers.openlibrary.org/b/olid/OL13M-M.jpg?default=false,AVAILABLE,2011,Statistics for practitioners,en,Available,科学技术,AUTO,3
+语言学基础,孙悦,9780000000014,G区>3层>语言>014,https://covers.openlibrary.org/b/olid/OL14M-M.jpg?default=false,AVAILABLE,2010,语言学教材,zh,Available,语言学习,AUTO,2
+Leadership for Libraries,Grace Adams,9780000000015,H区>1层>管理>015,https://covers.openlibrary.org/b/olid/OL15M-M.jpg?default=false,AVAILABLE,2019,Leadership practices for library teams,en,Available,经济管理,AUTO,4
+城市文化研究,何岩,9780000000016,B区>2层>社会科学>016,https://covers.openlibrary.org/b/olid/OL16M-M.jpg?default=false,AVAILABLE,2018,城市文化案例研究,zh,Available,社会科学,AUTO,3
+Modern Database Design,Lucas Evans,9780000000017,A区>1层>计算机>017,https://covers.openlibrary.org/b/olid/OL17M-M.jpg?default=false,AVAILABLE,2023,Database design patterns,en,Available,计算机,AUTO,6
+艺术史导读,冯洁,9780000000018,A区>2层>艺术>018,https://covers.openlibrary.org/b/olid/OL18M-M.jpg?default=false,AVAILABLE,2016,艺术史课程导读,zh,Available,艺术设计,AUTO,2
+Knowledge Graph Basics,Ethan Parker,9780000000019,A区>1层>计算机>019,https://covers.openlibrary.org/b/olid/OL19M-M.jpg?default=false,AVAILABLE,2021,Knowledge graph foundations,en,Available,计算机,AUTO,3
+馆藏建设与发展,刘晨,9780000000020,H区>2层>管理>020,https://covers.openlibrary.org/b/olid/OL20M-M.jpg?default=false,AVAILABLE,2015,图书馆馆藏建设研究,zh,Available,经济管理,AUTO,4
+User Experience Research,Mia Foster,9780000000021,A区>2层>设计>021,https://covers.openlibrary.org/b/olid/OL21M-M.jpg?default=false,AVAILABLE,2024,UX research methods,en,Available,艺术设计,AUTO,5
+古典诗词赏析,许岚,9780000000022,B区>3层>文学>022,https://covers.openlibrary.org/b/olid/OL22M-M.jpg?default=false,AVAILABLE,2017,古典诗词赏析读本,zh,Available,文学,AUTO,3
+Intro to Cybersecurity,Henry Cooper,9780000000023,A区>1层>计算机>023,https://covers.openlibrary.org/b/olid/OL23M-M.jpg?default=false,AVAILABLE,2020,Cybersecurity essentials,en,Available,计算机,AUTO,4
+社会调查方法,唐果,9780000000024,B区>2层>社会科学>024,https://covers.openlibrary.org/b/olid/OL24M-M.jpg?default=false,AVAILABLE,2014,社会调查研究方法,zh,Available,社会科学,AUTO,2
+Reference Collection Sample,Archive Desk,9780000000025,Z区>1层>参考>025,https://covers.openlibrary.org/b/olid/OL25M-M.jpg?default=false,REFERENCE_ONLY,2022,Reference-only sample record,en,Reading Room Only,综合,REFERENCE_ONLY,1

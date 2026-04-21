@@ -26,7 +26,7 @@ import java.util.Map;
     prefix = "library.search.elasticsearch",
     name = "enabled",
     havingValue = "true",
-    matchIfMissing = true
+    matchIfMissing = false
 )
 public class ElasticsearchStatisticsService {
 

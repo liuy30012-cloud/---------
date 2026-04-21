@@ -1,5 +1,8 @@
 package com.library.service.elasticsearch;
 
+import co.elastic.clients.elasticsearch._types.query_dsl.MultiMatchQuery;
+import co.elastic.clients.elasticsearch._types.query_dsl.Query;
+import co.elastic.clients.elasticsearch._types.query_dsl.TextQueryType;
 import com.library.document.BookDocument;
 import com.library.repository.BookDocumentRepository;
 import lombok.RequiredArgsConstructor;
@@ -14,18 +17,11 @@ import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.stereotype.Service;
 
-import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
-import co.elastic.clients.elasticsearch._types.query_dsl.MultiMatchQuery;
-import co.elastic.clients.elasticsearch._types.query_dsl.PrefixQuery;
-import co.elastic.clients.elasticsearch._types.query_dsl.Query;
-
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
-/**
- * Elasticsearch 搜索服务
- * 提供搜索建议和全文搜索功能
- */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -33,91 +29,59 @@ import java.util.stream.Collectors;
     prefix = "library.search.elasticsearch",
     name = "enabled",
     havingValue = "true",
-    matchIfMissing = true
+    matchIfMissing = false
 )
 public class ElasticsearchSearchService {
+
+    private static final List<String> SEARCH_FIELDS = List.of(
+        "title^4",
+        "author^3",
+        "description^2",
+        "isbn"
+    );
+
+    private static final List<String> SUGGESTION_FIELDS = List.of(
+        "title^4",
+        "author^3",
+        "description^2"
+    );
 
     private final ElasticsearchOperations elasticsearchOperations;
     private final BookDocumentRepository bookDocumentRepository;
 
-    /**
-     * 获取搜索建议（基于前缀匹配）
-     *
-     * @param prefix 搜索前缀
-     * @param limit 返回数量限制
-     * @return 建议列表
-     */
     public List<String> getSuggestions(String prefix, int limit) {
         if (prefix == null || prefix.trim().isEmpty() || prefix.length() < 2) {
             return List.of();
         }
 
         try {
-            String normalizedPrefix = prefix.trim().toLowerCase();
-
-            // 使用 prefix query 在 title 和 author 字段上进行前缀匹配
-            Query titlePrefixQuery = Query.of(q -> q
-                .prefix(PrefixQuery.of(p -> p
-                    .field("title")
-                    .value(normalizedPrefix)
-                ))
-            );
-
-            Query authorPrefixQuery = Query.of(q -> q
-                .prefix(PrefixQuery.of(p -> p
-                    .field("author.keyword")
-                    .value(normalizedPrefix)
-                ))
-            );
-
-            Query boolQuery = Query.of(q -> q
-                .bool(BoolQuery.of(b -> b
-                    .should(titlePrefixQuery)
-                    .should(authorPrefixQuery)
-                    .minimumShouldMatch("1")
-                ))
-            );
-
+            String normalizedPrefix = prefix.trim();
             NativeQuery searchQuery = NativeQuery.builder()
-                .withQuery(boolQuery)
+                .withQuery(buildSuggestionQuery(normalizedPrefix))
                 .withMaxResults(limit)
                 .build();
 
-            SearchHits<BookDocument> searchHits = elasticsearchOperations.search(
-                searchQuery,
-                BookDocument.class
-            );
+            SearchHits<BookDocument> searchHits = elasticsearchOperations.search(searchQuery, BookDocument.class);
 
-            // 提取书名和作者作为建议
-            return searchHits.getSearchHits().stream()
-                .map(SearchHit::getContent)
-                .flatMap(doc -> {
-                    List<String> suggestions = new java.util.ArrayList<>();
-                    if (doc.getTitle() != null && doc.getTitle().toLowerCase().contains(normalizedPrefix)) {
-                        suggestions.add(doc.getTitle());
-                    }
-                    if (doc.getAuthor() != null && doc.getAuthor().toLowerCase().contains(normalizedPrefix)) {
-                        suggestions.add(doc.getAuthor());
-                    }
-                    return suggestions.stream();
-                })
-                .distinct()
-                .limit(limit)
-                .collect(Collectors.toList());
+            LinkedHashSet<String> suggestions = new LinkedHashSet<>();
+            String loweredPrefix = normalizedPrefix.toLowerCase(Locale.ROOT);
 
+            for (SearchHit<BookDocument> hit : searchHits.getSearchHits()) {
+                BookDocument document = hit.getContent();
+                addSuggestionIfRelevant(suggestions, document.getTitle(), loweredPrefix);
+                addSuggestionIfRelevant(suggestions, document.getAuthor(), loweredPrefix);
+                if (suggestions.size() >= limit) {
+                    break;
+                }
+            }
+
+            return suggestions.stream().limit(limit).toList();
         } catch (Exception e) {
-            log.error("Failed to get suggestions from Elasticsearch for prefix: {}", prefix, e);
+            log.error("Failed to get Elasticsearch suggestions for prefix {}", prefix, e);
             throw new RuntimeException("Elasticsearch suggestion query failed", e);
         }
     }
 
-    /**
-     * 全文搜索
-     *
-     * @param keyword 搜索关键词
-     * @param pageable 分页参数
-     * @return 搜索结果分页
-     */
     public Page<BookDocument> search(String keyword, Pageable pageable) {
         if (keyword == null || keyword.trim().isEmpty()) {
             return Page.empty(pageable);
@@ -125,46 +89,23 @@ public class ElasticsearchSearchService {
 
         try {
             String normalizedKeyword = keyword.trim();
-
-            // 使用 multi_match 在多个字段上进行全文搜索
-            Query multiMatchQuery = Query.of(q -> q
-                .multiMatch(MultiMatchQuery.of(m -> m
-                    .query(normalizedKeyword)
-                    .fields("title^3", "author^2", "description", "isbn")
-                    .type(co.elastic.clients.elasticsearch._types.query_dsl.TextQueryType.BestFields)
-                    .fuzziness("AUTO")
-                ))
-            );
-
             NativeQuery searchQuery = NativeQuery.builder()
-                .withQuery(multiMatchQuery)
+                .withQuery(buildSearchQuery(normalizedKeyword))
                 .withPageable(pageable)
                 .build();
 
-            SearchHits<BookDocument> searchHits = elasticsearchOperations.search(
-                searchQuery,
-                BookDocument.class
-            );
-
+            SearchHits<BookDocument> searchHits = elasticsearchOperations.search(searchQuery, BookDocument.class);
             List<BookDocument> content = searchHits.getSearchHits().stream()
                 .map(SearchHit::getContent)
                 .collect(Collectors.toList());
 
-            return new PageImpl<>(
-                content,
-                pageable,
-                searchHits.getTotalHits()
-            );
-
+            return new PageImpl<>(content, pageable, searchHits.getTotalHits());
         } catch (Exception e) {
-            log.error("Failed to search from Elasticsearch for keyword: {}", keyword, e);
+            log.error("Failed to search Elasticsearch for keyword {}", keyword, e);
             throw new RuntimeException("Elasticsearch search query failed", e);
         }
     }
 
-    /**
-     * 检查 Elasticsearch 是否可用
-     */
     public boolean isAvailable() {
         try {
             bookDocumentRepository.count();
@@ -172,6 +113,34 @@ public class ElasticsearchSearchService {
         } catch (Exception e) {
             log.warn("Elasticsearch is not available: {}", e.getMessage());
             return false;
+        }
+    }
+
+    Query buildSuggestionQuery(String prefix) {
+        return Query.of(q -> q.multiMatch(MultiMatchQuery.of(m -> m
+            .query(prefix)
+            .fields(SUGGESTION_FIELDS)
+            .type(TextQueryType.BoolPrefix)
+        )));
+    }
+
+    Query buildSearchQuery(String keyword) {
+        return Query.of(q -> q.multiMatch(MultiMatchQuery.of(m -> m
+            .query(keyword)
+            .fields(SEARCH_FIELDS)
+            .type(TextQueryType.BestFields)
+            .fuzziness("AUTO")
+        )));
+    }
+
+    private void addSuggestionIfRelevant(LinkedHashSet<String> suggestions, String candidate, String loweredPrefix) {
+        if (candidate == null || candidate.isBlank()) {
+            return;
+        }
+
+        String normalizedCandidate = candidate.toLowerCase(Locale.ROOT);
+        if (normalizedCandidate.contains(loweredPrefix)) {
+            suggestions.add(candidate.trim());
         }
     }
 }

@@ -1164,4 +1164,8 @@ onUnmounted(() => {
     height: 35vh;
   }
 }
+.moon-wrapper,
+.moonlight-path {
+  display: none !important;
+}
 </style>

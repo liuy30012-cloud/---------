@@ -15,9 +15,11 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -89,5 +91,24 @@ class BookControllerAdminTest {
                 .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
                 .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser(authorities = "ROLE_ADMIN")
+    void testImportBooks_Success() throws Exception {
+        String csv = String.join("\n",
+            "title,author,isbn,location,coverUrl,status,year,description,languageCode,availability,category,circulationPolicy,totalCopies",
+            "Import Test Book,Import Author,9781111111111,A区>1层>测试>001,https://covers.openlibrary.org/b/olid/OL1M-M.jpg?default=false,AVAILABLE,2024,Imported for integration testing,en,Available,测试,MANUAL,3"
+        );
+
+        MockMultipartFile file = new MockMultipartFile("file", "books.csv", "text/csv", csv.getBytes());
+
+        mockMvc.perform(multipart("/api/books/import")
+                .file(file)
+                .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.success").value(true))
+            .andExpect(jsonPath("$.data.successCount").value(1))
+            .andExpect(jsonPath("$.data.failedCount").value(0));
     }
 }

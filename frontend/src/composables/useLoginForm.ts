@@ -1,10 +1,11 @@
 import { ref, reactive, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useUserStore } from '../stores/user'
 
 export function useLoginForm() {
   const router = useRouter()
+  const route = useRoute()
   const userStore = useUserStore()
   const { t } = useI18n()
 
@@ -244,8 +245,11 @@ export function useLoginForm() {
         )
 
         if (result.success) {
+          const redirectTarget = typeof route.query.redirect === 'string' ? route.query.redirect : '/'
           triggerCelebration()
-          setTimeout(() => router.push('/'), 800)
+          setTimeout(() => {
+            router.push(redirectTarget).catch(() => router.push('/'))
+          }, 800)
         } else {
           errorMessage.value = result.message
           triggerShake()

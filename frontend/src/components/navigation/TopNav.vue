@@ -12,16 +12,49 @@
           </div>
         </RouterLink>
 
-        <div ref="linksRef" class="nav-links">
-          <RouterLink
-            v-for="item in visibleNavItems"
-            :key="item.name"
-            :to="item.to"
-            class="nav-link"
-            :class="{ active: isActive(item) }"
+        <div
+          class="nav-links-shell"
+          :class="{
+            'nav-links-shell--active': showNavScrollControls,
+            'nav-links-shell--left': canScrollNavLeft,
+            'nav-links-shell--right': canScrollNavRight,
+          }"
+        >
+          <button
+            v-show="showNavScrollControls"
+            type="button"
+            class="nav-scroll-btn nav-scroll-btn--left"
+            :class="{ 'is-disabled': !canScrollNavLeft }"
+            :disabled="!canScrollNavLeft"
+            :aria-label="navScrollLabels.left"
+            @click="scrollNavLinks('left')"
           >
-            {{ item.label }}
-          </RouterLink>
+            <span class="material-symbols-outlined">chevron_left</span>
+          </button>
+
+          <div ref="linksRef" class="nav-links" @scroll.passive="syncNavScrollState">
+            <RouterLink
+              v-for="item in visibleNavItems"
+              :key="item.name"
+              :to="item.to"
+              class="nav-link"
+              :class="{ active: isActive(item) }"
+            >
+              {{ item.label }}
+            </RouterLink>
+          </div>
+
+          <button
+            v-show="showNavScrollControls"
+            type="button"
+            class="nav-scroll-btn nav-scroll-btn--right"
+            :class="{ 'is-disabled': !canScrollNavRight }"
+            :disabled="!canScrollNavRight"
+            :aria-label="navScrollLabels.right"
+            @click="scrollNavLinks('right')"
+          >
+            <span class="material-symbols-outlined">chevron_right</span>
+          </button>
         </div>
       </div>
 
@@ -215,7 +248,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, onMounted, onUnmounted, ref } from 'vue'
+import { computed, inject, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { gsap, prefersReducedMotion } from '../../motion'
@@ -240,6 +273,9 @@ const linksRef = ref<HTMLElement | null>(null)
 const actionsRef = ref<HTMLElement | null>(null)
 const avatarRef = ref<HTMLElement | null>(null)
 const isScrolled = ref(false)
+const showNavScrollControls = ref(false)
+const canScrollNavLeft = ref(false)
+const canScrollNavRight = ref(false)
 
 const navItems = computed(() => [
     { name: 'Home', to: '/', label: t('nav.home') },
@@ -266,6 +302,18 @@ const visibleNavItems = computed(() => navItems.value.filter((item) => {
   return true
 }))
 
+const navScrollLabels = computed(() => (
+  locale.value === 'en'
+    ? {
+        left: 'Scroll navigation left',
+        right: 'Scroll navigation right',
+      }
+    : {
+        left: '向左滑动导航',
+        right: '向右滑动导航',
+      }
+))
+
 const notifPanelRef = ref<HTMLElement | null>(null)
 const historyPanelRef = ref<HTMLElement | null>(null)
 const notifBtnRef = ref<HTMLElement | null>(null)
@@ -291,8 +339,54 @@ const toggleLang = () => {
 
 let scrollTicking = false
 
+const scheduleNavScrollSync = () => {
+  if (typeof window === 'undefined') {
+    return
+  }
+
+  window.requestAnimationFrame(() => {
+    syncNavScrollState()
+  })
+}
+
 const updateScrollState = () => {
   isScrolled.value = typeof window !== 'undefined' && window.scrollY > 24
+}
+
+const syncNavScrollState = () => {
+  const linksEl = linksRef.value
+  if (!linksEl || typeof window === 'undefined' || window.innerWidth < 768) {
+    showNavScrollControls.value = false
+    canScrollNavLeft.value = false
+    canScrollNavRight.value = false
+    return
+  }
+
+  const overflowAmount = linksEl.scrollWidth - linksEl.clientWidth
+  const hasOverflow = overflowAmount > 12
+  showNavScrollControls.value = hasOverflow
+
+  if (!hasOverflow) {
+    canScrollNavLeft.value = false
+    canScrollNavRight.value = false
+    return
+  }
+
+  canScrollNavLeft.value = linksEl.scrollLeft > 6
+  canScrollNavRight.value = linksEl.scrollLeft < overflowAmount - 6
+}
+
+const scrollNavLinks = (direction: 'left' | 'right') => {
+  const linksEl = linksRef.value
+  if (!linksEl) {
+    return
+  }
+
+  const distance = Math.max(linksEl.clientWidth * 0.72, 180)
+  linksEl.scrollBy({
+    left: direction === 'left' ? -distance : distance,
+    behavior: 'smooth',
+  })
 }
 
 const handleWindowScroll = () => {
@@ -303,6 +397,10 @@ const handleWindowScroll = () => {
     updateScrollState()
     scrollTicking = false
   })
+}
+
+const handleWindowResize = () => {
+  scheduleNavScrollSync()
 }
 
 const animateNavEntrance = () => {
@@ -425,11 +523,26 @@ onMounted(() => {
   document.addEventListener('click', handleClickOutside)
   updateScrollState()
   window.addEventListener('scroll', handleWindowScroll, { passive: true })
+  window.addEventListener('resize', handleWindowResize, { passive: true })
+  nextTick(() => {
+    scheduleNavScrollSync()
+  })
   window.requestAnimationFrame(animateNavEntrance)
 })
 
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
   window.removeEventListener('scroll', handleWindowScroll)
+  window.removeEventListener('resize', handleWindowResize)
 })
+
+watch(
+  [visibleNavItems, () => route.fullPath, locale],
+  () => {
+    nextTick(() => {
+      scheduleNavScrollSync()
+    })
+  },
+  { deep: true },
+)
 </script>

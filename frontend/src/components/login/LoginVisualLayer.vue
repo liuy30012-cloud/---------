@@ -56,9 +56,10 @@
   <div class="book-pages">
     <div
       v-for="page in props.bookPages"
-      :key="page.id"
+      :key="page.renderKey"
       class="book-page"
       :style="page.style"
+      @animationend="handlePageAnimationEnd(page.id)"
     >
       <div class="page-title">{{ page.title }}</div>
       <div class="page-author">{{ page.author }}</div>
@@ -82,6 +83,7 @@ interface FloatingIcon extends PositionedVisual {
 }
 
 interface BookPage extends PositionedVisual {
+  renderKey: number
   title: string
   author: string
   poem: string
@@ -98,7 +100,15 @@ const props = defineProps<{
   inkDots: PositionedVisual[]
 }>()
 
+const emit = defineEmits<{
+  pageAnimationEnd: [pageId: number]
+}>()
+
 void props.floatingIcons
+
+function handlePageAnimationEnd(pageId: number) {
+  emit('pageAnimationEnd', pageId)
+}
 </script>
 
 <style scoped>
@@ -294,29 +304,59 @@ void props.floatingIcons
   inset: 0;
   z-index: 4;
   pointer-events: none;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .book-page {
   position: absolute;
-  top: -20%;
+  top: -300px;
   background: linear-gradient(135deg, rgba(250, 245, 235, 0.95) 0%, rgba(245, 238, 220, 0.92) 100%);
   border: 1px solid rgba(180, 160, 130, 0.3);
-  border-radius: 4px;
-  padding: 16px 12px;
+  border-radius: 0;
+  padding: 16px 20px;
   box-shadow:
     0 4px 12px rgba(0, 0, 0, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.5);
-  writing-mode: vertical-rl;
-  text-orientation: upright;
+  writing-mode: horizontal-tb;
   font-family: 'KaiTi', 'STKaiti', serif;
   animation: bookPageFall var(--duration, 30s) linear var(--delay, 0s) forwards;
-  transform: rotate(var(--rot-start, 0deg));
   will-change: transform, top;
+  pointer-events: auto;
+  cursor: text;
+  user-select: text;
+  translate: 0 0;
+  scale: 1;
+  transition:
+    box-shadow 0.3s ease,
+    border-color 0.3s ease,
+    translate 0.28s ease,
+    scale 0.28s ease;
+}
+
+.book-page:hover {
+  animation-play-state: paused;
+  translate: 0 -14px;
+  scale: 1.03;
+  border-color: rgba(156, 126, 84, 0.38);
+  box-shadow:
+    0 22px 42px rgba(72, 58, 36, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  z-index: 18;
+}
+
+.book-page:focus-within {
+  animation-play-state: paused;
+  translate: 0 -14px;
+  scale: 1.03;
+  border-color: rgba(156, 126, 84, 0.38);
+  box-shadow:
+    0 22px 42px rgba(72, 58, 36, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  z-index: 18;
 }
 
 .page-title {
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 600;
   color: rgba(100, 80, 60, 0.9);
   margin-bottom: 8px;
@@ -324,24 +364,32 @@ void props.floatingIcons
 }
 
 .page-author {
-  font-size: 9px;
+  font-size: 11px;
   color: rgba(120, 100, 80, 0.75);
   margin-bottom: 12px;
   letter-spacing: 1px;
 }
 
 .page-poem {
-  font-size: var(--poem-font-size, 10px);
+  font-size: var(--poem-font-size, 12px);
   line-height: 1.8;
   color: rgba(80, 70, 60, 0.85);
   letter-spacing: 1px;
-  white-space: pre-line;
+  white-space: pre-wrap;
+  word-break: break-all;
+  overflow-wrap: anywhere;
+}
+
+.book-page:hover .page-title,
+.book-page:hover .page-author,
+.book-page:hover .page-poem {
+  color: rgba(54, 43, 28, 0.96);
 }
 
 @keyframes bookPageFall {
   0% {
-    top: -20%;
-    transform: rotate(var(--rot-start, 0deg)) translateX(0);
+    top: -300px;
+    transform: translateX(0);
     opacity: 0;
   }
 
@@ -349,17 +397,30 @@ void props.floatingIcons
     opacity: 1;
   }
 
-  50% {
-    transform: rotate(var(--rot-mid, 180deg)) translateX(var(--sway, 30px));
+  20% {
+    transform: translateX(var(--sway, 30px));
+  }
+
+  40% {
+    transform: translateX(calc(var(--sway, 30px) * -0.8));
+  }
+
+  60% {
+    transform: translateX(calc(var(--sway, 30px) * 0.6));
+  }
+
+  80% {
+    transform: translateX(calc(var(--sway, 30px) * -0.4));
   }
 
   95% {
     opacity: 1;
+    transform: translateX(0);
   }
 
   100% {
-    top: 120%;
-    transform: rotate(var(--rot-end, 360deg)) translateX(0);
+    top: calc(100vh + 300px);
+    transform: translateX(0);
     opacity: 0;
   }
 }

@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.Set;
 import java.util.HashSet;
 
+import static com.library.util.BookImportSupport.normalizeIsbn;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -227,13 +229,18 @@ public class BookService {
                 // 验证图书数据
                 validateBook(book);
 
+                String normalizedIsbn = normalizeIsbn(book.getIsbn());
+                if (normalizedIsbn.isEmpty()) {
+                    throw new IllegalArgumentException("ISBN is missing after normalization.");
+                }
+
                 // 检查当前批次中是否有重复的 ISBN
-                if (processedIsbns.contains(book.getIsbn())) {
+                if (processedIsbns.contains(normalizedIsbn)) {
                     throw new IllegalArgumentException("ISBN 在当前批次中重复。");
                 }
 
                 // 检查数据库中是否已存在该 ISBN
-                if (bookRepository.findByIsbn(book.getIsbn()).isPresent()) {
+                if (bookRepository.findFirstByNormalizedIsbn(normalizedIsbn).isPresent()) {
                     throw new IllegalArgumentException("ISBN 已存在于数据库中。");
                 }
 
@@ -243,7 +250,7 @@ public class BookService {
 
                 // 创建图书
                 createBook(book);
-                processedIsbns.add(book.getIsbn());
+                processedIsbns.add(normalizedIsbn);
                 successCount++;
             } catch (Exception e) {
                 failedCount++;

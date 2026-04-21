@@ -166,12 +166,35 @@ function setupReveal(el: ManagedRevealElement, optionsValue?: RevealPreset | Rev
     return
   }
 
+  if (!(el instanceof HTMLElement) || !el.isConnected) {
+    return
+  }
+
   resetRevealElement(el)
   el.__revealSignature__ = signature
   el.classList.add('motion-reveal', `motion-reveal--${options.preset}`)
 
   if (prefersReducedMotion()) {
     applyReducedMotionState(el)
+    return
+  }
+
+  if (el.offsetParent === null) {
+    requestAnimationFrame(() => {
+      if (el.offsetParent === null) {
+        applyReducedMotionState(el)
+        return
+      }
+      setupRevealWithScroll(el, options, signature)
+    })
+    return
+  }
+
+  setupRevealWithScroll(el, options, signature)
+}
+
+function setupRevealWithScroll(el: ManagedRevealElement, options: Required<RevealDirectiveValue>, signature: string) {
+  if (el.__revealSignature__ === signature) {
     return
   }
 

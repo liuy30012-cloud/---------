@@ -280,172 +280,178 @@ onMounted(() => {
     return
   }
 
-  const context = gsap.context(() => {
-    const railCards = gsap.utils.toArray<HTMLElement>('.hero-rail-card')
-    const metaCards = gsap.utils.toArray<HTMLElement>('.hero-meta-card')
-    const titleTargets = [copyRef.value, ...metaCards, searchPanelRef.value].filter(Boolean)
+  requestAnimationFrame(() => {
+    if (!heroRef.value) return
 
-    gsap.set(titleTargets, { willChange: 'transform, opacity, filter' })
+    const context = gsap.context(() => {
+      const railCards = gsap.utils.toArray<HTMLElement>('.hero-rail-card').filter(el => el instanceof HTMLElement && el.isConnected)
+      const metaCards = gsap.utils.toArray<HTMLElement>('.hero-meta-card').filter(el => el instanceof HTMLElement && el.isConnected)
+      const titleTargets = [copyRef.value, ...metaCards, searchPanelRef.value].filter(Boolean)
 
-    const enterTimeline = gsap.timeline({
-      defaults: {
-        ease: 'power3.out',
-      },
-    })
+      if (titleTargets.length > 0) {
+        gsap.set(titleTargets, { willChange: 'transform, opacity, filter' })
+      }
 
-    enterTimeline
-      .fromTo(
-        railCards,
-        {
-          autoAlpha: 0,
-          x: -24,
-          y: 18,
-          filter: 'blur(14px)',
-        },
-        {
-          autoAlpha: 1,
-          x: 0,
-          y: 0,
-          filter: 'blur(0px)',
-          duration: 0.7,
-          stagger: 0.08,
-          clearProps: 'filter',
-        }
-      )
-      .fromTo(
-        copyRef.value,
-        {
-          autoAlpha: 0,
-          y: 34,
-          filter: 'blur(16px)',
-        },
-        {
-          autoAlpha: 1,
-          y: 0,
-          filter: 'blur(0px)',
-          duration: 0.8,
-          clearProps: 'filter',
-        },
-        0.12
-      )
-      .fromTo(
-        metaCards,
-        {
-          autoAlpha: 0,
-          y: 22,
-          filter: 'blur(12px)',
-        },
-        {
-          autoAlpha: 1,
-          y: 0,
-          filter: 'blur(0px)',
-          duration: 0.56,
-          stagger: 0.08,
-          clearProps: 'filter',
-        },
-        0.3
-      )
-      .fromTo(
-        searchPanelRef.value,
-        {
-          autoAlpha: 0,
-          y: 24,
-          filter: 'blur(14px)',
-        },
-        {
-          autoAlpha: 1,
-          y: 0,
-          filter: 'blur(0px)',
-          duration: 0.62,
-          clearProps: 'filter',
-        },
-        0.42
-      )
-
-    if (landscapeRef.value) {
-      gsap.to(landscapeRef.value, {
-        yPercent: -6,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: heroRef.value,
-          start: 'top top',
-          end: 'bottom top',
-          scrub: 0.65,
+      const enterTimeline = gsap.timeline({
+        defaults: {
+          ease: 'power3.out',
         },
       })
-    }
 
-    if (leftBambooRef.value) {
-      gsap.to(leftBambooRef.value, {
-        yPercent: -8,
-        xPercent: -2,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: heroRef.value,
-          start: 'top top',
-          end: 'bottom top',
-          scrub: 0.5,
-        },
-      })
-    }
+      enterTimeline
+        .fromTo(
+          railCards,
+          {
+            autoAlpha: 0,
+            x: -24,
+            y: 18,
+            filter: 'blur(14px)',
+          },
+          {
+            autoAlpha: 1,
+            x: 0,
+            y: 0,
+            filter: 'blur(0px)',
+            duration: 0.7,
+            stagger: 0.08,
+            clearProps: 'filter',
+          }
+        )
+        .fromTo(
+          copyRef.value,
+          {
+            autoAlpha: 0,
+            y: 34,
+            filter: 'blur(16px)',
+          },
+          {
+            autoAlpha: 1,
+            y: 0,
+            filter: 'blur(0px)',
+            duration: 0.8,
+            clearProps: 'filter',
+          },
+          0.12
+        )
+        .fromTo(
+          metaCards,
+          {
+            autoAlpha: 0,
+            y: 22,
+            filter: 'blur(12px)',
+          },
+          {
+            autoAlpha: 1,
+            y: 0,
+            filter: 'blur(0px)',
+            duration: 0.56,
+            stagger: 0.08,
+            clearProps: 'filter',
+          },
+          0.3
+        )
+        .fromTo(
+          searchPanelRef.value,
+          {
+            autoAlpha: 0,
+            y: 24,
+            filter: 'blur(14px)',
+          },
+          {
+            autoAlpha: 1,
+            y: 0,
+            filter: 'blur(0px)',
+            duration: 0.62,
+            clearProps: 'filter',
+          },
+          0.42
+        )
 
-    if (rightBambooRef.value) {
-      gsap.to(rightBambooRef.value, {
-        yPercent: -6,
-        xPercent: 2,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: heroRef.value,
-          start: 'top top',
-          end: 'bottom top',
-          scrub: 0.48,
-        },
-      })
-    }
+      if (landscapeRef.value) {
+        gsap.to(landscapeRef.value, {
+          yPercent: -6,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: heroRef.value,
+            start: 'top top',
+            end: 'bottom top',
+            scrub: 0.65,
+          },
+        })
+      }
 
-    if (mistBackRef.value) {
-      gsap.to(mistBackRef.value, {
-        yPercent: -10,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: heroRef.value,
-          start: 'top top',
-          end: 'bottom top',
-          scrub: 0.7,
-        },
-      })
-    }
+      if (leftBambooRef.value) {
+        gsap.to(leftBambooRef.value, {
+          yPercent: -8,
+          xPercent: -2,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: heroRef.value,
+            start: 'top top',
+            end: 'bottom top',
+            scrub: 0.5,
+          },
+        })
+      }
 
-    if (mistMidRef.value) {
-      gsap.to(mistMidRef.value, {
-        yPercent: -6,
-        xPercent: 2,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: heroRef.value,
-          start: 'top top',
-          end: 'bottom top',
-          scrub: 0.6,
-        },
-      })
-    }
+      if (rightBambooRef.value) {
+        gsap.to(rightBambooRef.value, {
+          yPercent: -6,
+          xPercent: 2,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: heroRef.value,
+            start: 'top top',
+            end: 'bottom top',
+            scrub: 0.48,
+          },
+        })
+      }
 
-    if (mistFrontRef.value) {
-      gsap.to(mistFrontRef.value, {
-        yPercent: -14,
-        xPercent: -2,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: heroRef.value,
-          start: 'top top',
-          end: 'bottom top',
-          scrub: 0.72,
-        },
-      })
-    }
-  }, heroRef)
+      if (mistBackRef.value) {
+        gsap.to(mistBackRef.value, {
+          yPercent: -10,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: heroRef.value,
+            start: 'top top',
+            end: 'bottom top',
+            scrub: 0.7,
+          },
+        })
+      }
 
-  cleanupMotion = () => context.revert()
+      if (mistMidRef.value) {
+        gsap.to(mistMidRef.value, {
+          yPercent: -6,
+          xPercent: 2,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: heroRef.value,
+            start: 'top top',
+            end: 'bottom top',
+            scrub: 0.6,
+          },
+        })
+      }
+
+      if (mistFrontRef.value) {
+        gsap.to(mistFrontRef.value, {
+          yPercent: -14,
+          xPercent: -2,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: heroRef.value,
+            start: 'top top',
+            end: 'bottom top',
+            scrub: 0.72,
+          },
+        })
+      }
+    }, heroRef.value)
+
+    cleanupMotion = () => context.revert()
+  })
 })
 
 onUnmounted(() => {

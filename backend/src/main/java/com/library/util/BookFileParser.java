@@ -3,7 +3,14 @@ package com.library.util;
 import com.library.model.Book;
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvException;
-import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.FormulaEvaluator;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -12,190 +19,159 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
-public class BookFileParser {
+public final class BookFileParser {
 
-    private static final String[] REQUIRED_HEADERS = {"title", "author", "isbn", "location"};
+    private BookFileParser() {
+    }
 
     public static List<Book> parseExcel(MultipartFile file) throws IOException {
         List<Book> books = new ArrayList<>();
 
         try (Workbook workbook = new XSSFWorkbook(file.getInputStream())) {
             Sheet sheet = workbook.getSheetAt(0);
+            DataFormatter dataFormatter = new DataFormatter();
+            FormulaEvaluator evaluator = workbook.getCreationHelper().createFormulaEvaluator();
 
             if (sheet.getPhysicalNumberOfRows() < 2) {
-                throw new IllegalArgumentException("Excel文件至少需要包含表头和一行数据");
+                throw new IllegalArgumentException("Excel file must contain a header row and at least one data row.");
             }
 
-            Row headerRow = sheet.getRow(0);
-            validateHeaders(headerRow);
+            Map<String, Integer> headerIndexes = readExcelHeaderIndexes(
+                sheet.getRow(0),
+                dataFormatter,
+                evaluator
+            );
 
             for (int i = 1; i <= sheet.getLastRowNum(); i++) {
                 Row row = sheet.getRow(i);
-                if (row == null || isEmptyRow(row)) {
+                if (row == null || isEmptyRow(row, dataFormatter, evaluator)) {
                     continue;
                 }
 
-                Book book = parseExcelRow(row);
-                books.add(book);
+                books.add(parseExcelRow(row, headerIndexes, dataFormatter, evaluator));
             }
         }
 
         return books;
-    }
-
-    private static void validateHeaders(Row headerRow) {
-        if (headerRow == null) {
-            throw new IllegalArgumentException("Excel文件缺少表头行");
-        }
-
-        List<String> headers = new ArrayList<>();
-        for (Cell cell : headerRow) {
-            String header = getCellValueAsString(cell).toLowerCase().trim();
-            headers.add(header);
-        }
-
-        for (String required : REQUIRED_HEADERS) {
-            if (!headers.contains(required)) {
-                throw new IllegalArgumentException("Excel文件缺少必需列: " + required);
-            }
-        }
-    }
-
-    private static Book parseExcelRow(Row row) {
-        Book book = new Book();
-
-        book.setTitle(getCellValueAsString(row.getCell(0)));
-        book.setAuthor(getCellValueAsString(row.getCell(1)));
-        book.setIsbn(getCellValueAsString(row.getCell(2)));
-        book.setLocation(getCellValueAsString(row.getCell(3)));
-
-        String circulationPolicy = getCellValueAsString(row.getCell(4));
-        book.setCirculationPolicy(circulationPolicy.isEmpty() ? Book.CirculationPolicy.AUTO : Book.CirculationPolicy.valueOf(circulationPolicy));
-
-        String totalCopiesStr = getCellValueAsString(row.getCell(12));
-        if (totalCopiesStr != null && !totalCopiesStr.isEmpty()) {
-            try {
-                book.setTotalCopies(Integer.parseInt(totalCopiesStr));
-            } catch (NumberFormatException e) {
-                book.setTotalCopies(1);
-            }
-        } else {
-            book.setTotalCopies(1);
-        }
-        book.setAvailableCopies(book.getTotalCopies());
-        book.setBorrowedCount(0);
-
-        return book;
-    }
-
-    private static boolean isEmptyRow(Row row) {
-        for (Cell cell : row) {
-            if (cell != null && cell.getCellType() != CellType.BLANK) {
-                String value = getCellValueAsString(cell);
-                if (!value.trim().isEmpty()) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
-    private static String getCellValueAsString(Cell cell) {
-        if (cell == null) {
-            return "";
-        }
-
-        return switch (cell.getCellType()) {
-            case STRING -> cell.getStringCellValue();
-            case NUMERIC -> {
-                if (DateUtil.isCellDateFormatted(cell)) {
-                    yield cell.getDateCellValue().toString();
-                } else {
-                    double numericValue = cell.getNumericCellValue();
-                    if (numericValue == (long) numericValue) {
-                        yield String.valueOf((long) numericValue);
-                    } else {
-                        yield String.valueOf(numericValue);
-                    }
-                }
-            }
-            case BOOLEAN -> String.valueOf(cell.getBooleanCellValue());
-            case FORMULA -> cell.getCellFormula();
-            default -> "";
-        };
     }
 
     public static List<Book> parseCsv(MultipartFile file) throws IOException, CsvException {
         List<Book> books = new ArrayList<>();
 
         try (CSVReader csvReader = new CSVReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
-            List<String[]> allRows = csvReader.readAll();
-
-            if (allRows.size() < 2) {
-                throw new IllegalArgumentException("CSV文件至少需要包含表头和一行数据");
+            String[] headerRow = csvReader.readNext();
+            if (headerRow == null) {
+                throw new IllegalArgumentException("CSV file must contain a header row.");
             }
 
-            String[] headers = allRows.get(0);
-            validateCsvHeaders(headers);
+            Map<String, Integer> headerIndexes = BookImportSupport.buildHeaderIndexes(Arrays.asList(headerRow));
+            BookImportSupport.validateHeaders(headerIndexes.keySet());
 
-            for (int i = 1; i < allRows.size(); i++) {
-                String[] row = allRows.get(i);
+            String[] row;
+            while ((row = csvReader.readNext()) != null) {
                 if (isEmptyCsvRow(row)) {
                     continue;
                 }
 
-                Book book = parseCsvRow(row);
-                books.add(book);
+                books.add(BookImportSupport.parseBook(BookImportSupport.toRowMap(row, headerIndexes)));
             }
         }
 
         return books;
     }
 
-    private static void validateCsvHeaders(String[] headers) {
-        if (headers == null || headers.length == 0) {
-            throw new IllegalArgumentException("CSV文件缺少表头行");
-        }
+    public static byte[] generateTemplate() throws IOException {
+        try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            Sheet sheet = workbook.createSheet("book_import_template");
 
-        List<String> headerList = new ArrayList<>();
-        for (String header : headers) {
-            headerList.add(header.toLowerCase().trim());
-        }
+            CellStyle headerStyle = workbook.createCellStyle();
+            Font headerFont = workbook.createFont();
+            headerFont.setBold(true);
+            headerStyle.setFont(headerFont);
 
-        for (String required : REQUIRED_HEADERS) {
-            if (!headerList.contains(required)) {
-                throw new IllegalArgumentException("CSV文件缺少必需列: " + required);
+            Row headerRow = sheet.createRow(0);
+            for (int i = 0; i < BookImportSupport.TEMPLATE_HEADERS.size(); i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(BookImportSupport.TEMPLATE_HEADERS.get(i));
+                cell.setCellStyle(headerStyle);
+                sheet.setColumnWidth(i, 6_000);
             }
+
+            Row exampleRow = sheet.createRow(1);
+            String[] exampleData = {
+                "Thinking in Java",
+                "Bruce Eckel",
+                "9780131872486",
+                "A区>1层>计算机>001",
+                "https://covers.openlibrary.org/b/olid/OL7440033M-M.jpg?default=false",
+                "AVAILABLE",
+                "2006",
+                "Classic introduction to Java programming.",
+                "en",
+                "Available",
+                "计算机",
+                "AUTO",
+                "5"
+            };
+
+            for (int i = 0; i < exampleData.length; i++) {
+                exampleRow.createCell(i).setCellValue(exampleData[i]);
+            }
+
+            workbook.write(out);
+            return out.toByteArray();
         }
     }
 
-    private static Book parseCsvRow(String[] row) {
-        Book book = new Book();
-
-        book.setTitle(getValueOrNull(row, 0));
-        book.setAuthor(getValueOrNull(row, 1));
-        book.setIsbn(getValueOrNull(row, 2));
-        book.setLocation(getValueOrNull(row, 3));
-
-        String circulationPolicy = getValueOrNull(row, 4);
-        book.setCirculationPolicy(circulationPolicy == null || circulationPolicy.isEmpty() ? Book.CirculationPolicy.AUTO : Book.CirculationPolicy.valueOf(circulationPolicy));
-
-        String totalCopiesStr = getValueOrNull(row, 12);
-        if (totalCopiesStr != null && !totalCopiesStr.isEmpty()) {
-            try {
-                book.setTotalCopies(Integer.parseInt(totalCopiesStr));
-            } catch (NumberFormatException e) {
-                book.setTotalCopies(1);
-            }
-        } else {
-            book.setTotalCopies(1);
+    private static Map<String, Integer> readExcelHeaderIndexes(
+        Row headerRow,
+        DataFormatter dataFormatter,
+        FormulaEvaluator evaluator
+    ) {
+        if (headerRow == null) {
+            throw new IllegalArgumentException("Excel file is missing a header row.");
         }
-        book.setAvailableCopies(book.getTotalCopies());
-        book.setBorrowedCount(0);
 
-        return book;
+        List<String> headers = new ArrayList<>();
+        int cellCount = Math.max(headerRow.getLastCellNum(), 0);
+        for (int i = 0; i < cellCount; i++) {
+            headers.add(getCellValueAsString(headerRow.getCell(i), dataFormatter, evaluator));
+        }
+
+        Map<String, Integer> headerIndexes = BookImportSupport.buildHeaderIndexes(headers);
+        BookImportSupport.validateHeaders(headerIndexes.keySet());
+        return headerIndexes;
+    }
+
+    private static Book parseExcelRow(
+        Row row,
+        Map<String, Integer> headerIndexes,
+        DataFormatter dataFormatter,
+        FormulaEvaluator evaluator
+    ) {
+        Map<String, String> rowValues = new LinkedHashMap<>();
+        for (Map.Entry<String, Integer> entry : headerIndexes.entrySet()) {
+            rowValues.put(
+                entry.getKey(),
+                getCellValueAsString(row.getCell(entry.getValue()), dataFormatter, evaluator)
+            );
+        }
+        return BookImportSupport.parseBook(rowValues);
+    }
+
+    private static boolean isEmptyRow(Row row, DataFormatter dataFormatter, FormulaEvaluator evaluator) {
+        int lastCellNum = Math.max(row.getLastCellNum(), 0);
+        for (int i = 0; i < lastCellNum; i++) {
+            if (!getCellValueAsString(row.getCell(i), dataFormatter, evaluator).isBlank()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static boolean isEmptyCsvRow(String[] row) {
@@ -211,73 +187,10 @@ public class BookFileParser {
         return true;
     }
 
-    private static String getValueOrNull(String[] row, int index) {
-        if (index >= row.length) {
+    private static String getCellValueAsString(Cell cell, DataFormatter dataFormatter, FormulaEvaluator evaluator) {
+        if (cell == null) {
             return "";
         }
-        String value = row[index];
-        return (value == null || value.trim().isEmpty()) ? "" : value.trim();
-    }
-
-    public static byte[] generateTemplate() throws IOException {
-        try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-            Sheet sheet = workbook.createSheet("图书导入模板");
-
-            // 创建表头行 - 顺序与 parseExcelRow() 方法完全一致
-            Row headerRow = sheet.createRow(0);
-            String[] headers = {
-                "title",              // 索引 0
-                "author",             // 索引 1
-                "isbn",               // 索引 2
-                "location",           // 索引 3
-                "circulationPolicy",  // 索引 4
-                "",                   // 索引 5 (未使用)
-                "",                   // 索引 6 (未使用)
-                "",                   // 索引 7 (未使用)
-                "",                   // 索引 8 (未使用)
-                "",                   // 索引 9 (未使用)
-                "",                   // 索引 10 (未使用)
-                "",                   // 索引 11 (未使用)
-                "totalCopies"         // 索引 12
-            };
-
-            CellStyle headerStyle = workbook.createCellStyle();
-            Font headerFont = workbook.createFont();
-            headerFont.setBold(true);
-            headerStyle.setFont(headerFont);
-
-            for (int i = 0; i < headers.length; i++) {
-                Cell cell = headerRow.createCell(i);
-                cell.setCellValue(headers[i]);
-                cell.setCellStyle(headerStyle);
-                sheet.setColumnWidth(i, 4000);
-            }
-
-            // 创建示例数据行 - 与表头对应
-            Row exampleRow = sheet.createRow(1);
-            String[] exampleData = {
-                "Java编程思想",       // title
-                "Bruce Eckel",       // author
-                "978-0131872486",    // isbn
-                "A区-1层-001",       // location
-                "可借阅",            // circulationPolicy
-                "",                  // 未使用
-                "",                  // 未使用
-                "",                  // 未使用
-                "",                  // 未使用
-                "",                  // 未使用
-                "",                  // 未使用
-                "",                  // 未使用
-                "5"                  // totalCopies
-            };
-
-            for (int i = 0; i < exampleData.length; i++) {
-                Cell cell = exampleRow.createCell(i);
-                cell.setCellValue(exampleData[i]);
-            }
-
-            workbook.write(out);
-            return out.toByteArray();
-        }
+        return dataFormatter.formatCellValue(cell, evaluator).trim();
     }
 }

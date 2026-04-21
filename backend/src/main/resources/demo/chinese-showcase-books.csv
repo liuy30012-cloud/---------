@@ -1,0 +1,31 @@
+title,author,isbn,location,coverUrl,status,year,description,languageCode,availability,category,circulationPolicy,totalCopies
+设计模式：可复用面向对象软件的基础,Erich Gamma,9787111075752,A区>1层>计算机>001,,AVAILABLE,2000,经典设计模式著作，适合中文关键词“设计模式”演示。,zh,Available,计算机,AUTO,5
+Head First 设计模式,Eric Freeman,9787508353938,A区>1层>计算机>002,,AVAILABLE,2007,面向初学者的设计模式入门读物。,zh,Available,计算机,AUTO,4
+大话设计模式,程杰,9787302250334,A区>1层>计算机>003,,AVAILABLE,2011,用中文案例解释常见设计模式。,zh,Available,计算机,AUTO,6
+深入理解计算机系统,Randal E. Bryant,9787111544937,A区>1层>计算机>004,,AVAILABLE,2016,计算机系统方向中文演示核心书目。,zh,Available,计算机,AUTO,5
+计算机系统基础,袁春风,9787302514511,A区>1层>计算机>005,,AVAILABLE,2018,覆盖处理器、存储与操作系统基础。,zh,Available,计算机,AUTO,4
+计算机系统要点,王道论坛,9787121412783,A区>1层>计算机>006,,AVAILABLE,2021,面向课程与考研复习的计算机系统读物。,zh,Available,计算机,AUTO,3
+算法导论,Thomas H. Cormen,9787111407010,A区>1层>计算机>007,,AVAILABLE,2013,算法方向高频中文检索样本。,zh,Available,计算机,AUTO,5
+算法（第4版）,Robert Sedgewick,9787111544938,A区>1层>计算机>008,,AVAILABLE,2018,算法与数据结构经典教材。,zh,Available,计算机,AUTO,4
+算法竞赛入门经典,刘汝佳,9787302594285,A区>1层>计算机>009,,AVAILABLE,2022,算法竞赛与题解实践入门书。,zh,Available,计算机,AUTO,3
+数据库系统概论,王珊,9787040568499,A区>1层>计算机>010,,AVAILABLE,2021,数据库方向中文演示书目。,zh,Available,计算机,AUTO,5
+数据库系统实现,贾珈,9787111676034,A区>1层>计算机>011,,AVAILABLE,2022,偏工程实现的数据库系统读物。,zh,Available,计算机,AUTO,3
+高性能MySQL,Baron Schwartz,9787111619055,A区>1层>计算机>012,,AVAILABLE,2019,数据库优化与运维方向书籍。,zh,Available,计算机,AUTO,4
+操作系统导论,Remzi H. Arpaci-Dusseau,9787111558422,A区>1层>计算机>013,,AVAILABLE,2019,操作系统中文检索演示核心书目。,zh,Available,计算机,AUTO,5
+现代操作系统,Andrew S. Tanenbaum,9787302541951,A区>1层>计算机>014,,AVAILABLE,2020,操作系统经典教材。,zh,Available,计算机,AUTO,4
+操作系统真象还原,郑钢,9787302527719,A区>1层>计算机>015,,AVAILABLE,2019,贴近实现的中文操作系统读物。,zh,Available,计算机,AUTO,3
+计算机网络：自顶向下方法,James F. Kurose,9787111599715,A区>1层>计算机>016,,AVAILABLE,2018,网络方向中文常搜书目。,zh,Available,计算机,AUTO,4
+图解HTTP,上野宣,9787111544939,A区>1层>计算机>017,,AVAILABLE,2018,网络与 Web 基础中文演示样本。,zh,Available,计算机,AUTO,6
+TCP/IP详解 卷1,Richard Stevens,9787111391241,A区>1层>计算机>018,,AVAILABLE,2013,TCP/IP 协议经典读物。,zh,Available,计算机,AUTO,3
+Java编程思想,Bruce Eckel,9787111213826,A区>1层>计算机>019,,AVAILABLE,2007,Java 检索常见书目。,zh,Available,计算机,AUTO,5
+Effective Java,Joshua Bloch,9787111558423,A区>1层>计算机>020,,AVAILABLE,2018,Java 最佳实践。,zh,Available,计算机,AUTO,4
+Spring实战,Craig Walls,9787111676035,A区>1层>计算机>021,,AVAILABLE,2020,后端开发中文检索书目。,zh,Available,计算机,AUTO,3
+Vue.js设计与实现,霍春阳,9787115584238,A区>1层>计算机>022,,AVAILABLE,2022,前端框架中文高频关键词样本。,zh,Available,计算机,AUTO,4
+深入浅出Vue.js,刘博文,9787115431464,A区>1层>计算机>023,,AVAILABLE,2017,Vue 学习路线书籍。,zh,Available,计算机,AUTO,3
+重构：改善既有代码的设计,Martin Fowler,9787115545444,A区>1层>计算机>024,,AVAILABLE,2020,软件工程与重构主题书。,zh,Available,计算机,AUTO,4
+代码整洁之道,Robert C. Martin,9787115447779,A区>1层>计算机>025,,AVAILABLE,2017,代码质量主题中文检索样本。,zh,Available,计算机,AUTO,4
+人月神话,Frederick P. Brooks Jr.,9787115428020,A区>1层>计算机>026,,AVAILABLE,2016,软件工程经典读物。,zh,Available,计算机,AUTO,3
+编译原理,Alfred V. Aho,9787111619062,A区>1层>计算机>027,,AVAILABLE,2014,编译原理中文检索样本。,zh,Available,计算机,AUTO,3
+人工智能：一种现代方法,Stuart Russell,9787111646525,A区>1层>计算机>028,,AVAILABLE,2021,AI 方向中文演示书目。,zh,Available,计算机,AUTO,4
+深度学习,Ian Goodfellow,9787115461478,A区>1层>计算机>029,,AVAILABLE,2017,深度学习经典教材。,zh,Available,计算机,AUTO,4
+机器学习,周志华,9787302423288,A区>1层>计算机>030,,AVAILABLE,2016,机器学习中文高频检索样本。,zh,Available,计算机,AUTO,5

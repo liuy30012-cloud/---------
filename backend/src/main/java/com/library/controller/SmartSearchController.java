@@ -60,6 +60,7 @@ public class SmartSearchController {
         response.put("totalPages", books.getTotalPages());
         response.put("originalQuery", result.getOriginalQuery());
         response.put("normalizedQuery", result.getNormalizedQuery());
+        response.put("searchEngine", result.getSearchEngine().name());
 
         if (result.getDidYouMean() != null) {
             response.put("didYouMean", result.getDidYouMean());

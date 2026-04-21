@@ -1,5 +1,6 @@
 package com.library.service;
 
+import com.library.document.BookDocument;
 import com.library.model.Book;
 import com.library.model.SearchSuggestion;
 import com.library.repository.BookRepository;
@@ -9,13 +10,19 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -32,7 +39,6 @@ public class SmartSearchService {
     @Value("${library.search.elasticsearch.enabled:true}")
     private boolean elasticsearchEnabled;
 
-    // 自然语言搜索关键词映射
     private static final Map<String, String> INTENT_KEYWORDS = Map.ofEntries(
         Map.entry("入门", "category:入门"),
         Map.entry("初学", "category:入门"),
@@ -59,106 +65,49 @@ public class SmartSearchService {
         this.elasticsearchSearchService = elasticsearchSearchService;
     }
 
-    /**
-     * 智能搜索 - 支持模糊匹配、拼写纠错和自然语言
-     */
     @Transactional
     public SmartSearchResult smartSearch(String query, Pageable pageable) {
         SmartSearchResult result = new SmartSearchResult();
 
-        if (query == null || query.trim().isEmpty()) {
+        if (!StringUtils.hasText(query)) {
             result.setBooks(Page.empty(pageable));
+            result.setSearchEngine(SearchEngine.MYSQL_FALLBACK);
             return result;
         }
 
         String normalizedQuery = normalizeQuery(query);
-
-        // 1. 尝试直接搜索
-        Page<Book> directResults = bookRepository.searchCatalog(
-            normalizedQuery, "", "", "", "", "", pageable
-        );
-
-        // 2. 如果结果少于3个，尝试模糊搜索
-        if (directResults.getTotalElements() < 3) {
-            // 使用 Elasticsearch 或历史记录获取搜索词
-            List<String> searchTerms = new ArrayList<>();
-
-            // 尝试从 Elasticsearch 获取
-            if (elasticsearchEnabled && elasticsearchSearchService != null) {
-                try {
-                    searchTerms = elasticsearchSearchService.getSuggestions(normalizedQuery, 20);
-                } catch (Exception e) {
-                    log.debug("Failed to get search terms from Elasticsearch: {}", e.getMessage());
-                }
-            }
-
-            // 如果 ES 没有结果，从历史记录获取
-            if (searchTerms.isEmpty()) {
-                searchTerms = suggestionRepository.findByQueryStartingWithOrderByFrequencyDesc(
-                    normalizedQuery,
-                    PageRequest.of(0, 20)
-                ).stream()
-                    .map(SearchSuggestion::getQuery)
-                    .collect(Collectors.toList());
-            }
-
-            if (!searchTerms.isEmpty()) {
-                List<FuzzySearchService.SimilarityMatch> similarTitles =
-                    fuzzySearchService.findSimilarMatches(normalizedQuery, searchTerms);
-
-                if (!similarTitles.isEmpty()) {
-                    result.setSuggestions(similarTitles.stream()
-                        .map(FuzzySearchService.SimilarityMatch::text)
-                        .limit(5)
-                        .collect(Collectors.toList()));
-                    result.setDidYouMean(similarTitles.get(0).text());
-                }
-            }
-        }
-
-        // 3. 解析自然语言查询
         NaturalLanguageQuery nlQuery = parseNaturalLanguage(query);
-        if (nlQuery.hasIntent()) {
-            result.setInterpretation(nlQuery.getInterpretation());
-            // 使用解析后的参数重新搜索
-            directResults = bookRepository.searchCatalog(
-                nlQuery.getKeyword(),
-                nlQuery.getAuthor(),
-                "",
-                nlQuery.getCategory(),
-                "",
-                "",
-                pageable
-            );
-        }
 
-        result.setBooks(directResults);
         result.setOriginalQuery(query);
         result.setNormalizedQuery(normalizedQuery);
+        if (StringUtils.hasText(nlQuery.getInterpretation())) {
+            result.setInterpretation(nlQuery.getInterpretation());
+        }
 
-        // 4. 记录搜索历史用于改进建议
-        recordSearchQuery(normalizedQuery, (int) directResults.getTotalElements());
+        Page<Book> primaryResults = runPrimarySearch(normalizedQuery, pageable, nlQuery, result);
+        result.setBooks(primaryResults);
 
+        if (primaryResults.getTotalElements() < 3) {
+            populateSuggestions(normalizedQuery, result);
+        }
+
+        recordSearchQuery(normalizedQuery, (int) primaryResults.getTotalElements());
         return result;
     }
 
-    /**
-     * 获取搜索建议（自动完成）
-     */
     public List<String> getSearchSuggestions(String prefix, int limit) {
-        if (prefix == null || prefix.length() < 2) {
+        if (!StringUtils.hasText(prefix) || prefix.trim().length() < 2) {
             return Collections.emptyList();
         }
 
         String normalized = normalizeQuery(prefix);
         int safeLimit = Math.max(limit, 1);
 
-        // 优先使用 Elasticsearch，失败时降级到历史记录
         if (elasticsearchEnabled && elasticsearchSearchService != null) {
             try {
                 List<String> esSuggestions = elasticsearchSearchService.getSuggestions(normalized, safeLimit);
                 if (!esSuggestions.isEmpty()) {
-                    log.debug("Using Elasticsearch for search suggestions");
+                    log.debug("Using Elasticsearch suggestions for prefix {}", prefix);
                     return esSuggestions;
                 }
             } catch (Exception e) {
@@ -166,15 +115,10 @@ public class SmartSearchService {
             }
         }
 
-        // 降级方案：从历史搜索中获取建议
-        log.debug("Using search history for suggestions");
-        List<SearchSuggestion> historySuggestions =
-            suggestionRepository.findByQueryStartingWithOrderByFrequencyDesc(
+        return suggestionRepository.findByQueryStartingWithOrderByFrequencyDesc(
                 normalized,
                 PageRequest.of(0, safeLimit)
-            );
-
-        return historySuggestions.stream()
+            ).stream()
             .map(SearchSuggestion::getQuery)
             .filter(StringUtils::hasText)
             .map(String::trim)
@@ -183,15 +127,126 @@ public class SmartSearchService {
             .collect(Collectors.toList());
     }
 
-    /**
-     * 解析自然语言查询
-     */
+    private Page<Book> runPrimarySearch(
+        String normalizedQuery,
+        Pageable pageable,
+        NaturalLanguageQuery nlQuery,
+        SmartSearchResult result
+    ) {
+        if (canUseElasticsearchPrimarySearch(nlQuery)) {
+            try {
+                Page<BookDocument> esResults = elasticsearchSearchService.search(normalizedQuery, pageable);
+                result.setSearchEngine(SearchEngine.ELASTICSEARCH);
+                return hydrateBooksFromDocuments(esResults, pageable);
+            } catch (Exception e) {
+                log.warn("Elasticsearch primary search failed, falling back to MySQL: {}", e.getMessage());
+            }
+        }
+
+        result.setSearchEngine(SearchEngine.MYSQL_FALLBACK);
+        return searchCatalogFallback(normalizedQuery, pageable, nlQuery);
+    }
+
+    private boolean canUseElasticsearchPrimarySearch(NaturalLanguageQuery nlQuery) {
+        if (!elasticsearchEnabled || elasticsearchSearchService == null) {
+            return false;
+        }
+
+        if (nlQuery.hasStructuredFilters()) {
+            return false;
+        }
+
+        try {
+            return elasticsearchSearchService.isAvailable();
+        } catch (Exception e) {
+            log.debug("Elasticsearch availability probe failed: {}", e.getMessage());
+            return false;
+        }
+    }
+
+    private Page<Book> hydrateBooksFromDocuments(Page<BookDocument> documents, Pageable pageable) {
+        if (documents.isEmpty()) {
+            return new PageImpl<>(List.of(), pageable, documents.getTotalElements());
+        }
+
+        List<Long> ids = documents.getContent().stream()
+            .map(BookDocument::getId)
+            .filter(java.util.Objects::nonNull)
+            .toList();
+
+        Map<Long, Book> booksById = new HashMap<>();
+        for (Book book : bookRepository.findAllById(ids)) {
+            booksById.put(book.getId(), book);
+        }
+
+        List<Book> ordered = ids.stream()
+            .map(booksById::get)
+            .filter(java.util.Objects::nonNull)
+            .toList();
+
+        return new PageImpl<>(ordered, pageable, documents.getTotalElements());
+    }
+
+    private Page<Book> searchCatalogFallback(
+        String normalizedQuery,
+        Pageable pageable,
+        NaturalLanguageQuery nlQuery
+    ) {
+        String keyword = nlQuery.hasStructuredFilters()
+            ? nlQuery.getKeyword()
+            : (StringUtils.hasText(nlQuery.getKeyword()) ? nlQuery.getKeyword() : normalizedQuery);
+        return bookRepository.searchCatalog(
+            keyword,
+            nlQuery.getAuthor(),
+            "",
+            nlQuery.getCategory(),
+            "",
+            "",
+            pageable
+        );
+    }
+
+    private void populateSuggestions(String normalizedQuery, SmartSearchResult result) {
+        List<String> searchTerms = new ArrayList<>();
+
+        if (elasticsearchEnabled && elasticsearchSearchService != null) {
+            try {
+                searchTerms = elasticsearchSearchService.getSuggestions(normalizedQuery, 20);
+            } catch (Exception e) {
+                log.debug("Failed to get search suggestions from Elasticsearch: {}", e.getMessage());
+            }
+        }
+
+        if (searchTerms.isEmpty()) {
+            searchTerms = suggestionRepository.findByQueryStartingWithOrderByFrequencyDesc(
+                    normalizedQuery,
+                    PageRequest.of(0, 20)
+                ).stream()
+                .map(SearchSuggestion::getQuery)
+                .collect(Collectors.toList());
+        }
+
+        if (searchTerms.isEmpty()) {
+            return;
+        }
+
+        List<FuzzySearchService.SimilarityMatch> similarTitles =
+            fuzzySearchService.findSimilarMatches(normalizedQuery, searchTerms);
+
+        if (!similarTitles.isEmpty()) {
+            result.setSuggestions(similarTitles.stream()
+                .map(FuzzySearchService.SimilarityMatch::text)
+                .limit(5)
+                .collect(Collectors.toList()));
+            result.setDidYouMean(similarTitles.get(0).text());
+        }
+    }
+
     private NaturalLanguageQuery parseNaturalLanguage(String query) {
         NaturalLanguageQuery nlQuery = new NaturalLanguageQuery();
         String remaining = query;
         List<String> interpretations = new ArrayList<>();
 
-        // 检测意图关键词
         for (Map.Entry<String, String> entry : INTENT_KEYWORDS.entrySet()) {
             if (query.contains(entry.getKey())) {
                 String[] parts = entry.getValue().split(":");
@@ -209,13 +264,14 @@ public class SmartSearchService {
                             nlQuery.setSort(parts[1]);
                             interpretations.add("排序: 热门优先");
                         }
+                        default -> {
+                        }
                     }
                 }
                 remaining = remaining.replace(entry.getKey(), "").trim();
             }
         }
 
-        // 提取作者（"XXX的书"、"XXX写的"）
         Pattern authorPattern = Pattern.compile("([\\u4e00-\\u9fa5a-zA-Z]+)(的书|写的|著)");
         Matcher authorMatcher = authorPattern.matcher(query);
         if (authorMatcher.find()) {
@@ -225,7 +281,6 @@ public class SmartSearchService {
             remaining = remaining.replaceAll(authorPattern.pattern(), "").trim();
         }
 
-        // 剩余部分作为关键词
         if (!remaining.isEmpty()) {
             nlQuery.setKeyword(remaining);
             interpretations.add("关键词: " + remaining);
@@ -238,18 +293,12 @@ public class SmartSearchService {
         return nlQuery;
     }
 
-    /**
-     * 标准化查询字符串
-     */
     private String normalizeQuery(String query) {
         return query.trim()
             .toLowerCase()
             .replaceAll("\\s+", " ");
     }
 
-    /**
-     * 记录搜索查询
-     */
     private void recordSearchQuery(String query, int resultCount) {
         try {
             Optional<SearchSuggestion> existing = suggestionRepository.findByQuery(query);
@@ -267,39 +316,68 @@ public class SmartSearchService {
                 suggestionRepository.save(newSuggestion);
             }
         } catch (Exception e) {
-            // 记录失败不影响搜索结果
+            log.debug("Failed to record search query {}", query, e);
         }
     }
 
-    // 内部类：自然语言查询解析结果
     private static class NaturalLanguageQuery {
         private String keyword = "";
         private String author = "";
         private String category = "";
         private String sort = "";
-        private List<String> tags = new ArrayList<>();
+        private final List<String> tags = new ArrayList<>();
         private String interpretation = "";
 
-        public boolean hasIntent() {
-            return !author.isEmpty() || !category.isEmpty() || !sort.isEmpty() || !tags.isEmpty();
+        boolean hasStructuredFilters() {
+            return StringUtils.hasText(author) || StringUtils.hasText(category) || !tags.isEmpty();
         }
 
-        // Getters and setters
-        public String getKeyword() { return keyword; }
-        public void setKeyword(String keyword) { this.keyword = keyword; }
-        public String getAuthor() { return author; }
-        public void setAuthor(String author) { this.author = author; }
-        public String getCategory() { return category; }
-        public void setCategory(String category) { this.category = category; }
-        public String getSort() { return sort; }
-        public void setSort(String sort) { this.sort = sort; }
-        public List<String> getTags() { return tags; }
-        public void addTag(String tag) { this.tags.add(tag); }
-        public String getInterpretation() { return interpretation; }
-        public void setInterpretation(String interpretation) { this.interpretation = interpretation; }
+        public String getKeyword() {
+            return keyword;
+        }
+
+        public void setKeyword(String keyword) {
+            this.keyword = keyword;
+        }
+
+        public String getAuthor() {
+            return author;
+        }
+
+        public void setAuthor(String author) {
+            this.author = author;
+        }
+
+        public String getCategory() {
+            return category;
+        }
+
+        public void setCategory(String category) {
+            this.category = category;
+        }
+
+        public void setSort(String sort) {
+            this.sort = sort;
+        }
+
+        public void addTag(String tag) {
+            this.tags.add(tag);
+        }
+
+        public String getInterpretation() {
+            return interpretation;
+        }
+
+        public void setInterpretation(String interpretation) {
+            this.interpretation = interpretation;
+        }
     }
 
-    // 搜索结果包装类
+    public enum SearchEngine {
+        ELASTICSEARCH,
+        MYSQL_FALLBACK
+    }
+
     public static class SmartSearchResult {
         private Page<Book> books;
         private String originalQuery;
@@ -307,19 +385,62 @@ public class SmartSearchService {
         private String didYouMean;
         private List<String> suggestions = new ArrayList<>();
         private String interpretation;
+        private SearchEngine searchEngine;
 
-        // Getters and setters
-        public Page<Book> getBooks() { return books; }
-        public void setBooks(Page<Book> books) { this.books = books; }
-        public String getOriginalQuery() { return originalQuery; }
-        public void setOriginalQuery(String originalQuery) { this.originalQuery = originalQuery; }
-        public String getNormalizedQuery() { return normalizedQuery; }
-        public void setNormalizedQuery(String normalizedQuery) { this.normalizedQuery = normalizedQuery; }
-        public String getDidYouMean() { return didYouMean; }
-        public void setDidYouMean(String didYouMean) { this.didYouMean = didYouMean; }
-        public List<String> getSuggestions() { return suggestions; }
-        public void setSuggestions(List<String> suggestions) { this.suggestions = suggestions; }
-        public String getInterpretation() { return interpretation; }
-        public void setInterpretation(String interpretation) { this.interpretation = interpretation; }
+        public Page<Book> getBooks() {
+            return books;
+        }
+
+        public void setBooks(Page<Book> books) {
+            this.books = books;
+        }
+
+        public String getOriginalQuery() {
+            return originalQuery;
+        }
+
+        public void setOriginalQuery(String originalQuery) {
+            this.originalQuery = originalQuery;
+        }
+
+        public String getNormalizedQuery() {
+            return normalizedQuery;
+        }
+
+        public void setNormalizedQuery(String normalizedQuery) {
+            this.normalizedQuery = normalizedQuery;
+        }
+
+        public String getDidYouMean() {
+            return didYouMean;
+        }
+
+        public void setDidYouMean(String didYouMean) {
+            this.didYouMean = didYouMean;
+        }
+
+        public List<String> getSuggestions() {
+            return suggestions;
+        }
+
+        public void setSuggestions(List<String> suggestions) {
+            this.suggestions = suggestions;
+        }
+
+        public String getInterpretation() {
+            return interpretation;
+        }
+
+        public void setInterpretation(String interpretation) {
+            this.interpretation = interpretation;
+        }
+
+        public SearchEngine getSearchEngine() {
+            return searchEngine;
+        }
+
+        public void setSearchEngine(SearchEngine searchEngine) {
+            this.searchEngine = searchEngine;
+        }
     }
 }

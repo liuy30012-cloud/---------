@@ -59,8 +59,12 @@ onMounted(async () => {
   try {
     const response = await statisticsApi.getPopularBooks(10)
     books.value = response.data.success ? response.data.data : []
-  } catch (error) {
-    logger.error('Failed to load popular books:', error)
+  } catch (error: any) {
+    // 403 在未登录时属于预期行为（热门图书可能受后端权限控制），静默降级
+    const is403 = error.response?.status === 403
+    if (!is403) {
+      logger.error('Failed to load popular books:', error)
+    }
     books.value = []
   } finally {
     loading.value = false

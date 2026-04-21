@@ -22,6 +22,7 @@ export interface PoemIndex {
 export class PoemLoader {
   private indexCache: PoemIndex | null = null
   private dynastyCache: Map<string, PoemEntry[]> = new Map()
+  private allPoemsCache: PoemEntry[] | null = null
   private baseUrl = '/poems/'
 
   async loadIndex(): Promise<DynastyInfo[]> {
@@ -56,7 +57,10 @@ export class PoemLoader {
     }
 
     const data = await response.json()
-    const poems = data.poems as PoemEntry[]
+    const poems = (data.poems as PoemEntry[]).map(p => ({
+      ...p,
+      poem: p.poem.replace(/\\n/g, '\n')
+    }))
 
     this.dynastyCache.set(dynastyId, poems)
     return poems
@@ -67,6 +71,21 @@ export class PoemLoader {
     const availableDynasties = dynasties.filter(d => d.count > 0)
     const randomDynasty = availableDynasties[Math.floor(Math.random() * availableDynasties.length)]
     return this.loadDynasty(randomDynasty.id)
+  }
+
+  async loadAllPoems(): Promise<PoemEntry[]> {
+    if (this.allPoemsCache) {
+      return this.allPoemsCache
+    }
+
+    const dynasties = await this.loadIndex()
+    const availableDynasties = dynasties.filter(d => d.count > 0)
+    const poemGroups = await Promise.all(
+      availableDynasties.map(dynasty => this.loadDynasty(dynasty.id))
+    )
+
+    this.allPoemsCache = poemGroups.flat()
+    return this.allPoemsCache
   }
 
   async loadRandomPoems(count: number): Promise<PoemEntry[]> {
@@ -89,6 +108,7 @@ export class PoemLoader {
 
   clearCache(): void {
     this.indexCache = null
+    this.allPoemsCache = null
     this.dynastyCache.clear()
   }
 }

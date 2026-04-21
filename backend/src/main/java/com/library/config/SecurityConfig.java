@@ -44,6 +44,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/register", "/api/auth/login", "/api/auth/refresh", "/api/auth/logout", "/api/auth/account-status").permitAll()
                         .requestMatchers("/api/captcha/**", "/api/health/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/books/search", "/api/books/advanced-search", "/api/books/categories", "/api/books/languages").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/statistics/popular-books").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/reviews/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/books/*").permitAll()
                         .requestMatchers(HttpMethod.GET, "/damage-photos/**").permitAll()

@@ -107,7 +107,9 @@ export interface PurchaseSuggestionSummary {
 
 export const statisticsApi = {
   getPopularBooks: (limit: number = 10) =>
-    httpClient.get(`/api/statistics/popular-books?limit=${limit}`),
+    httpClient.get(`/api/statistics/popular-books?limit=${limit}`, {
+      skipErrorHandling: true,
+    } as any),
 
   getBorrowTrends: (days: number = 30) =>
     httpClient.get(`/api/statistics/borrow-trends?days=${days}`),

@@ -122,6 +122,9 @@
             <p class="toolbar-meta">
               {{ t('bookSearch.toolbar.results', { total: totalResults, page: pagination.page + 1, totalPages: Math.max(pagination.totalPages, 1) }) }}
             </p>
+            <p v-if="smartSearchEngine" class="toolbar-engine">
+              {{ searchEngineCopy.label }}: {{ smartSearchEngine === 'ELASTICSEARCH' ? searchEngineCopy.elasticsearch : searchEngineCopy.fallback }}
+            </p>
           </div>
           <div class="toolbar-actions">
             <label>
@@ -318,6 +321,7 @@ const favoritedBookIds = ref<Set<number>>(new Set())
 const smartDidYouMean = ref('')
 const smartSuggestions = ref<string[]>([])
 const smartInterpretation = ref('')
+const smartSearchEngine = ref<SmartSearchResponse['searchEngine'] | ''>('')
 
 const querySummary = computed(() => {
   const parts = [form.keyword, form.author, form.category, form.language].filter(Boolean)
@@ -352,7 +356,27 @@ const assistanceCopy = computed(() => (
       }
 ))
 
-const assistanceQuery = computed(() => String(form.keyword || form.author || '').trim())
+const searchEngineCopy = computed(() => (
+  locale.value.startsWith('zh')
+    ? {
+        label: '搜索引擎',
+        elasticsearch: 'Elasticsearch',
+        fallback: 'MySQL 回退',
+      }
+    : {
+        label: 'Search engine',
+        elasticsearch: 'Elasticsearch',
+        fallback: 'MySQL fallback',
+      }
+))
+
+const assistanceQuery = computed(() =>
+  [String(form.keyword || '').trim(), String(form.author || '').trim()]
+    .filter(Boolean)
+    .join(' ')
+)
+
+const shouldUseSmartSearch = computed(() => Boolean(assistanceQuery.value))
 
 const filteredSmartSuggestions = computed(() => {
   const blocked = new Set([
@@ -471,6 +495,7 @@ function resetSmartAssistance() {
   smartDidYouMean.value = ''
   smartSuggestions.value = []
   smartInterpretation.value = ''
+  smartSearchEngine.value = ''
 }
 
 function syncSmartAssistance(payload: SmartSearchResponse | null, query: string) {
@@ -494,6 +519,7 @@ function syncSmartAssistance(payload: SmartSearchResponse | null, query: string)
     ),
   )
   smartInterpretation.value = payload.interpretation?.trim() || ''
+  smartSearchEngine.value = payload.searchEngine
 }
 
 async function fetchResults() {
@@ -512,27 +538,26 @@ async function fetchResults() {
       page: form.page,
       size: form.size,
     }
-    const [response, smartResponse] = await Promise.all([
-      bookApi.searchBooks(params),
-      assistiveQuery
-        ? bookApi.smartSearch({
-            query: assistiveQuery,
-            page: form.page,
-            size: form.size,
-          }).then(result => (result.data.success ? result.data.data : null)).catch(() => null)
-        : Promise.resolve(null),
-    ])
+    if (shouldUseSmartSearch.value) {
+      const smartResponse = await bookApi.smartSearch({
+        query: assistiveQuery,
+        page: form.page,
+        size: form.size,
+      }).then(result => (result.data.success ? result.data.data : null))
 
-    if (assistiveQuery) {
       syncSmartAssistance(smartResponse, assistiveQuery)
+      books.value = smartResponse?.books || []
+      totalResults.value = smartResponse?.total || books.value.length
+      pagination.page = smartResponse?.page || 0
+      pagination.totalPages = smartResponse?.totalPages || 0
     } else {
       resetSmartAssistance()
+      const response = await bookApi.searchBooks(params)
+      books.value = response.data.data || []
+      totalResults.value = response.data.total || books.value.length
+      pagination.page = response.data.page || 0
+      pagination.totalPages = response.data.totalPages || 0
     }
-
-    books.value = response.data.data || []
-    totalResults.value = response.data.total || books.value.length
-    pagination.page = response.data.page || 0
-    pagination.totalPages = response.data.totalPages || 0
 
     // 批量查询收藏状态
     if (userStore.isLoggedIn && books.value.length > 0) {
@@ -949,6 +974,12 @@ function circulationLabel(policy: string) {
 .toolbar-meta {
   margin: 0.5rem 0 0;
   color: rgba(229, 217, 197, 0.7);
+}
+
+.toolbar-engine {
+  margin: 0.35rem 0 0;
+  color: rgba(215, 179, 122, 0.84);
+  font-size: 0.82rem;
 }
 
 .state-card {

@@ -30,6 +30,12 @@ interface AuthResponse {
   user: UserInfo
 }
 
+interface ApiResponseEnvelope<T> {
+  success?: boolean
+  data?: T
+  message?: string | null
+}
+
 const AUTH_MESSAGE_KEY_MAP: Record<string, string> = {
   '学号不能为空': 'login.validation.studentIdRequired',
   '学号不能为空。': 'login.validation.studentIdRequired',
@@ -106,6 +112,18 @@ export const useUserStore = defineStore('user', () => {
   const isTeacher = computed(() => user.value?.role === UserRole.TEACHER)
   const isAdmin = computed(() => user.value?.role === UserRole.ADMIN)
 
+  function unwrapAuthResponse(payload: AuthResponse | ApiResponseEnvelope<AuthResponse>): AuthResponse | null {
+    if ('token' in payload && typeof payload.token === 'string') {
+      return payload
+    }
+
+    if ('data' in payload) {
+      return payload.data ?? null
+    }
+
+    return null
+  }
+
   function setAuthState(newToken: string | null, newRefresh: string | null, newUser: UserInfo | null) {
     token.value = newToken
     refreshToken.value = newRefresh
@@ -126,13 +144,17 @@ export const useUserStore = defineStore('user', () => {
   async function login(studentId: string, password: string, rememberMe: boolean = false) {
     isLoading.value = true
     try {
-      const response = await httpClient.post<AuthResponse>('/api/auth/login', {
+      const response = await httpClient.post<AuthResponse | ApiResponseEnvelope<AuthResponse>>('/api/auth/login', {
         studentId,
         password,
         rememberMe,
       })
 
-      const data = response.data
+      const data = unwrapAuthResponse(response.data)
+      if (!data) {
+        return { success: false, message: translate('login.messages.loginFailed') }
+      }
+
       setAuthState(data.token, data.refreshToken, data.user)
       return { success: true, message: translate('login.messages.loginSuccess') }
     } catch (error: any) {
@@ -204,11 +226,16 @@ export const useUserStore = defineStore('user', () => {
 
     refreshLock = (async () => {
       try {
-        const response = await httpClient.post<AuthResponse>('/api/auth/refresh', {
+        const response = await httpClient.post<AuthResponse | ApiResponseEnvelope<AuthResponse>>('/api/auth/refresh', {
           refreshToken: refreshToken.value,
         })
 
-        const data = response.data
+        const data = unwrapAuthResponse(response.data)
+        if (!data) {
+          await logout()
+          return false
+        }
+
         setAuthState(data.token, data.refreshToken, data.user)
         return true
       } catch (error) {

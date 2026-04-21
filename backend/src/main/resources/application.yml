@@ -17,11 +17,18 @@ app:
     enabled: ${APP_SCHEDULING_ENABLED:true}
   upload:
     damage-photos-dir: ${UPLOAD_DAMAGE_DIR:uploads/damage-photos}
+  demo-books:
+    enabled: ${DEMO_BOOKS_ENABLED:false}
+    seed-if-empty-only: ${DEMO_BOOKS_SEED_IF_EMPTY_ONLY:true}
+    resource: ${DEMO_BOOKS_RESOURCE:classpath:/demo/openlibrary-demo-books.csv.gz}
+    chinese-showcase-resource: ${DEMO_BOOKS_CHINESE_SHOWCASE_RESOURCE:classpath:/demo/chinese-showcase-books.csv}
+    target-count: ${DEMO_BOOKS_TARGET_COUNT:100000}
+    disable-es-listener-during-seed: ${DEMO_BOOKS_DISABLE_ES_LISTENER_DURING_SEED:true}
 
 spring.servlet.multipart:
   enabled: true
-  max-file-size: 5MB
-  max-request-size: 20MB
+  max-file-size: 50MB
+  max-request-size: 60MB
 
 spring:
   application:
@@ -60,6 +67,7 @@ spring:
         max-wait: -1ms
   data:
     redis:
+      enabled: ${REDIS_ENABLED:false}
       repositories:
         enabled: false
     elasticsearch:
@@ -123,7 +131,7 @@ anti-crawler:
 library:
   search:
     elasticsearch:
-      enabled: ${ES_ENABLED:true}
+      enabled: ${ES_ENABLED:false}
       fallback-enabled: true
 
 # Circuit Breaker 配置

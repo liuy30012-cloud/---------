@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
     prefix = "library.search.elasticsearch",
     name = "enabled",
     havingValue = "true",
-    matchIfMissing = true
+    matchIfMissing = false
 )
 public class ElasticsearchSyncController {
 

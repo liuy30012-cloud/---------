@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.elasticsearch.client.ClientConfiguration;
 import org.springframework.data.elasticsearch.client.elc.ElasticsearchConfiguration;
 import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories;
+import org.springframework.util.StringUtils;
 
 @Configuration
 @EnableElasticsearchRepositories(basePackages = "com.library.repository")
@@ -13,7 +14,7 @@ import org.springframework.data.elasticsearch.repository.config.EnableElasticsea
     prefix = "library.search.elasticsearch",
     name = "enabled",
     havingValue = "true",
-    matchIfMissing = true
+    matchIfMissing = false
 )
 public class ElasticsearchConfig extends ElasticsearchConfiguration {
 
@@ -28,11 +29,15 @@ public class ElasticsearchConfig extends ElasticsearchConfiguration {
 
     @Override
     public ClientConfiguration clientConfiguration() {
-        return ClientConfiguration.builder()
+        var builder = ClientConfiguration.builder()
             .connectedTo(elasticsearchUris.replace("http://", ""))
-            .withBasicAuth(username, password)
             .withConnectTimeout(3000)
-            .withSocketTimeout(5000)
-            .build();
+            .withSocketTimeout(5000);
+
+        if (StringUtils.hasText(username)) {
+            return builder.withBasicAuth(username, password == null ? "" : password).build();
+        }
+
+        return builder.build();
     }
 }

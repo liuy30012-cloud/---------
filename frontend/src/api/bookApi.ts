@@ -129,6 +129,7 @@ export interface SmartSearchResponse {
   totalPages: number
   originalQuery: string
   normalizedQuery: string
+  searchEngine: 'ELASTICSEARCH' | 'MYSQL_FALLBACK'
   didYouMean?: string
   suggestions?: string[]
   interpretation?: string

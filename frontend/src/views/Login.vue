@@ -10,6 +10,7 @@
       :floating-icons="floatingIcons"
       :book-pages="bookPages"
       :ink-dots="inkDots"
+      @page-animation-end="onPageAnimationEnd"
     />
 
     <canvas v-if="showVisualLayer" ref="inkCanvas" class="ink-canvas"></canvas>
@@ -124,6 +125,10 @@ function onGlobalKeydown(_event: KeyboardEvent) {
   // Reserved for future keyboard shortcuts.
 }
 
+function onPageAnimationEnd(pageId: number) {
+  particles.reloadSinglePage(pageId)
+}
+
 onMounted(() => {
   setTimeout(() => { hasEntered.value = true }, 100)
   window.setTimeout(() => {
@@ -139,6 +144,7 @@ onMounted(() => {
 onUnmounted(() => {
   canvas.cleanup()
   form.cleanup()
+  particles.cleanup()
 })
 </script>
 

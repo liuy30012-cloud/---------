@@ -73,6 +73,9 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     @Query("SELECT DISTINCT b.languageCode FROM Book b WHERE b.languageCode IS NOT NULL AND b.languageCode <> '' ORDER BY b.languageCode")
     List<String> findDistinctLanguages();
 
+    @Query("SELECT b.isbn FROM Book b WHERE b.isbn IS NOT NULL AND b.isbn <> ''")
+    List<String> findAllIsbns();
+
     List<Book> findTop6ByCategoryAndIdNotOrderByBorrowedCountDesc(String category, Long id);
 
     List<Book> findTop6ByAuthorAndIdNotOrderByBorrowedCountDesc(String author, Long id);

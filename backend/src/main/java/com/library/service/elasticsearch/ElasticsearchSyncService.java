@@ -7,6 +7,8 @@ import com.library.repository.BookRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +23,7 @@ import java.util.stream.Collectors;
     prefix = "library.search.elasticsearch",
     name = "enabled",
     havingValue = "true",
-    matchIfMissing = true
+    matchIfMissing = false
 )
 public class ElasticsearchSyncService {
 
@@ -34,9 +36,9 @@ public class ElasticsearchSyncService {
         try {
             BookDocument doc = convertToDocument(book);
             bookDocumentRepository.save(doc);
-            log.info("成功同步图书到 ES: {}", book.getId());
+            log.info("Successfully synchronized book {} to Elasticsearch.", book.getId());
         } catch (Exception e) {
-            log.error("同步图书到 ES 失败: {}", book.getId(), e);
+            log.error("Failed to synchronize book {} to Elasticsearch.", book.getId(), e);
         }
     }
 
@@ -51,21 +53,33 @@ public class ElasticsearchSyncService {
     public void deleteBook(Long bookId) {
         try {
             bookDocumentRepository.deleteById(bookId);
-            log.info("成功从 ES 删除图书: {}", bookId);
+            log.info("Successfully removed book {} from Elasticsearch.", bookId);
         } catch (Exception e) {
-            log.error("从 ES 删除图书失败: {}", bookId, e);
+            log.error("Failed to remove book {} from Elasticsearch.", bookId, e);
         }
     }
 
     @Transactional
     public void syncAllBooks() {
-        log.info("开始全量同步图书到 ES");
-        List<Book> books = bookRepository.findAll();
-        List<BookDocument> docs = books.stream()
-            .map(this::convertToDocument)
-            .collect(Collectors.toList());
-        bookDocumentRepository.saveAll(docs);
-        log.info("全量同步完成，共同步 {} 本图书", docs.size());
+        log.info("Starting full book synchronization to Elasticsearch.");
+
+        int pageNumber = 0;
+        int totalSynced = 0;
+        Page<Book> page;
+
+        do {
+            page = bookRepository.findAll(PageRequest.of(pageNumber, 1_000));
+            if (!page.isEmpty()) {
+                List<BookDocument> docs = page.getContent().stream()
+                    .map(this::convertToDocument)
+                    .collect(Collectors.toList());
+                bookDocumentRepository.saveAll(docs);
+                totalSynced += docs.size();
+            }
+            pageNumber++;
+        } while (page.hasNext());
+
+        log.info("Completed full Elasticsearch sync for {} books.", totalSynced);
     }
 
     private BookDocument convertToDocument(Book book) {
