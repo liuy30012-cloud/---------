@@ -1,0 +1,77 @@
+<h2>首页结构方案对比</h2>
+<p class="subtitle">视觉风格已经确定，这一页只比较信息结构。共同前提：保留左侧双时钟、保留东方景深气氛、标题收敛、搜索是主角。</p>
+
+<div class="cards">
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">A · 单主搜索区 + 下方三张价值卡</div>
+        <div class="mockup-body" style="background:linear-gradient(180deg,#f4efe4 0%,#e7ede3 100%);padding:20px;border-radius:18px;min-height:320px;position:relative;overflow:hidden;">
+          <div style="position:absolute;left:0;top:0;bottom:0;width:92px;background:rgba(255,251,245,.52);"></div>
+          <div style="position:absolute;left:18px;top:24px;width:54px;height:150px;border-radius:16px;background:rgba(255,255,255,.72);"></div>
+          <div style="position:absolute;left:18px;top:192px;width:54px;height:88px;border-radius:16px;background:rgba(255,255,255,.58);"></div>
+          <div style="position:absolute;left:118px;top:28px;width:250px;height:58px;border-radius:12px;background:transparent;color:#1b211c;font-size:26px;line-height:1.2;font-weight:700;">雅致标题 + 清晰说明</div>
+          <div style="position:absolute;left:118px;top:112px;right:20px;height:92px;border-radius:26px;background:rgba(251,248,242,.88);box-shadow:0 16px 28px rgba(70,60,40,.12);"></div>
+          <div style="position:absolute;left:118px;top:218px;right:20px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+            <div style="height:62px;border-radius:18px;background:rgba(255,251,245,.62);"></div>
+            <div style="height:62px;border-radius:18px;background:rgba(255,251,245,.62);"></div>
+            <div style="height:62px;border-radius:18px;background:rgba(255,251,245,.62);"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>方案 A</h3>
+      <p>搜索区独立、最强；三张价值卡留在下方承接。结构稳定，既有产品感，也不丢气质。</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">B · 单主搜索区 + 右侧辅助信息块</div>
+        <div class="mockup-body" style="background:linear-gradient(180deg,#f4efe4 0%,#e7ede3 100%);padding:20px;border-radius:18px;min-height:320px;position:relative;overflow:hidden;">
+          <div style="position:absolute;left:0;top:0;bottom:0;width:92px;background:rgba(255,251,245,.52);"></div>
+          <div style="position:absolute;left:18px;top:24px;width:54px;height:150px;border-radius:16px;background:rgba(255,255,255,.72);"></div>
+          <div style="position:absolute;left:18px;top:192px;width:54px;height:88px;border-radius:16px;background:rgba(255,255,255,.58);"></div>
+          <div style="position:absolute;left:118px;top:28px;width:172px;height:58px;color:#1b211c;font-size:24px;line-height:1.2;font-weight:700;">标题与说明</div>
+          <div style="position:absolute;left:118px;top:112px;width:230px;height:110px;border-radius:26px;background:rgba(251,248,242,.88);box-shadow:0 16px 28px rgba(70,60,40,.12);"></div>
+          <div style="position:absolute;right:20px;top:28px;width:128px;display:flex;flex-direction:column;gap:10px;">
+            <div style="height:78px;border-radius:18px;background:rgba(255,251,245,.62);"></div>
+            <div style="height:78px;border-radius:18px;background:rgba(255,251,245,.62);"></div>
+            <div style="height:78px;border-radius:18px;background:rgba(255,251,245,.62);"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>方案 B</h3>
+      <p>更紧凑、更偏现代产品，但右侧信息块会和左侧双时钟形成两翼竞争。</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">C · 双层搜索区</div>
+        <div class="mockup-body" style="background:linear-gradient(180deg,#f4efe4 0%,#e7ede3 100%);padding:20px;border-radius:18px;min-height:320px;position:relative;overflow:hidden;">
+          <div style="position:absolute;left:0;top:0;bottom:0;width:92px;background:rgba(255,251,245,.52);"></div>
+          <div style="position:absolute;left:18px;top:24px;width:54px;height:150px;border-radius:16px;background:rgba(255,255,255,.72);"></div>
+          <div style="position:absolute;left:18px;top:192px;width:54px;height:88px;border-radius:16px;background:rgba(255,255,255,.58);"></div>
+          <div style="position:absolute;left:118px;top:28px;width:250px;height:48px;color:#1b211c;font-size:22px;line-height:1.2;font-weight:700;">标题更轻，搜索更强</div>
+          <div style="position:absolute;left:118px;top:92px;right:20px;height:88px;border-radius:26px;background:rgba(251,248,242,.9);box-shadow:0 16px 28px rgba(70,60,40,.12);"></div>
+          <div style="position:absolute;left:118px;top:194px;right:20px;height:86px;border-radius:24px;background:rgba(255,251,245,.62);"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>方案 C</h3>
+      <p>搜索最强，但整体会更像工具型页面，东方气质会进一步后退。</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>我的推荐</h3>
+  <p class="subtitle"><strong>A</strong> 仍然是最平衡的落地方案：结构最稳，搜索最清楚，也最容易把你认可的气质保住。</p>
+</div>

@@ -6,7 +6,8 @@
       "Bash(cat \"e:/图书馆书籍定位系统/.superpowers/brainstorm/\"*/state/server-info)",
       "Bash(claude mcp:*)",
       "Bash(claude --version)",
-      "Bash(node -e ' *)"
+      "Bash(node -e ' *)",
+      "Bash(git push *)"
     ],
     "additionalDirectories": [
       "C:\\Users\\35012\\.claude"

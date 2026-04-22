@@ -71,94 +71,96 @@
       </aside>
 
       <div class="hero-content">
-        <div ref="copyRef" class="hero-copy">
-          <p class="hero-kicker">{{ t('hero.kicker') }}</p>
-          <h1 class="hero-title">{{ t('hero.title') }}</h1>
-          <p class="hero-subtitle">{{ t('hero.subtitle') }}</p>
-        </div>
-
-        <div class="hero-metadata">
-          <div class="hero-meta-card">
-            <span class="hero-meta-key">{{ t('hero.metaTrust') }}</span>
-            <span class="hero-meta-value">{{ t('hero.metaTrustValue') }}</span>
-          </div>
-          <div class="hero-meta-card">
-            <span class="hero-meta-key">{{ t('hero.metaContinuity') }}</span>
-            <span class="hero-meta-value">{{ t('hero.metaContinuityValue') }}</span>
-          </div>
-          <div class="hero-meta-card">
-            <span class="hero-meta-key">{{ t('hero.metaNextStep') }}</span>
-            <span class="hero-meta-value">{{ t('hero.metaNextStepValue') }}</span>
-          </div>
-        </div>
-
-        <div ref="searchPanelRef" class="hero-search-panel">
-          <div class="hero-search-header">
-            <span class="hero-search-title">{{ t('hero.searchTitle') }}</span>
-            <span class="hero-search-note">{{ t('hero.searchNote') }}</span>
+        <div class="hero-stage">
+          <div ref="copyRef" class="hero-intro">
+            <p class="hero-kicker">{{ t('hero.kicker') }}</p>
+            <h1 class="hero-title">{{ t('hero.title') }}</h1>
+            <p class="hero-subtitle">{{ t('hero.subtitle') }}</p>
           </div>
 
-          <div ref="searchComboboxRef" class="search-combobox">
-            <div class="search-bar" role="search" aria-label="Search the library collection">
-              <span class="material-symbols-outlined search-icon" aria-hidden="true">search</span>
-              <input
-                v-model="searchQuery"
-                type="text"
-                class="search-input"
-                role="combobox"
-                aria-autocomplete="list"
-                aria-label="Search title, author, or ISBN"
-                :aria-expanded="searchAutocompleteOpen"
-                :aria-controls="searchAutocompleteListId"
-                :aria-activedescendant="searchAutocompleteActiveIndex >= 0 ? getSearchAutocompleteOptionId(searchAutocompleteActiveIndex) : undefined"
-                autocomplete="off"
-                spellcheck="false"
-                :placeholder="t('hero.searchPlaceholder')"
-                @focus="openSearchAutocompleteIfAvailable()"
-                @blur="handleSearchBlur"
-                @input="handleSearchInput"
-                @keydown="handleSearchKeydown"
-              />
-              <button class="search-btn" @click="submitSearch">{{ t('hero.searchBtn') }}</button>
+          <div ref="searchPanelRef" class="hero-search-panel">
+            <div class="hero-search-header">
+              <span class="hero-search-title">{{ t('hero.searchTitle') }}</span>
+              <span class="hero-search-note">{{ t('hero.searchNote') }}</span>
             </div>
 
-            <div
-              v-if="searchAutocompleteLoading || searchAutocompleteOpen"
-              :id="searchAutocompleteListId"
-              class="hero-suggestion-popover"
-              role="listbox"
-            >
-              <div v-if="searchAutocompleteLoading && searchAutocompleteSuggestions.length === 0" class="hero-suggestion-loading">
-                <span class="material-symbols-outlined" aria-hidden="true">hourglass_top</span>
-                <span>{{ searchLoadingLabel }}</span>
+            <div ref="searchComboboxRef" class="search-combobox">
+              <div class="search-bar" role="search" aria-label="Search the library collection">
+                <span class="material-symbols-outlined search-icon" aria-hidden="true">search</span>
+                <input
+                  v-model="searchQuery"
+                  type="text"
+                  class="search-input"
+                  role="combobox"
+                  aria-autocomplete="list"
+                  aria-label="Search title, author, or ISBN"
+                  :aria-expanded="searchAutocompleteOpen"
+                  :aria-controls="searchAutocompleteListId"
+                  :aria-activedescendant="searchAutocompleteActiveIndex >= 0 ? getSearchAutocompleteOptionId(searchAutocompleteActiveIndex) : undefined"
+                  autocomplete="off"
+                  spellcheck="false"
+                  :placeholder="t('hero.searchPlaceholder')"
+                  @focus="openSearchAutocompleteIfAvailable()"
+                  @blur="handleSearchBlur"
+                  @input="handleSearchInput"
+                  @keydown="handleSearchKeydown"
+                />
+                <button class="search-btn" @click="submitSearch">{{ t('hero.searchBtn') }}</button>
               </div>
-              <button
-                v-for="(suggestion, index) in searchAutocompleteSuggestions"
-                v-else
-                :id="getSearchAutocompleteOptionId(index)"
-                :key="`${suggestion}-${index}`"
-                :class="['hero-suggestion-item', { 'hero-suggestion-item--active': index === searchAutocompleteActiveIndex }]"
-                type="button"
-                role="option"
-                :aria-selected="index === searchAutocompleteActiveIndex"
-                @mousedown.prevent="applySuggestion(suggestion)"
+
+              <div
+                v-if="searchAutocompleteLoading || searchAutocompleteOpen"
+                :id="searchAutocompleteListId"
+                class="hero-suggestion-popover"
+                role="listbox"
               >
-                <span class="material-symbols-outlined" aria-hidden="true">history</span>
-                <span>{{ suggestion }}</span>
+                <div v-if="searchAutocompleteLoading && searchAutocompleteSuggestions.length === 0" class="hero-suggestion-loading">
+                  <span class="material-symbols-outlined" aria-hidden="true">hourglass_top</span>
+                  <span>{{ searchLoadingLabel }}</span>
+                </div>
+                <button
+                  v-for="(suggestion, index) in searchAutocompleteSuggestions"
+                  v-else
+                  :id="getSearchAutocompleteOptionId(index)"
+                  :key="`${suggestion}-${index}`"
+                  :class="['hero-suggestion-item', { 'hero-suggestion-item--active': index === searchAutocompleteActiveIndex }]"
+                  type="button"
+                  role="option"
+                  :aria-selected="index === searchAutocompleteActiveIndex"
+                  @mousedown.prevent="applySuggestion(suggestion)"
+                >
+                  <span class="material-symbols-outlined" aria-hidden="true">history</span>
+                  <span>{{ suggestion }}</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="trending-tags">
+              <span class="trending-label">{{ t('hero.trendingLabel') }}</span>
+              <button
+                v-for="tag in trendingTags"
+                :key="tag.label"
+                class="tag-btn"
+                @click="applyTag(tag.query)"
+              >
+                {{ tag.label }}
               </button>
             </div>
           </div>
+        </div>
 
-          <div class="trending-tags">
-            <span class="trending-label">{{ t('hero.trendingLabel') }}</span>
-            <button
-              v-for="tag in trendingTags"
-              :key="tag.label"
-              class="tag-btn"
-              @click="applyTag(tag.query)"
-            >
-              {{ tag.label }}
-            </button>
+        <div class="hero-value-grid">
+          <div class="hero-value-card">
+            <span class="hero-value-card__title">{{ t('hero.valueCard1Title') }}</span>
+            <span class="hero-value-card__desc">{{ t('hero.valueCard1Desc') }}</span>
+          </div>
+          <div class="hero-value-card">
+            <span class="hero-value-card__title">{{ t('hero.valueCard2Title') }}</span>
+            <span class="hero-value-card__desc">{{ t('hero.valueCard2Desc') }}</span>
+          </div>
+          <div class="hero-value-card">
+            <span class="hero-value-card__title">{{ t('hero.valueCard3Title') }}</span>
+            <span class="hero-value-card__desc">{{ t('hero.valueCard3Desc') }}</span>
           </div>
         </div>
       </div>
@@ -792,6 +794,58 @@ onBeforeUnmount(() => {
   z-index: 1;
 }
 
+.hero-stage {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.hero-intro {
+  max-width: 47rem;
+}
+
+.hero-intro::after {
+  content: '';
+  display: block;
+  width: clamp(5rem, 10vw, 8rem);
+  height: 2px;
+  margin-top: var(--space-5);
+  border-radius: 999px;
+  background:
+    linear-gradient(90deg, rgba(103, 128, 101, 0.62) 0%, rgba(193, 167, 122, 0.34) 54%, transparent 100%);
+  box-shadow: 0 10px 20px rgba(139, 123, 95, 0.12);
+}
+
+.hero-value-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+}
+
+.hero-value-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  background:
+    linear-gradient(180deg, rgba(252, 249, 243, 0.76) 0%, rgba(242, 237, 228, 0.68) 100%);
+  border: 1px solid rgba(105, 116, 98, 0.14);
+  box-shadow: 0 14px 26px rgba(43, 52, 44, 0.08);
+}
+
+.hero-value-card__title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--home-ink);
+}
+
+.hero-value-card__desc {
+  font-size: 0.84rem;
+  color: rgba(83, 94, 82, 0.72);
+}
+
 .hero-copy {
   max-width: 47rem;
 }
@@ -1127,6 +1181,10 @@ onBeforeUnmount(() => {
 
 @media (max-width: 1180px) {
   .hero-metadata {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-value-grid {
     grid-template-columns: 1fr;
   }
 }
