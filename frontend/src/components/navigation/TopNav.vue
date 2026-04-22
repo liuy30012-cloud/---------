@@ -4,7 +4,7 @@
       <div class="nav-left">
         <RouterLink to="/" class="brand-wrapper brand-link" aria-label="Home">
           <div class="photo-logo">
-            <img src="/school-badge.png" alt="Logo" />
+            <img src="/school-badge.png" alt="Logo" width="40" height="40" />
           </div>
           <div class="brand-identity">
             <span class="brand-kicker">{{ t('nav.systemName') }}</span>
@@ -29,7 +29,7 @@
             :aria-label="navScrollLabels.left"
             @click="scrollNavLinks('left')"
           >
-            <span class="material-symbols-outlined">chevron_left</span>
+            <span class="material-symbols-outlined" aria-hidden="true">chevron_left</span>
           </button>
 
           <div ref="linksRef" class="nav-links" @scroll.passive="syncNavScrollState">
@@ -39,6 +39,7 @@
               :to="item.to"
               class="nav-link"
               :class="{ active: isActive(item) }"
+              :aria-current="isActive(item) ? 'page' : undefined"
             >
               {{ item.label }}
             </RouterLink>
@@ -53,7 +54,7 @@
             :aria-label="navScrollLabels.right"
             @click="scrollNavLinks('right')"
           >
-            <span class="material-symbols-outlined">chevron_right</span>
+            <span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
           </button>
         </div>
       </div>
@@ -78,7 +79,7 @@
             :title="theme.isDark.value ? t('nav.switchToLight') : t('nav.switchToDark')"
             @click="theme.toggle"
           >
-            <span class="material-symbols-outlined">{{ theme.isDark.value ? 'light_mode' : 'dark_mode' }}</span>
+            <span class="material-symbols-outlined" aria-hidden="true">{{ theme.isDark.value ? 'light_mode' : 'dark_mode' }}</span>
           </LibraryButton>
 
           <div class="icon-btn-wrapper">
@@ -89,7 +90,7 @@
               :aria-label="t('nav.openNotifications')"
               @click="props.notif.toggleNotifPanel(closeHistoryPanel)"
             >
-              <span class="material-symbols-outlined">notifications</span>
+              <span class="material-symbols-outlined" aria-hidden="true">notifications</span>
               <span v-if="props.notif.unreadCount.value > 0" class="unread-badge">{{ props.notif.unreadCount.value }}</span>
             </LibraryButton>
             <Transition name="popup">
@@ -137,7 +138,7 @@
               :aria-label="t('nav.openSearchHistory')"
               @click="props.history.toggleHistoryPanel(closeNotifPanel)"
             >
-              <span class="material-symbols-outlined">history</span>
+              <span class="material-symbols-outlined" aria-hidden="true">history</span>
             </LibraryButton>
             <Transition name="popup">
               <div
@@ -227,15 +228,15 @@
                 </div>
                 <div class="dropdown-divider"></div>
                 <button class="dropdown-item" type="button" @click="openAccount">
-                  <span class="material-symbols-outlined">manage_accounts</span>
+                  <span class="material-symbols-outlined" aria-hidden="true">manage_accounts</span>
                   <span>{{ t('nav.myAccount') }}</span>
                 </button>
                 <button class="dropdown-item" type="button" @click="openBookshelf">
-                  <span class="material-symbols-outlined">favorite</span>
+                  <span class="material-symbols-outlined" aria-hidden="true">favorite</span>
                   <span>{{ t('nav.myBookshelf') }}</span>
                 </button>
                 <button class="dropdown-item" type="button" @click="handleLogout">
-                  <span class="material-symbols-outlined">logout</span>
+                  <span class="material-symbols-outlined" aria-hidden="true">logout</span>
                   <span>{{ t('nav.signOut') }}</span>
                 </button>
               </div>
@@ -519,8 +520,36 @@ const handleClickOutside = (e: MouseEvent) => {
   }
 }
 
+const handleKeydown = (e: KeyboardEvent) => {
+  if (e.key !== 'Escape') {
+    return
+  }
+
+  let closed = false
+
+  if (props.notif.showNotifPanel.value) {
+    closeNotifPanel()
+    closed = true
+  }
+
+  if (props.history.showHistoryPanel.value) {
+    closeHistoryPanel()
+    closed = true
+  }
+
+  if (showUserMenu.value) {
+    showUserMenu.value = false
+    closed = true
+  }
+
+  if (closed) {
+    e.preventDefault()
+  }
+}
+
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
+  document.addEventListener('keydown', handleKeydown)
   updateScrollState()
   window.addEventListener('scroll', handleWindowScroll, { passive: true })
   window.addEventListener('resize', handleWindowResize, { passive: true })
@@ -532,6 +561,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
+  document.removeEventListener('keydown', handleKeydown)
   window.removeEventListener('scroll', handleWindowScroll)
   window.removeEventListener('resize', handleWindowResize)
 })

@@ -261,31 +261,52 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
+import { prefersReducedMotion } from '../../motion'
 import crescentMoonImg from '../../assets/crescent-moon.png'
 
 const sceneRef = ref<HTMLElement | null>(null)
 
-// Subtle parallax on mouse move
-function onMouseMove(e: MouseEvent) {
-  if (!sceneRef.value) return
+let rafId: number | null = null
+let pendingMouseEvent: MouseEvent | null = null
+let farEl: HTMLElement | null = null
+let midEl: HTMLElement | null = null
+let nearEl: HTMLElement | null = null
+let birdsEl: HTMLElement | null = null
+
+function applyParallax() {
+  rafId = null
+  if (!pendingMouseEvent) return
+  const e = pendingMouseEvent
   const cx = (e.clientX / window.innerWidth - 0.5) * 2
   const cy = (e.clientY / window.innerHeight - 0.5) * 2
-  const far = sceneRef.value.querySelector('.mountain-far') as HTMLElement
-  const mid = sceneRef.value.querySelector('.mountain-mid') as HTMLElement
-  const near = sceneRef.value.querySelector('.mountain-near') as HTMLElement
-  const birds = sceneRef.value.querySelector('.flying-birds') as HTMLElement
-  if (far) far.style.transform = `translateX(${cx * 6}px) translateY(${cy * 3}px)`
-  if (mid) mid.style.transform = `translateX(${cx * 12}px) translateY(${cy * 5}px)`
-  if (near) near.style.transform = `translateX(${cx * 20}px) translateY(${cy * 8}px)`
-  if (birds) birds.style.transform = `translate(${cx * 15}px, ${cy * 6}px)`
+  if (farEl) farEl.style.transform = `translate3d(${cx * 6}px, ${cy * 3}px, 0)`
+  if (midEl) midEl.style.transform = `translate3d(${cx * 12}px, ${cy * 5}px, 0)`
+  if (nearEl) nearEl.style.transform = `translate3d(${cx * 20}px, ${cy * 8}px, 0)`
+  if (birdsEl) birdsEl.style.transform = `translate3d(${cx * 15}px, ${cy * 6}px, 0)`
+}
+
+function onMouseMove(e: MouseEvent) {
+  pendingMouseEvent = e
+  if (rafId !== null) return
+  rafId = requestAnimationFrame(applyParallax)
 }
 
 onMounted(() => {
-  window.addEventListener('mousemove', onMouseMove)
+  if (!prefersReducedMotion() && sceneRef.value) {
+    farEl = sceneRef.value.querySelector('.mountain-far')
+    midEl = sceneRef.value.querySelector('.mountain-mid')
+    nearEl = sceneRef.value.querySelector('.mountain-near')
+    birdsEl = sceneRef.value.querySelector('.flying-birds')
+    window.addEventListener('mousemove', onMouseMove)
+  }
 })
 
 onUnmounted(() => {
   window.removeEventListener('mousemove', onMouseMove)
+  if (rafId !== null) {
+    cancelAnimationFrame(rafId)
+    rafId = null
+  }
 })
 </script>
 
@@ -1167,5 +1188,49 @@ onUnmounted(() => {
 .moon-wrapper,
 .moonlight-path {
   display: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .moon-body,
+  .crescent-glow,
+  .crescent-bloom,
+  .moon-cloud,
+  .moon-star,
+  .mountain-far,
+  .mountain-mid,
+  .mountain-near,
+  .pine-trees,
+  .layer-mist,
+  .water-surface,
+  .waterline-glow,
+  .wave-strip,
+  .moon-disc-reflection,
+  .moonpath-center,
+  .moonpath-wing,
+  .moonpath-sparkle,
+  .sparkle,
+  .wisp,
+  .flying-birds,
+  .bird-group,
+  .boat-silhouette {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .mountain-far,
+  .mountain-mid,
+  .mountain-near,
+  .water-surface,
+  .layer-mist {
+    opacity: 1 !important;
+  }
+
+  .wisp {
+    opacity: 0.2 !important;
+  }
+
+  .mountain-svg {
+    transition: none !important;
+  }
 }
 </style>

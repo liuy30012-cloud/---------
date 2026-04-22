@@ -30,9 +30,9 @@
         v-if="normalizedToast.closable"
         class="toast-close"
         @click="handleClose"
-        aria-label="关闭"
+        :aria-label="t('common.button.close')"
       >
-        <span class="material-symbols-outlined">close</span>
+        <span class="material-symbols-outlined" aria-hidden="true">close</span>
       </button>
 
       <div
@@ -46,6 +46,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import type { Toast, ToastAction, ToastType } from '@/types/feedback'
 import { TOAST_ICONS, TOAST_TRANSITION_DURATION } from '@/constants/toastIcons'
 
@@ -53,6 +54,8 @@ type LegacyToast = {
   message: string
   type: Exclude<ToastType, 'warning' | 'loading'>
 }
+
+const { t } = useI18n()
 
 const props = defineProps<{
   toast: Toast | LegacyToast
@@ -290,4 +293,5 @@ const handleAction = (action: ToastAction) => {
     bottom: auto;
   }
 }
+
 </style>

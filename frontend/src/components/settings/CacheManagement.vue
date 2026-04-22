@@ -277,7 +277,7 @@ onMounted(() => {
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
 }
 
 .action-button:disabled {
@@ -370,5 +370,11 @@ onMounted(() => {
 
 .cache-info li {
   margin-bottom: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .button-icon--spin {
+    animation: none !important;
+  }
 }
 </style>

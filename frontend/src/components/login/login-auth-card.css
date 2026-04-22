@@ -8,7 +8,7 @@
   align-items: center;
   opacity: 0;
   transform: translateY(28px) scale(0.98);
-  transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .login-container.entered {
@@ -100,6 +100,14 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .typed-char {
+    animation: none;
+    opacity: 1;
+    transform: none;
   }
 }
 
@@ -483,6 +491,9 @@
   transform: rotate(11deg);
   opacity: 0.52;
   cursor: pointer;
+  background: transparent;
+  padding: 0;
+  font: inherit;
   transition: transform 0.22s ease, opacity 0.22s ease;
 }
 

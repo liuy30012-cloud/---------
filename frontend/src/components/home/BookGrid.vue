@@ -6,19 +6,19 @@
         <p class="catalog-subtitle">{{ $t('catalog.featuredSub') }}</p>
       </div>
       <div class="view-toggles">
-        <LibraryButton type="ghost" size="small" :class="{ 'is-active': viewMode === 'grid' }" @click="$emit('setViewMode', 'grid')"><span class="material-symbols-outlined">grid_view</span></LibraryButton>
-        <LibraryButton type="ghost" size="small" :class="{ 'is-active': viewMode === 'list' }" @click="$emit('setViewMode', 'list')"><span class="material-symbols-outlined">view_list</span></LibraryButton>
+        <LibraryButton type="ghost" size="small" :class="{ 'is-active': viewMode === 'grid' }" :aria-pressed="viewMode === 'grid'" :aria-label="$t('catalog.gridView')" @click="$emit('setViewMode', 'grid')"><span class="material-symbols-outlined" aria-hidden="true">grid_view</span></LibraryButton>
+        <LibraryButton type="ghost" size="small" :class="{ 'is-active': viewMode === 'list' }" :aria-pressed="viewMode === 'list'" :aria-label="$t('catalog.listView')" @click="$emit('setViewMode', 'list')"><span class="material-symbols-outlined" aria-hidden="true">view_list</span></LibraryButton>
       </div>
     </div>
 
     <!-- Loading State -->
-    <div v-if="loading" class="state-message">
-      <div class="spinner"></div>
+    <div v-if="loading" class="state-message" role="status" aria-live="polite">
+      <div class="spinner" aria-hidden="true"></div>
       <p>{{ $t('catalog.loading') }}</p>
     </div>
 
     <!-- Empty State -->
-    <div v-else-if="books.length === 0" class="state-message empty">
+    <div v-else-if="books.length === 0" class="state-message empty" role="status" aria-live="polite">
       <p>{{ $t('catalog.empty') }}</p>
     </div>
 
@@ -28,7 +28,10 @@
         v-for="book in books"
         :key="book.id + '-' + (book.status || 'db')"
         class="book-card"
+        role="button"
+        tabindex="0"
         @click="$emit('goToDetail', Number(book.id))"
+        @keydown.enter="$emit('goToDetail', Number(book.id))"
       >
         <div class="book-cover-wrapper">
           <img v-if="book.coverUrl" :src="book.coverUrl" :alt="book.title" class="book-cover-img" @error="onImgError" />

@@ -22,9 +22,9 @@
           @click="openBook(book.bookId)"
         >
         <div class="related-cover">
-          <img v-if="book.coverUrl" :src="book.coverUrl" :alt="book.title" class="related-img" />
+          <img v-if="book.coverUrl" :src="book.coverUrl" :alt="book.title" class="related-img" width="120" height="160" loading="lazy" />
           <div v-else class="related-placeholder">
-            <span class="material-symbols-outlined">menu_book</span>
+            <span class="material-symbols-outlined" aria-hidden="true">menu_book</span>
           </div>
         </div>
         <h4 class="related-item-title">{{ book.title }}</h4>
@@ -35,8 +35,8 @@
     </div>
 
     <div class="carousel-controls" v-if="books.length > 0">
-      <button v-reveal="{ preset: 'card', delay: 0.04, once: true }" class="nav-arrow" @click="scrollCarousel('left')"><span class="material-symbols-outlined">chevron_left</span></button>
-      <button v-reveal="{ preset: 'card', delay: 0.1, once: true }" class="nav-arrow" @click="scrollCarousel('right')"><span class="material-symbols-outlined">chevron_right</span></button>
+      <button v-reveal="{ preset: 'card', delay: 0.04, once: true }" class="nav-arrow" @click="scrollCarousel('left')"><span class="material-symbols-outlined" aria-hidden="true">chevron_left</span></button>
+      <button v-reveal="{ preset: 'card', delay: 0.1, once: true }" class="nav-arrow" @click="scrollCarousel('right')"><span class="material-symbols-outlined" aria-hidden="true">chevron_right</span></button>
     </div>
   </section>
 </template>

@@ -1,7 +1,7 @@
 <template>
   <div class="icon-btn-wrapper">
     <LibraryButton type="ghost" size="small" ref="notifBtnRef" @click="togglePanel">
-      <span class="material-symbols-outlined">notifications</span>
+      <span class="material-symbols-outlined" aria-hidden="true">notifications</span>
       <span v-if="unreadCount > 0" class="unread-badge">{{ unreadCount }}</span>
     </LibraryButton>
     <Transition name="popup">
@@ -224,7 +224,7 @@ onUnmounted(() => {
 
 .popup-enter-active,
 .popup-leave-active {
-  transition: all 0.2s ease;
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
 .popup-enter-from,

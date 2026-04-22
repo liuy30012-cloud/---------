@@ -3,7 +3,7 @@
     <div class="modal-content" @click.stop>
       <div class="modal-header">
         <h2>{{ t('quickActions.renewModal.title') }}</h2>
-        <button class="close-btn" @click="$emit('close')">×</button>
+        <button class="close-btn" :aria-label="t('common.button.close')" type="button" @click="$emit('close')">×</button>
       </div>
 
       <div class="modal-body">
@@ -63,7 +63,7 @@
 
       <div class="modal-footer">
         <p class="info-text">{{ t('quickActions.renewModal.info') }}</p>
-        <button class="btn-close" @click="$emit('close')">{{ t('quickActions.renewModal.close') }}</button>
+        <button class="btn-close" type="button" @click="$emit('close')">{{ t('quickActions.renewModal.close') }}</button>
       </div>
     </div>
   </div>
@@ -151,6 +151,7 @@ function showMessage(text: string, tone: 'success' | 'error') {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.5);
+  overscroll-behavior: contain;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -386,5 +387,15 @@ function showMessage(text: string, tone: 'success' | 'error') {
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .renew-modal__panel {
+    animation: none !important;
+  }
+  .renew-spinner,
+  .button-icon--spin {
+    animation: none !important;
+  }
 }
 </style>

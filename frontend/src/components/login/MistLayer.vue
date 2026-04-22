@@ -85,4 +85,10 @@
     opacity: 0.2;
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .mist {
+    animation: none !important;
+  }
+}
 </style>

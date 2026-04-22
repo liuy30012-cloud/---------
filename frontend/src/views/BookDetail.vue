@@ -20,9 +20,9 @@
 
       <section v-reveal="{ preset: 'section', once: true }" class="book-main surface-card">
         <div class="book-cover-panel">
-          <img v-if="book.coverUrl" :src="book.coverUrl" :alt="book.title" class="book-cover-large" @error="onImgError" />
+          <img v-if="book.coverUrl" :src="book.coverUrl" :alt="book.title" class="book-cover-large" width="200" height="280" @error="onImgError" />
           <div v-else class="book-cover-placeholder-large">
-            <span class="material-symbols-outlined">menu_book</span>
+            <span class="material-symbols-outlined" aria-hidden="true">menu_book</span>
           </div>
 
           <div class="status-ribbon" :class="book.availableCopies > 0 ? 'status-ribbon--available' : 'status-ribbon--busy'">
@@ -57,7 +57,7 @@
         <div class="book-info-panel">
           <div class="rating-strip">
             <div class="stars">
-              <span v-for="i in 5" :key="i" class="star" :class="{ filled: i <= Math.round(book.averageRating || 0) }">★</span>
+              <span v-for="i in 5" :key="i" class="star" :class="{ filled: i <= Math.round(book.averageRating || 0) }" aria-hidden="true">★</span>
             </div>
             <span class="rating-text">{{ Number(book.averageRating || 0).toFixed(1) }} · {{ t('bookDetail.rating', { count: book.totalReviews }) }}</span>
           </div>
@@ -69,11 +69,12 @@
               type="button"
               @click="toggleFavorite"
             >
-              <span class="material-symbols-outlined">{{ isFavorited ? 'favorite' : 'favorite_border' }}</span>
+              <span class="material-symbols-outlined" aria-hidden="true">{{ isFavorited ? 'favorite' : 'favorite_border' }}</span>
               <span>{{ isFavorited ? t('bookDetail.favorite.active') : t('bookDetail.favorite.inactive') }}</span>
             </button>
+            <label class="visually-hidden" for="reading-status">{{ t('bookDetail.readingStatus.label') }}</label>
             <div class="reading-status-selector">
-              <select v-model="currentReadingStatus" @change="updateReadingStatus">
+              <select id="reading-status" v-model="currentReadingStatus" name="reading_status" @change="updateReadingStatus">
                 <option value="">{{ t('bookDetail.readingStatus.label') }}</option>
                 <option value="WANT_TO_READ">{{ t('bookDetail.readingStatus.wantToRead') }}</option>
                 <option value="READING">{{ t('bookDetail.readingStatus.reading') }}</option>
@@ -81,8 +82,11 @@
               </select>
             </div>
             <div v-if="currentReadingStatus" class="notes-section">
+              <label class="visually-hidden" for="reading-notes">{{ t('bookDetail.notes.placeholder') }}</label>
               <textarea
+                id="reading-notes"
                 v-model="readingNotes"
+                name="reading_notes"
                 rows="2"
                 :placeholder="t('bookDetail.notes.placeholder')"
                 @blur="saveNotes"
@@ -187,13 +191,15 @@
                 class="star-toggle"
                 :class="{ active: i <= reviewDraft.rating }"
                 type="button"
+                :aria-label="t('bookDetail.reviews.starLabel', { value: i })"
                 @click="reviewDraft.rating = i"
               >
-                ★
+                <span aria-hidden="true">★</span>
               </button>
             </div>
           </div>
-          <textarea v-model="reviewDraft.content" rows="4" :placeholder="t('bookDetail.reviews.placeholder')" />
+          <label class="visually-hidden" for="review-content">{{ t('bookDetail.reviews.placeholder') }}</label>
+          <textarea id="review-content" v-model="reviewDraft.content" rows="4" :placeholder="t('bookDetail.reviews.placeholder')" name="review_content" />
           <div class="review-actions">
             <LibraryButton type="primary" :loading="isSubmitting" success-text="评论已提交" error-text="评论提交失败" @click="submitReview">
               {{ t('bookDetail.reviews.submit') }}
@@ -208,7 +214,7 @@
               <div>
                 <strong>{{ review.username }}</strong>
                 <div class="stars stars--small">
-                  <span v-for="i in 5" :key="i" class="star" :class="{ filled: i <= review.rating }">★</span>
+                  <span v-for="i in 5" :key="i" class="star" :class="{ filled: i <= review.rating }" aria-hidden="true">★</span>
                 </div>
               </div>
               <span>{{ formatDate(review.createdAt) }}</span>
@@ -231,9 +237,9 @@
             :aria-label="t('bookDetail.related.ariaLabel', { title: related.title })"
             @click="goToBook(related.id)"
           >
-            <img v-if="related.coverUrl" :src="related.coverUrl" :alt="related.title" @error="onImgError" />
+            <img v-if="related.coverUrl" :src="related.coverUrl" :alt="related.title" width="120" height="160" loading="lazy" @error="onImgError" />
             <div v-else class="related-placeholder">
-              <span class="material-symbols-outlined">menu_book</span>
+              <span class="material-symbols-outlined" aria-hidden="true">menu_book</span>
             </div>
             <h3>{{ related.title }}</h3>
             <p>{{ related.author }}</p>
@@ -977,7 +983,7 @@ async function saveNotes() {
   font-size: 0.88rem;
   font-weight: 600;
   color: var(--on-surface-variant);
-  transition: all 0.2s ease;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
 .fav-toggle:hover {
@@ -1010,10 +1016,11 @@ async function saveNotes() {
   font-size: 0.88rem;
   color: var(--on-surface);
   cursor: pointer;
-  outline: none;
 }
 
-.reading-status-selector select:focus {
+.reading-status-selector select:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
   border-color: var(--primary);
 }
 
@@ -1030,11 +1037,13 @@ async function saveNotes() {
   font-size: 0.85rem;
   color: var(--on-surface);
   resize: vertical;
-  outline: none;
   font-family: inherit;
 }
 
-.notes-section textarea:focus {
+.notes-section textarea:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
   border-color: var(--primary);
 }
+
 </style>

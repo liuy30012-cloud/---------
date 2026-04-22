@@ -60,6 +60,7 @@ void props
   padding: 1.5rem;
   background: rgba(23, 28, 22, 0.38);
   backdrop-filter: blur(18px) saturate(112%);
+  overscroll-behavior: contain;
 }
 
 .dialog-panel {

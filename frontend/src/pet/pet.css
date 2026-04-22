@@ -521,7 +521,6 @@
   appearance: none;
   background: #dbe4ea;
   border-radius: 2px;
-  outline: none;
 }
 .pet-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
@@ -558,7 +557,7 @@
   border-radius: 6px;
   font-size: 12px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background 0.2s, border-color 0.2s;
   margin-top: 4px;
 }
 .pet-reset-btn:hover {

@@ -36,6 +36,8 @@ onMounted(() => {
     return
   }
 
+  gsap.set(targets, { willChange: 'transform, opacity' })
+
   gsap.fromTo(
     targets,
     {
@@ -52,6 +54,9 @@ onMounted(() => {
       stagger: 0.08,
       delay: 0.04,
       clearProps: 'filter',
+      onComplete: () => {
+        gsap.set(targets, { willChange: 'auto' })
+      },
     }
   )
 })

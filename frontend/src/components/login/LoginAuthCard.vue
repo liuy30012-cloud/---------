@@ -16,7 +16,7 @@
 
     <div class="login-brand">
       <div class="badge-ring">
-        <img src="/school-badge.png" :alt="t('login.schoolBadgeAlt')" class="brand-badge" />
+        <img src="/school-badge.png" :alt="t('login.schoolBadgeAlt')" class="brand-badge" width="80" height="80" />
       </div>
       <h2 class="brand-name">{{ t('login.brandName') }}</h2>
       <p class="brand-subtitle">{{ t('login.brandSubtitle') }}</p>
@@ -154,8 +154,14 @@
           </div>
 
           <div v-if="props.isLogin" class="form-extras">
-            <label class="checkbox-label" @click.prevent="toggleRememberMe">
-              <div class="custom-check-box" :class="{ checked: props.formData.rememberMe }">
+            <label class="checkbox-label">
+              <input
+                type="checkbox"
+                class="visually-hidden"
+                :checked="props.formData.rememberMe"
+                @change="toggleRememberMe"
+              />
+              <div class="custom-check-box" :class="{ checked: props.formData.rememberMe }" aria-hidden="true">
                 <span class="material-symbols-outlined check-icon">check</span>
               </div>
               <span>{{ t('login.rememberMe') }}</span>
@@ -223,9 +229,9 @@
         </form>
       </Transition>
 
-      <div class="seal-stamp" :class="{ 'seal-clicked': props.sealClicked }" @click.stop="emit('seal-click')">
+      <button class="seal-stamp" :class="{ 'seal-clicked': props.sealClicked }" type="button" :aria-label="t('login.sealAriaLabel')" @click.stop="emit('seal-click')">
         <span class="seal-text">{{ props.sealText }}</span>
-      </div>
+      </button>
 
       <div class="card-light" :style="props.cardLightStyle"></div>
     </div>

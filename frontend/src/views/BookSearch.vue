@@ -19,12 +19,16 @@
 
     <div class="search-layout">
       <aside v-reveal="{ preset: 'sidebar', once: true }" class="search-sidebar surface-card">
+        <form @submit.prevent="submitSearch">
         <div class="search-group">
-          <label>{{ t('bookSearch.sidebar.keyword') }}</label>
+          <label for="search-keyword">{{ t('bookSearch.sidebar.keyword') }}</label>
           <div ref="keywordComboboxRef" class="search-combobox">
             <input
+              id="search-keyword"
               v-model="form.keyword"
               type="text"
+              name="keyword"
+              autocomplete="off"
               role="combobox"
               aria-autocomplete="list"
               :aria-expanded="keywordAutocompleteOpen"
@@ -64,38 +68,38 @@
           </div>
         </div>
         <div class="search-group">
-          <label>{{ t('bookSearch.sidebar.author') }}</label>
-          <input v-model="form.author" type="text" :placeholder="t('bookSearch.sidebar.authorPlaceholder')" @keyup.enter="submitSearch" />
+          <label for="search-author">{{ t('bookSearch.sidebar.author') }}</label>
+          <input id="search-author" v-model="form.author" type="text" name="author" autocomplete="off" :placeholder="t('bookSearch.sidebar.authorPlaceholder')" @keyup.enter="submitSearch" />
         </div>
         <div class="search-group">
-          <label>{{ t('bookSearch.sidebar.year') }}</label>
-          <input v-model="form.year" type="text" :placeholder="t('bookSearch.sidebar.yearPlaceholder')" @keyup.enter="submitSearch" />
+          <label for="search-year">{{ t('bookSearch.sidebar.year') }}</label>
+          <input id="search-year" v-model="form.year" type="text" name="year" autocomplete="off" inputmode="numeric" :placeholder="t('bookSearch.sidebar.yearPlaceholder')" @keyup.enter="submitSearch" />
         </div>
         <div class="search-group">
-          <label>{{ t('bookSearch.sidebar.category') }}</label>
-          <select v-model="form.category">
+          <label for="search-category">{{ t('bookSearch.sidebar.category') }}</label>
+          <select id="search-category" v-model="form.category" name="category">
             <option value="">{{ t('bookSearch.sidebar.allCategories') }}</option>
             <option v-for="category in categories" :key="category" :value="category">{{ category }}</option>
           </select>
         </div>
         <div class="search-group">
-          <label>{{ t('bookSearch.sidebar.language') }}</label>
-          <select v-model="form.language">
+          <label for="search-language">{{ t('bookSearch.sidebar.language') }}</label>
+          <select id="search-language" v-model="form.language" name="language">
             <option value="">{{ t('bookSearch.sidebar.allLanguages') }}</option>
             <option v-for="language in languages" :key="language" :value="language">{{ language }}</option>
           </select>
         </div>
         <div class="search-group">
-          <label>{{ t('bookSearch.sidebar.status') }}</label>
-          <select v-model="form.status">
+          <label for="search-status">{{ t('bookSearch.sidebar.status') }}</label>
+          <select id="search-status" v-model="form.status" name="status">
             <option value="">{{ t('bookSearch.sidebar.allStatus') }}</option>
             <option value="AVAILABLE">{{ t('bookSearch.sidebar.availableNow') }}</option>
             <option value="CHECKED_OUT">{{ t('bookSearch.sidebar.checkedOut') }}</option>
           </select>
         </div>
         <div class="search-group">
-          <label>{{ t('bookSearch.sidebar.sort') }}</label>
-          <select v-model="form.sort">
+          <label for="search-sort">{{ t('bookSearch.sidebar.sort') }}</label>
+          <select id="search-sort" v-model="form.sort" name="sort">
             <option value="relevance">{{ t('bookSearch.sortOptions.relevance') }}</option>
             <option value="popular">{{ t('bookSearch.sortOptions.popular') }}</option>
             <option value="availability">{{ t('bookSearch.sortOptions.availability') }}</option>
@@ -103,15 +107,16 @@
             <option value="title_asc">{{ t('bookSearch.sortOptions.titleAsc') }}</option>
           </select>
         </div>
-        <button class="sidebar-submit" type="button" :disabled="loading" @click="submitSearch">
+        <button class="sidebar-submit" type="submit" :disabled="loading">
           <span v-if="loading" class="btn-spinner"></span>
           {{ loading ? t('bookSearch.sidebar.searching') : t('bookSearch.sidebar.updateResults') }}
         </button>
+        </form>
       </aside>
 
       <section class="search-results">
-        <div v-if="errorMessage" v-reveal="{ preset: 'section', once: true }" class="error-banner">
-          <span class="material-symbols-outlined">warning</span>
+        <div v-if="errorMessage" v-reveal="{ preset: 'section', once: true }" class="error-banner" aria-live="polite">
+          <span class="material-symbols-outlined" aria-hidden="true">warning</span>
           <span>{{ errorMessage }}</span>
         </div>
 
@@ -201,9 +206,9 @@
             @click="goToBookDetail(book.id)"
           >
             <div class="result-cover">
-              <img v-if="book.coverUrl" :src="book.coverUrl" :alt="book.title" />
+              <img v-if="book.coverUrl" :src="book.coverUrl" :alt="book.title" width="120" height="160" loading="lazy" />
               <div v-else class="result-cover-placeholder">
-                <span class="material-symbols-outlined">menu_book</span>
+                <span class="material-symbols-outlined" aria-hidden="true">menu_book</span>
               </div>
               <span class="result-badge" :class="book.availableCopies > 0 ? 'result-badge--available' : 'result-badge--busy'">
                 {{ book.availableCopies > 0 ? t('bookSearch.badge.available') : t('bookSearch.badge.reserve') }}
@@ -216,7 +221,7 @@
                 :aria-label="favoritedBookIds.has(book.id) ? t('bookSearch.favorite.remove') : t('bookSearch.favorite.add')"
                 @click.stop="toggleFavoriteFromSearch(book.id)"
               >
-                <span class="material-symbols-outlined">{{ favoritedBookIds.has(book.id) ? 'favorite' : 'favorite_border' }}</span>
+                <span class="material-symbols-outlined" aria-hidden="true">{{ favoritedBookIds.has(book.id) ? 'favorite' : 'favorite_border' }}</span>
               </button>
             </div>
             <div class="result-copy">
@@ -224,7 +229,7 @@
               <p class="result-author">{{ book.author }}</p>
               <p class="result-meta">{{ book.category }} · {{ book.languageCode }} · {{ book.year || t('bookSearch.yearUnknown') }}</p>
               <div class="location-pill">
-                <span class="material-symbols-outlined">location_on</span>
+                <span class="material-symbols-outlined" aria-hidden="true">location_on</span>
                 <span>{{ book.location }}</span>
               </div>
               <div class="result-footer">
@@ -759,10 +764,11 @@ function circulationLabel(policy: string) {
   color: rgba(229, 217, 197, 0.42);
 }
 
-.search-group input:focus,
-.search-group select:focus,
-.toolbar-actions select:focus {
-  outline: none;
+.search-group input:focus-visible,
+.search-group select:focus-visible,
+.toolbar-actions select:focus-visible {
+  outline: 2px solid rgba(215, 179, 122, 0.5);
+  outline-offset: 2px;
   border-color: rgba(215, 179, 122, 0.36);
   box-shadow:
     0 0 0 4px rgba(199, 160, 103, 0.08),
@@ -1248,7 +1254,7 @@ function circulationLabel(policy: string) {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
   z-index: 2;
 }
@@ -1270,4 +1276,5 @@ function circulationLabel(policy: string) {
 .fav-heart--active:hover {
   background: rgba(229, 62, 62, 0.18);
 }
+
 </style>

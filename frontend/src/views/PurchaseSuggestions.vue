@@ -8,7 +8,7 @@
       <template #actions>
         <div class="page-actions">
           <LibraryButton type="secondary" @click="loadBoard">
-            <span class="material-symbols-outlined">refresh</span>
+            <span class="material-symbols-outlined" aria-hidden="true">refresh</span>
             <span>{{ t('purchaseSuggestions.buttons.refresh') }}</span>
           </LibraryButton>
           <LibraryButton
@@ -16,7 +16,7 @@
             type="secondary"
             @click="exportSuggestions"
           >
-            <span class="material-symbols-outlined">download</span>
+            <span class="material-symbols-outlined" aria-hidden="true">download</span>
             <span>{{ t('purchaseSuggestions.buttons.exportSuggestions') }}</span>
           </LibraryButton>
           <LibraryButton
@@ -24,7 +24,7 @@
             type="primary"
             @click="loadAdminData"
           >
-            <span class="material-symbols-outlined">tune</span>
+            <span class="material-symbols-outlined" aria-hidden="true">tune</span>
             <span>{{ t('purchaseSuggestions.buttons.refreshAdmin') }}</span>
           </LibraryButton>
         </div>
@@ -71,11 +71,11 @@
         </div>
 
         <div class="process-card surface-card">
-          <div class=”section-heading”>
-            <p class=”section-kicker”>{{ t('purchaseSuggestions.process.kicker') }}</p>
+          <div class="section-heading">
+            <p class="section-kicker">{{ t('purchaseSuggestions.process.kicker') }}</p>
             <h2>{{ t('purchaseSuggestions.process.title') }}</h2>
           </div>
-          <ol class=”process-list”>
+          <ol class="process-list">
             <li>{{ t('purchaseSuggestions.process.step1') }}</li>
             <li>{{ t('purchaseSuggestions.process.step2') }}</li>
             <li>{{ t('purchaseSuggestions.process.step3') }}</li>
@@ -93,20 +93,21 @@
           <form class="request-form" @submit.prevent="submitRequest">
             <label class="field">
               <span class="field-label">{{ t('purchaseSuggestions.form.bookTitle') }}</span>
-              <input v-model.trim="requestForm.title" type="text" maxlength="200" :placeholder="t('purchaseSuggestions.form.bookTitlePlaceholder')" />
+              <input v-model.trim="requestForm.title" type="text" name="title" autocomplete="off" maxlength="200" :placeholder="t('purchaseSuggestions.form.bookTitlePlaceholder')" />
             </label>
             <label class="field">
               <span class="field-label">{{ t('purchaseSuggestions.form.author') }}</span>
-              <input v-model.trim="requestForm.author" type="text" maxlength="100" :placeholder="t('purchaseSuggestions.form.authorPlaceholder')" />
+              <input v-model.trim="requestForm.author" type="text" name="author" autocomplete="off" maxlength="100" :placeholder="t('purchaseSuggestions.form.authorPlaceholder')" />
             </label>
             <label class="field">
               <span class="field-label">{{ t('purchaseSuggestions.form.isbn') }}</span>
-              <input v-model.trim="requestForm.isbn" type="text" maxlength="32" :placeholder="t('purchaseSuggestions.form.isbnPlaceholder')" />
+              <input v-model.trim="requestForm.isbn" type="text" name="isbn" autocomplete="off" inputmode="numeric" maxlength="32" :placeholder="t('purchaseSuggestions.form.isbnPlaceholder')" />
             </label>
             <label class="field">
               <span class="field-label">{{ t('purchaseSuggestions.form.reason') }}</span>
               <textarea
                 v-model.trim="requestForm.reason"
+                name="reason"
                 rows="4"
                 maxlength="500"
                 :placeholder="t('purchaseSuggestions.form.reasonPlaceholder')"
@@ -120,7 +121,7 @@
               error-text="提交失败"
               @click="submitRequest"
             >
-              <span class="material-symbols-outlined">library_add</span>
+              <span class="material-symbols-outlined" aria-hidden="true">library_add</span>
               <span>{{ submitting ? t('purchaseSuggestions.form.submitting') : t('purchaseSuggestions.form.submit') }}</span>
             </LibraryButton>
           </form>
@@ -139,8 +140,8 @@
         </div>
       </section>
 
-      <div v-if="feedback" :class="['feedback-banner', `feedback-banner--${feedback.tone}`]">
-        <span class="material-symbols-outlined">{{ feedbackIcon(feedback.tone) }}</span>
+      <div v-if="feedback" :class="['feedback-banner', `feedback-banner--${feedback.tone}`]" aria-live="polite">
+        <span class="material-symbols-outlined" aria-hidden="true">{{ feedbackIcon(feedback.tone) }}</span>
         <span>{{ feedback.message }}</span>
       </div>
 
@@ -154,7 +155,7 @@
         </div>
 
         <div v-if="!board?.requests?.length" class="empty-state">
-          <span class="material-symbols-outlined">menu_book</span>
+          <span class="material-symbols-outlined" aria-hidden="true">menu_book</span>
           <p>{{ t('purchaseSuggestions.empty.title') }}</p>
           <p class="empty-state__desc">{{ t('purchaseSuggestions.empty.description') }}</p>
         </div>
@@ -199,7 +200,7 @@
             <p class="request-reason">{{ request.reason || t('purchaseSuggestions.card.noReason') }}</p>
 
             <div v-if="request.statusNote" class="status-note">
-              <span class="material-symbols-outlined">campaign</span>
+              <span class="material-symbols-outlined" aria-hidden="true">campaign</span>
               <span>{{ request.statusNote }}</span>
             </div>
 
@@ -211,7 +212,7 @@
                 :loading="isVoting(request.id)"
                 @click="voteForRequest(request.id)"
               >
-                <span class="material-symbols-outlined">how_to_vote</span>
+                <span class="material-symbols-outlined" aria-hidden="true">how_to_vote</span>
                 <span>{{ voteButtonText(request) }}</span>
               </LibraryButton>
               <span class="footer-note">{{ t('purchaseSuggestions.card.createdAt') }} {{ formatFullDate(request.createdAt) }}</span>
@@ -244,7 +245,7 @@
                 :loading="isSavingStatus(request.id)"
                 @click="saveStatus(request.id)"
               >
-                <span class="material-symbols-outlined">save</span>
+                <span class="material-symbols-outlined" aria-hidden="true">save</span>
                 <span>{{ isSavingStatus(request.id) ? t('purchaseSuggestions.admin.saving') : t('purchaseSuggestions.admin.save') }}</span>
               </LibraryButton>
             </div>
@@ -262,12 +263,12 @@
         </div>
 
         <div v-if="suggestionsLoading && !suggestionSummary" class="empty-state empty-state--compact">
-          <span class="material-symbols-outlined">hourglass_top</span>
+          <span class="material-symbols-outlined" aria-hidden="true">hourglass_top</span>
           <p>{{ t('purchaseSuggestions.adminSection.loading') }}</p>
         </div>
 
         <div v-else-if="suggestionsError" class="empty-state empty-state--compact">
-          <span class="material-symbols-outlined">error</span>
+          <span class="material-symbols-outlined" aria-hidden="true">error</span>
           <p>{{ suggestionsError }}</p>
         </div>
 
@@ -296,7 +297,7 @@
           </div>
 
           <div v-if="!suggestionSummary.suggestions.length" class="empty-state empty-state--compact">
-            <span class="material-symbols-outlined">inventory_2</span>
+            <span class="material-symbols-outlined" aria-hidden="true">inventory_2</span>
             <p>{{ t('purchaseSuggestions.adminSection.noSuggestions') }}</p>
           </div>
 

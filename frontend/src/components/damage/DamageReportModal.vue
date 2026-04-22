@@ -3,7 +3,7 @@
     <div class="report-modal" @click.stop>
       <div class="modal-header">
         <h2>{{ t('damageReports.modal.title') }}</h2>
-        <button class="close-btn" @click="$emit('close')">✕</button>
+        <button class="close-btn" :aria-label="t('common.button.close')" type="button" @click="$emit('close')">✕</button>
       </div>
 
       <div class="modal-body">
@@ -32,7 +32,7 @@
           <div class="photo-grid">
             <div v-for="(file, idx) in photoPreviews" :key="idx" class="photo-item">
               <img :src="file.preview" :alt="t('damageReports.modal.photoAlt')" />
-              <button class="photo-remove" @click="removePhoto(idx)" type="button">✕</button>
+              <button class="photo-remove" :aria-label="t('common.button.delete')" type="button" @click="removePhoto(idx)">✕</button>
             </div>
             <label v-if="photoFiles.length < 3" class="photo-add">
               <input type="file" accept="image/jpeg,image/png,image/webp" multiple @change="onPhotoChange" />
@@ -186,6 +186,7 @@ async function submitReport() {
   z-index: 200;
   background: rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(6px);
+  overscroll-behavior: contain;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -269,7 +270,7 @@ async function submitReport() {
   color: rgba(50, 67, 56, 0.78);
   font-size: 0.8rem;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
 }
 
 .type-tag:hover {
@@ -359,8 +360,9 @@ async function submitReport() {
   box-sizing: border-box;
 }
 
-.form-textarea:focus {
-  outline: none;
+.form-textarea:focus-visible {
+  outline: 2px solid rgba(113, 138, 107, 0.5);
+  outline-offset: 2px;
   border-color: rgba(113, 138, 107, 0.34);
   box-shadow: 0 0 0 4px rgba(133, 160, 131, 0.12);
 }

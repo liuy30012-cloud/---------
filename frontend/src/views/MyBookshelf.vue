@@ -27,7 +27,7 @@
     </div>
 
     <div v-else-if="filteredItems.length === 0" class="state-card surface-card">
-      <span class="material-symbols-outlined empty-icon">auto_stories</span>
+      <span class="material-symbols-outlined empty-icon" aria-hidden="true">auto_stories</span>
       <p class="state-title">{{ emptyMessage }}</p>
       <LibraryButton type="primary" @click="goToSearch">
         {{ t('myBookshelf.goDiscover') }}
@@ -40,12 +40,17 @@
         :key="item.bookId"
         v-reveal="{ preset: 'card', delay: index * 0.04, once: true }"
         class="shelf-card"
+        role="button"
+        tabindex="0"
+        :aria-label="item.bookTitle"
         @click="goToBook(item.bookId)"
+        @keydown.enter="goToBook(item.bookId)"
+        @keydown.space.prevent="goToBook(item.bookId)"
       >
         <div class="shelf-cover">
-          <img v-if="item.coverUrl" :src="item.coverUrl" :alt="item.bookTitle" @error="onImgError" />
+          <img v-if="item.coverUrl" :src="item.coverUrl" :alt="item.bookTitle" width="120" height="160" loading="lazy" @error="onImgError" />
           <div v-else class="shelf-cover-placeholder">
-            <span class="material-symbols-outlined">menu_book</span>
+            <span class="material-symbols-outlined" aria-hidden="true">menu_book</span>
           </div>
           <span v-if="item.readingStatus" class="status-tag" :class="`status-tag--${item.readingStatus.toLowerCase()}`">
             {{ statusLabel(item.readingStatus) }}
@@ -56,16 +61,19 @@
             :aria-label="t('myBookshelf.ariaLabel.removeFav')"
             @click.stop="confirmRemove(item)"
           >
-            <span class="material-symbols-outlined">close</span>
+            <span class="material-symbols-outlined" aria-hidden="true">close</span>
           </button>
         </div>
         <div class="shelf-info">
           <h3>{{ item.bookTitle }}</h3>
           <p class="shelf-author">{{ item.author }}</p>
           <p v-if="item.category" class="shelf-meta">{{ item.category }}</p>
+          <label class="visually-hidden" :for="`reading-status-${item.bookId}`">{{ t('myBookshelf.select.label') }}</label>
           <div class="shelf-actions" @click.stop>
             <select
+              :id="`reading-status-${item.bookId}`"
               :value="item.readingStatus || ''"
+              name="reading_status"
               @change="updateStatus(item.bookId, ($event.target as HTMLSelectElement).value)"
             >
               <option value="">{{ t('myBookshelf.select.label') }}</option>
@@ -308,7 +316,7 @@ const onImgError = (event: Event) => handleImageError(event, '/logo-photo.jpg')
   font-size: 0.82rem;
   font-weight: 600;
   color: var(--on-surface-variant);
-  transition: all 0.2s ease;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
 .tabs button.active {
@@ -454,7 +462,7 @@ const onImgError = (event: Event) => handleImageError(event, '/logo-photo.jpg')
   align-items: center;
   justify-content: center;
   opacity: 0;
-  transition: all 0.2s ease;
+  transition: opacity 0.2s ease, background 0.2s ease, color 0.2s ease;
 }
 
 .shelf-card:hover .shelf-remove {
@@ -512,10 +520,11 @@ const onImgError = (event: Event) => handleImageError(event, '/logo-photo.jpg')
   font-size: 0.8rem;
   color: var(--on-surface);
   cursor: pointer;
-  outline: none;
 }
 
-.shelf-actions select:focus {
+.shelf-actions select:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
   border-color: var(--primary);
 }
 
@@ -535,4 +544,5 @@ const onImgError = (event: Event) => handleImageError(event, '/logo-photo.jpg')
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   }
 }
+
 </style>

@@ -33,7 +33,7 @@
           </div>
 
           <button type="button" class="offline-panel__close" @click="panelVisible = false" :aria-label="t('offlineIndicator.dismiss')">
-            <span class="material-symbols-outlined">close</span>
+            <span class="material-symbols-outlined" aria-hidden="true">close</span>
           </button>
         </div>
 

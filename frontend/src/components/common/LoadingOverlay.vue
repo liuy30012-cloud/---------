@@ -73,4 +73,10 @@ defineProps<{
     transform: rotate(360deg);
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .loading-icon {
+    animation: none !important;
+  }
+}
 </style>

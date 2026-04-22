@@ -8,7 +8,7 @@
       <template #actions>
         <div class="page-actions">
           <LibraryButton type="secondary" @click="refresh">
-            <span class="material-symbols-outlined">refresh</span>
+            <span class="material-symbols-outlined" aria-hidden="true">refresh</span>
             <span>{{ t('damageReports.refresh') }}</span>
           </LibraryButton>
         </div>
@@ -43,6 +43,7 @@
           :key="f.value"
           class="filter-chip"
           :class="{ active: currentFilter === f.value }"
+          type="button"
           @click="setFilter(f.value)"
         >
           {{ f.label }}
@@ -68,7 +69,11 @@
           :key="report.id"
           class="report-card surface-card"
           :class="'report-card--' + report.status.toLowerCase()"
+          role="button"
+          tabindex="0"
           @click="selectReport(report)"
+          @keydown.enter="selectReport(report)"
+          @keydown.space.prevent="selectReport(report)"
         >
           <div class="report-card-body">
             <div class="report-main">
@@ -90,9 +95,9 @@
 
       <!-- 分页 -->
       <div v-if="totalPages > 1" class="pagination">
-        <button class="page-btn" :disabled="page === 0" @click="page--; loadReports()">{{ t('damageReports.pagination.prev') }}</button>
+        <button class="page-btn" type="button" :disabled="page === 0" @click="page--; loadReports()">{{ t('damageReports.pagination.prev') }}</button>
         <span class="page-info">{{ page + 1 }} / {{ totalPages }}</span>
-        <button class="page-btn" :disabled="page >= totalPages - 1" @click="page++; loadReports()">{{ t('damageReports.pagination.next') }}</button>
+        <button class="page-btn" type="button" :disabled="page >= totalPages - 1" @click="page++; loadReports()">{{ t('damageReports.pagination.next') }}</button>
       </div>
     </section>
 
@@ -101,7 +106,7 @@
       <div class="detail-modal" @click.stop>
         <div class="modal-header">
           <h2>{{ t('damageReports.detail.title') }}</h2>
-          <button class="close-btn" @click="selectedReport = null">✕</button>
+          <button class="close-btn" :aria-label="t('common.button.close')" type="button" @click="selectedReport = null">✕</button>
         </div>
         <div class="modal-body">
           <div class="detail-section">
@@ -341,7 +346,7 @@ onMounted(() => {
   color: rgba(50, 67, 56, 0.7);
   font-size: 0.8rem;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
 
 .filter-chip.active {
@@ -478,6 +483,7 @@ onMounted(() => {
   z-index: 200;
   background: rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(6px);
+  overscroll-behavior: contain;
   display: flex;
   align-items: center;
   justify-content: center;

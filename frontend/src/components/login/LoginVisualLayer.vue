@@ -320,7 +320,6 @@ function handlePageAnimationEnd(pageId: number) {
   writing-mode: horizontal-tb;
   font-family: 'KaiTi', 'STKaiti', serif;
   animation: bookPageFall var(--duration, 30s) linear var(--delay, 0s) forwards;
-  will-change: transform, top;
   pointer-events: auto;
   cursor: text;
   user-select: text;
@@ -422,6 +421,23 @@ function handlePageAnimationEnd(pageId: number) {
     top: calc(100vh + 300px);
     transform: translateX(0);
     opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ink-dot,
+  .ambient-particle {
+    animation: none !important;
+    opacity: var(--dot-opacity, 0.08) !important;
+  }
+
+  .mouse-particle,
+  .click-ripple,
+  .ink-splash-dot,
+  .celebration-particle,
+  .book-page {
+    animation: none !important;
+    opacity: 0 !important;
   }
 }
 </style>

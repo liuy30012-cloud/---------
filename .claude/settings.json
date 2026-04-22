@@ -7,7 +7,11 @@
       "Bash(claude mcp:*)",
       "Bash(claude --version)",
       "Bash(node -e ' *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Read(//docs/superpowers/specs/**)",
+      "Bash(npm --prefix frontend run test:run -- src/test/components/home/HeroSection.spec.ts)",
+      "Bash(npm --prefix frontend run test:run -- src/test/App.spec.ts)",
+      "Bash(npm --prefix frontend run build)"
     ],
     "additionalDirectories": [
       "C:\\Users\\35012\\.claude"

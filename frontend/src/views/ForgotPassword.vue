@@ -5,9 +5,9 @@
 
       <div class="forgot-brand">
         <div class="badge-ring">
-          <img src="/school-badge.png" :alt="t('login.schoolBadgeAlt')" class="brand-badge" />
+          <img src="/school-badge.png" :alt="t('login.schoolBadgeAlt')" class="brand-badge" width="72" height="72" />
         </div>
-        <h2 class="brand-name">{{ t('login.brandName') }}</h2>
+        <h1 class="brand-name">{{ t('login.brandName') }}</h1>
       </div>
 
       <div class="forgot-card">
@@ -25,10 +25,13 @@
 
         <form class="forgot-form" @submit.prevent="handleQuery">
           <div class="input-group">
+            <label class="visually-hidden" for="student-id">{{ t('forgotPassword.inputPlaceholder') }}</label>
             <span class="material-symbols-outlined input-icon" aria-hidden="true">badge</span>
             <input
+              id="student-id"
               v-model="studentId"
               type="text"
+              name="student_id"
               class="forgot-input"
               :placeholder="t('forgotPassword.inputPlaceholder')"
               inputmode="numeric"
@@ -221,7 +224,7 @@ onUnmounted(() => {
   align-items: center;
   opacity: 0;
   transform: translateY(28px) scale(0.98);
-  transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .forgot-container.entered {
@@ -342,9 +345,13 @@ onUnmounted(() => {
   background: rgba(255, 255, 255, 0.6);
   font-size: 0.92rem;
   color: rgba(53, 63, 52, 0.92);
-  outline: none;
   transition: border-color 0.25s, box-shadow 0.25s;
   font-family: inherit;
+}
+
+.forgot-input:focus-visible {
+  outline: 2px solid rgba(154, 179, 151, 0.6);
+  outline-offset: 2px;
 }
 
 .forgot-input::placeholder {
@@ -474,11 +481,11 @@ onUnmounted(() => {
 
 /* 过渡动画 */
 .result-fade-enter-active {
-  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .result-fade-leave-active {
-  transition: all 0.2s ease-in;
+  transition: opacity 0.2s ease-in;
 }
 
 .result-fade-enter-from {
@@ -515,4 +522,5 @@ onUnmounted(() => {
     font-size: 1rem;
   }
 }
+
 </style>

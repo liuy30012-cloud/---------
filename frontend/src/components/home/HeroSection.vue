@@ -84,7 +84,7 @@
               <span class="hero-search-note">{{ t('hero.searchNote') }}</span>
             </div>
 
-            <div ref="searchComboboxRef" class="search-combobox">
+            <div ref="searchComboboxRef" class="search-combobox" @focusout="handleSearchFocusout">
               <div class="search-bar" role="search" aria-label="Search the library collection">
                 <span class="material-symbols-outlined search-icon" aria-hidden="true">search</span>
                 <input
@@ -101,7 +101,6 @@
                   spellcheck="false"
                   :placeholder="t('hero.searchPlaceholder')"
                   @focus="openSearchAutocompleteIfAvailable()"
-                  @blur="handleSearchBlur"
                   @input="handleSearchInput"
                   @keydown="handleSearchKeydown"
                 />
@@ -151,16 +150,16 @@
 
         <div class="hero-value-grid">
           <div class="hero-value-card">
-            <span class="hero-value-card__title">{{ t('hero.valueCard1Title') }}</span>
-            <span class="hero-value-card__desc">{{ t('hero.valueCard1Desc') }}</span>
+            <span class="hero-meta-key">{{ t('hero.metaTrust') }}</span>
+            <span class="hero-meta-value">{{ t('hero.metaTrustValue') }}</span>
           </div>
           <div class="hero-value-card">
-            <span class="hero-value-card__title">{{ t('hero.valueCard2Title') }}</span>
-            <span class="hero-value-card__desc">{{ t('hero.valueCard2Desc') }}</span>
+            <span class="hero-meta-key">{{ t('hero.metaContinuity') }}</span>
+            <span class="hero-meta-value">{{ t('hero.metaContinuityValue') }}</span>
           </div>
           <div class="hero-value-card">
-            <span class="hero-value-card__title">{{ t('hero.valueCard3Title') }}</span>
-            <span class="hero-value-card__desc">{{ t('hero.valueCard3Desc') }}</span>
+            <span class="hero-meta-key">{{ t('hero.metaNextStep') }}</span>
+            <span class="hero-meta-value">{{ t('hero.metaNextStepValue') }}</span>
           </div>
         </div>
       </div>
@@ -260,12 +259,11 @@ function applyTag(query: string) {
   submitSearch()
 }
 
-function handleSearchBlur() {
-  window.setTimeout(() => {
-    if (!searchComboboxRef.value?.contains(document.activeElement)) {
-      closeSearchAutocomplete()
-    }
-  }, 0)
+function handleSearchFocusout(event: FocusEvent) {
+  const relatedTarget = event.relatedTarget as Node | null
+  if (!searchComboboxRef.value?.contains(relatedTarget)) {
+    closeSearchAutocomplete()
+  }
 }
 
 function handleDocumentPointerDown(event: MouseEvent) {
@@ -285,93 +283,53 @@ onMounted(() => {
   requestAnimationFrame(() => {
     if (!heroRef.value) return
 
+    const isCompactViewport = window.matchMedia('(max-width: 767px)').matches
+    const parallaxFactor = isCompactViewport ? 0.35 : 1
+
     const context = gsap.context(() => {
       const railCards = gsap.utils.toArray<HTMLElement>('.hero-rail-card').filter(el => el instanceof HTMLElement && el.isConnected)
-      const metaCards = gsap.utils.toArray<HTMLElement>('.hero-meta-card').filter(el => el instanceof HTMLElement && el.isConnected)
-      const titleTargets = [copyRef.value, ...metaCards, searchPanelRef.value].filter(Boolean)
+      const valueCards = gsap.utils.toArray<HTMLElement>('.hero-value-card').filter(el => el instanceof HTMLElement && el.isConnected)
+      const introTargets = [copyRef.value, searchPanelRef.value, ...valueCards].filter(Boolean)
 
-      if (titleTargets.length > 0) {
-        gsap.set(titleTargets, { willChange: 'transform, opacity, filter' })
+      if (introTargets.length > 0) {
+        gsap.set(introTargets, { willChange: 'transform, opacity' })
       }
 
-      const enterTimeline = gsap.timeline({
-        defaults: {
-          ease: 'power3.out',
+      gsap.timeline({
+        defaults: { ease: 'power3.out' },
+        onComplete: () => {
+          if (introTargets.length > 0) {
+            gsap.set(introTargets, { willChange: 'auto' })
+          }
         },
       })
-
-      enterTimeline
         .fromTo(
           railCards,
-          {
-            autoAlpha: 0,
-            x: -24,
-            y: 18,
-            filter: 'blur(14px)',
-          },
-          {
-            autoAlpha: 1,
-            x: 0,
-            y: 0,
-            filter: 'blur(0px)',
-            duration: 0.7,
-            stagger: 0.08,
-            clearProps: 'filter',
-          }
+          { autoAlpha: 0, x: -20, y: 18, filter: 'blur(12px)' },
+          { autoAlpha: 1, x: 0, y: 0, filter: 'blur(0px)', duration: 0.68, stagger: 0.08, clearProps: 'filter' },
         )
         .fromTo(
           copyRef.value,
-          {
-            autoAlpha: 0,
-            y: 34,
-            filter: 'blur(16px)',
-          },
-          {
-            autoAlpha: 1,
-            y: 0,
-            filter: 'blur(0px)',
-            duration: 0.8,
-            clearProps: 'filter',
-          },
-          0.12
-        )
-        .fromTo(
-          metaCards,
-          {
-            autoAlpha: 0,
-            y: 22,
-            filter: 'blur(12px)',
-          },
-          {
-            autoAlpha: 1,
-            y: 0,
-            filter: 'blur(0px)',
-            duration: 0.56,
-            stagger: 0.08,
-            clearProps: 'filter',
-          },
-          0.3
+          { autoAlpha: 0, y: 28, filter: 'blur(14px)' },
+          { autoAlpha: 1, y: 0, filter: 'blur(0px)', duration: 0.74, clearProps: 'filter' },
+          0.1,
         )
         .fromTo(
           searchPanelRef.value,
-          {
-            autoAlpha: 0,
-            y: 24,
-            filter: 'blur(14px)',
-          },
-          {
-            autoAlpha: 1,
-            y: 0,
-            filter: 'blur(0px)',
-            duration: 0.62,
-            clearProps: 'filter',
-          },
-          0.42
+          { autoAlpha: 0, y: 24, filter: 'blur(12px)' },
+          { autoAlpha: 1, y: 0, filter: 'blur(0px)', duration: 0.6, clearProps: 'filter' },
+          0.24,
+        )
+        .fromTo(
+          valueCards,
+          { autoAlpha: 0, y: 18, filter: 'blur(10px)' },
+          { autoAlpha: 1, y: 0, filter: 'blur(0px)', duration: 0.5, stagger: 0.08, clearProps: 'filter' },
+          0.38,
         )
 
-      if (landscapeRef.value) {
+      if (!isCompactViewport && landscapeRef.value) {
         gsap.to(landscapeRef.value, {
-          yPercent: -6,
+          yPercent: -6 * parallaxFactor,
           ease: 'none',
           scrollTrigger: {
             trigger: heroRef.value,
@@ -382,10 +340,10 @@ onMounted(() => {
         })
       }
 
-      if (leftBambooRef.value) {
+      if (!isCompactViewport && leftBambooRef.value) {
         gsap.to(leftBambooRef.value, {
-          yPercent: -8,
-          xPercent: -2,
+          yPercent: -8 * parallaxFactor,
+          xPercent: -2 * parallaxFactor,
           ease: 'none',
           scrollTrigger: {
             trigger: heroRef.value,
@@ -396,10 +354,10 @@ onMounted(() => {
         })
       }
 
-      if (rightBambooRef.value) {
+      if (!isCompactViewport && rightBambooRef.value) {
         gsap.to(rightBambooRef.value, {
-          yPercent: -6,
-          xPercent: 2,
+          yPercent: -6 * parallaxFactor,
+          xPercent: 2 * parallaxFactor,
           ease: 'none',
           scrollTrigger: {
             trigger: heroRef.value,
@@ -410,9 +368,9 @@ onMounted(() => {
         })
       }
 
-      if (mistBackRef.value) {
+      if (!isCompactViewport && mistBackRef.value) {
         gsap.to(mistBackRef.value, {
-          yPercent: -10,
+          yPercent: -10 * parallaxFactor,
           ease: 'none',
           scrollTrigger: {
             trigger: heroRef.value,
@@ -423,10 +381,10 @@ onMounted(() => {
         })
       }
 
-      if (mistMidRef.value) {
+      if (!isCompactViewport && mistMidRef.value) {
         gsap.to(mistMidRef.value, {
-          yPercent: -6,
-          xPercent: 2,
+          yPercent: -6 * parallaxFactor,
+          xPercent: 2 * parallaxFactor,
           ease: 'none',
           scrollTrigger: {
             trigger: heroRef.value,
@@ -437,10 +395,10 @@ onMounted(() => {
         })
       }
 
-      if (mistFrontRef.value) {
+      if (!isCompactViewport && mistFrontRef.value) {
         gsap.to(mistFrontRef.value, {
-          yPercent: -14,
-          xPercent: -2,
+          yPercent: -14 * parallaxFactor,
+          xPercent: -2 * parallaxFactor,
           ease: 'none',
           scrollTrigger: {
             trigger: heroRef.value,
@@ -537,7 +495,7 @@ onBeforeUnmount(() => {
   left: 10%;
   width: min(40rem, 48vw);
   height: 8rem;
-  animation: heroMistDrift 22s ease-in-out infinite;
+  animation: heroMistDrift 24s ease-in-out infinite;
 }
 
 .hero-mist--mid {
@@ -545,7 +503,7 @@ onBeforeUnmount(() => {
   right: 12%;
   width: min(28rem, 32vw);
   height: 7rem;
-  animation: heroMistDrift 26s ease-in-out infinite reverse;
+  animation: heroMistDrift 28s ease-in-out infinite reverse;
 }
 
 .hero-mist--front {
@@ -553,8 +511,8 @@ onBeforeUnmount(() => {
   left: 30%;
   width: min(34rem, 40vw);
   height: 7.5rem;
-  opacity: 0.58;
-  animation: heroMistDrift 28s ease-in-out infinite;
+  opacity: 0.52;
+  animation: heroMistDrift 30s ease-in-out infinite;
 }
 
 .hero-landscape {
@@ -564,7 +522,7 @@ onBeforeUnmount(() => {
   width: min(100%, 90rem);
   height: auto;
   transform: translateX(-50%);
-  opacity: 0.74;
+  opacity: var(--hero-depth-opacity);
 }
 
 .hero-landscape-layer {
@@ -601,13 +559,13 @@ onBeforeUnmount(() => {
 .hero-bamboo--left {
   left: -1.5rem;
   transform-origin: left bottom;
-  animation: heroBambooSway 16s ease-in-out infinite;
+  animation: heroBambooSway 18s ease-in-out infinite;
 }
 
 .hero-bamboo--right {
   right: -1.5rem;
   transform-origin: right bottom;
-  animation: heroBambooSway 18s ease-in-out infinite reverse;
+  animation: heroBambooSway 20s ease-in-out infinite reverse;
 }
 
 .hero-bamboo-stalk,
@@ -652,8 +610,8 @@ onBeforeUnmount(() => {
   width: min(100% - 2 * var(--page-gutter), var(--page-width-home));
   margin: 0 auto;
   display: grid;
-  grid-template-columns: minmax(19rem, 23rem) minmax(0, 1fr);
-  gap: clamp(1.4rem, 2vw, 2.4rem);
+  grid-template-columns: minmax(14rem, var(--hero-rail-width)) minmax(0, 1fr);
+  gap: var(--hero-shell-gap);
   align-items: stretch;
 }
 
@@ -665,7 +623,7 @@ onBeforeUnmount(() => {
 
 .hero-rail-card,
 .hero-content,
-.hero-meta-card,
+.hero-value-card,
 .hero-search-panel {
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -677,7 +635,7 @@ onBeforeUnmount(() => {
   border-radius: calc(var(--radius-xl) + 0.35rem);
   background:
     linear-gradient(180deg, rgba(251, 249, 244, 0.9) 0%, rgba(237, 233, 223, 0.82) 100%);
-  border: 1px solid rgba(103, 110, 93, 0.16);
+  border: 1px solid var(--hero-border);
   box-shadow: var(--home-shadow-lift);
   overflow: hidden;
 }
@@ -698,7 +656,7 @@ onBeforeUnmount(() => {
   position: absolute;
   inset: 0.9rem;
   border-radius: inherit;
-  border: 1px solid rgba(255, 255, 255, 0.42);
+  border: 1px solid var(--hero-inner-border);
   opacity: 0.54;
   pointer-events: none;
 }
@@ -758,10 +716,9 @@ onBeforeUnmount(() => {
 .hero-content {
   position: relative;
   overflow: hidden;
-  padding: clamp(2rem, 4vw, 4rem);
+  padding: clamp(1.5rem, 2.5vw, 2.5rem);
   border-radius: 2.45rem;
-  background:
-    linear-gradient(180deg, rgba(250, 248, 242, 0.92) 0%, rgba(236, 242, 233, 0.84) 100%);
+  background: var(--hero-surface);
   border: 1px solid rgba(103, 110, 93, 0.18);
   box-shadow: var(--home-shadow-deep);
 }
@@ -782,13 +739,11 @@ onBeforeUnmount(() => {
   position: absolute;
   inset: 1rem;
   border-radius: calc(2.45rem - 1rem);
-  border: 1px solid rgba(255, 255, 255, 0.42);
+  border: 1px solid var(--hero-inner-border);
   opacity: 0.68;
   pointer-events: none;
 }
 
-.hero-copy,
-.hero-metadata,
 .hero-search-panel {
   position: relative;
   z-index: 1;
@@ -798,72 +753,31 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   gap: var(--space-6);
+  max-width: 46rem;
 }
 
 .hero-intro {
-  max-width: 47rem;
-}
-
-.hero-intro::after {
-  content: '';
-  display: block;
-  width: clamp(5rem, 10vw, 8rem);
-  height: 2px;
-  margin-top: var(--space-5);
-  border-radius: 999px;
-  background:
-    linear-gradient(90deg, rgba(103, 128, 101, 0.62) 0%, rgba(193, 167, 122, 0.34) 54%, transparent 100%);
-  box-shadow: 0 10px 20px rgba(139, 123, 95, 0.12);
+  max-width: 36rem;
 }
 
 .hero-value-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-4);
-  margin-top: var(--space-6);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
 }
 
 .hero-value-card {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
+  position: relative;
+  overflow: hidden;
   padding: var(--space-4);
-  border-radius: var(--radius-lg);
-  background:
-    linear-gradient(180deg, rgba(252, 249, 243, 0.76) 0%, rgba(242, 237, 228, 0.68) 100%);
-  border: 1px solid rgba(105, 116, 98, 0.14);
-  box-shadow: 0 14px 26px rgba(43, 52, 44, 0.08);
-}
-
-.hero-value-card__title {
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: var(--home-ink);
-}
-
-.hero-value-card__desc {
-  font-size: 0.84rem;
-  color: rgba(83, 94, 82, 0.72);
-}
-
-.hero-copy {
-  max-width: 47rem;
-}
-
-.hero-copy::after {
-  content: '';
-  display: block;
-  width: clamp(5rem, 10vw, 8rem);
-  height: 2px;
-  margin-top: var(--space-5);
-  border-radius: 999px;
-  background:
-    linear-gradient(90deg, rgba(103, 128, 101, 0.62) 0%, rgba(193, 167, 122, 0.34) 54%, transparent 100%);
-  box-shadow: 0 10px 20px rgba(139, 123, 95, 0.12);
+  border-radius: calc(var(--radius-lg) + 0.1rem);
+  background: var(--hero-card-surface);
+  border: 1px solid var(--hero-card-border);
+  box-shadow: var(--hero-card-shadow);
 }
 
 .hero-kicker {
-  margin: 0 0 var(--space-4);
+  margin: 0 0 var(--space-3);
   font-size: 0.76rem;
   font-family: var(--font-label);
   font-weight: 800;
@@ -874,49 +788,21 @@ onBeforeUnmount(() => {
 
 .hero-title {
   margin: 0;
-  max-width: 12ch;
+  max-width: 22ch;
   font-family: var(--font-headline);
-  font-size: clamp(3rem, 5vw, 4.8rem);
-  line-height: 1.02;
-  letter-spacing: -0.045em;
+  font-size: clamp(2rem, 2.6vw, 2.8rem);
+  line-height: 1.22;
+  letter-spacing: -0.02em;
   color: var(--home-ink);
   text-wrap: balance;
 }
 
 .hero-subtitle {
-  margin: var(--space-4) 0 0;
-  max-width: 48rem;
-  font-size: 1.02rem;
-  line-height: 1.9;
+  margin: var(--space-3) 0 0;
+  max-width: 36rem;
+  font-size: 0.95rem;
+  line-height: 1.7;
   color: rgba(54, 67, 55, 0.8);
-}
-
-.hero-metadata {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--space-3);
-  margin-top: var(--space-6);
-}
-
-.hero-meta-card {
-  position: relative;
-  overflow: hidden;
-  padding: var(--space-4);
-  border-radius: calc(var(--radius-lg) + 0.1rem);
-  background:
-    linear-gradient(180deg, rgba(252, 249, 243, 0.76) 0%, rgba(242, 237, 228, 0.68) 100%);
-  border: 1px solid rgba(105, 116, 98, 0.14);
-  box-shadow: 0 14px 26px rgba(43, 52, 44, 0.08);
-}
-
-.hero-meta-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.46) 0%, transparent 48%),
-    radial-gradient(circle at bottom right, rgba(202, 163, 111, 0.1) 0%, transparent 24%);
-  pointer-events: none;
 }
 
 .hero-meta-key {
@@ -939,26 +825,11 @@ onBeforeUnmount(() => {
 .hero-search-panel {
   position: relative;
   overflow: hidden;
-  margin-top: var(--space-7);
-  padding: clamp(1.25rem, 3vw, 1.6rem);
-  border-radius: calc(var(--radius-xl) + 0.2rem);
-  background:
-    linear-gradient(180deg, rgba(250, 247, 241, 0.82) 0%, rgba(239, 234, 224, 0.74) 100%);
-  border: 1px solid rgba(103, 110, 93, 0.16);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.46),
-    0 16px 34px rgba(49, 59, 50, 0.08);
-}
-
-.hero-search-panel::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.48) 0%, transparent 46%),
-    radial-gradient(circle at top right, rgba(202, 163, 111, 0.12) 0%, transparent 24%),
-    radial-gradient(circle at bottom left, rgba(140, 163, 136, 0.12) 0%, transparent 24%);
-  pointer-events: none;
+  padding: var(--hero-panel-padding);
+  border-radius: calc(var(--hero-panel-radius) + 0.15rem);
+  background: var(--hero-surface-strong);
+  border: 1px solid var(--hero-border);
+  box-shadow: var(--hero-search-shadow);
 }
 
 .hero-search-header {
@@ -989,8 +860,8 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  min-height: 4.4rem;
-  padding: 0.55rem 0.6rem 0.55rem 1.15rem;
+  min-height: var(--hero-search-height);
+  padding: 0.6rem 0.65rem 0.6rem 1.2rem;
   border-radius: 999px;
   background: rgba(255, 253, 248, 0.94);
   border: 1px solid rgba(107, 113, 96, 0.16);
@@ -1001,14 +872,14 @@ onBeforeUnmount(() => {
 }
 
 .search-bar:focus-within {
-  border-color: rgba(106, 138, 104, 0.38);
+  border-color: var(--hero-border-focus);
   box-shadow:
     0 0 0 4px rgba(133, 160, 131, 0.16),
     0 20px 36px rgba(61, 70, 57, 0.14);
 }
 
 .search-icon {
-  color: rgba(109, 89, 58, 0.72);
+  color: var(--hero-icon);
   font-size: 1.35rem;
 }
 
@@ -1017,10 +888,14 @@ onBeforeUnmount(() => {
   min-width: 0;
   border: none;
   background: transparent;
-  outline: none;
   font-size: 1rem;
   line-height: 1.5;
   color: var(--home-ink);
+}
+
+.search-input:focus-visible {
+  outline: 2px solid var(--home-focus);
+  outline-offset: 2px;
 }
 
 .search-input::placeholder {
@@ -1028,9 +903,9 @@ onBeforeUnmount(() => {
 }
 
 .search-btn {
-  min-width: 8rem;
-  min-height: 3.2rem;
-  padding: 0 1.35rem;
+  min-width: 9rem;
+  min-height: 3.35rem;
+  padding: 0 1.45rem;
   border: none;
   border-radius: 999px;
   background: linear-gradient(135deg, #d9bf8f 0%, #bb975f 48%, #efe0bf 100%);
@@ -1038,7 +913,7 @@ onBeforeUnmount(() => {
   font-size: 0.95rem;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 16px 30px rgba(121, 93, 57, 0.14);
+  box-shadow: 0 18px 34px rgba(121, 93, 57, 0.16);
   transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
 }
 
@@ -1103,16 +978,17 @@ onBeforeUnmount(() => {
 .trending-tags {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-3);
   flex-wrap: wrap;
   margin-top: var(--space-4);
 }
 
 .trending-label {
-  margin-right: var(--space-1);
+  margin-right: var(--space-3);
   font-size: 0.82rem;
   font-weight: 700;
   color: rgba(94, 84, 70, 0.74);
+  white-space: nowrap;
 }
 
 .tag-btn {
@@ -1180,56 +1056,32 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 1180px) {
-  .hero-metadata {
-    grid-template-columns: 1fr;
-  }
-
   .hero-value-grid {
     grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 1024px) {
-  .hero-section::before {
-    left: 4%;
-    right: 4%;
-    height: 34rem;
-  }
-
   .hero-shell {
     grid-template-columns: 1fr;
   }
 
   .hero-rail {
-    grid-template-columns: 1fr 1fr;
     display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-3);
   }
 
   .hero-bamboo {
-    opacity: 0.46;
+    opacity: 0.42;
   }
 }
 
 @media (max-width: 767px) {
   .hero-section::before {
     top: 1.5rem;
-    height: 30rem;
-    filter: blur(18px);
-  }
-
-  .hero-landscape {
-    width: 72rem;
-    left: 48%;
-  }
-
-  .hero-lantern-glow {
-    right: -2rem;
-    top: 4rem;
-  }
-
-  .hero-bamboo {
-    width: 10rem;
-    opacity: 0.34;
+    height: 28rem;
+    filter: blur(16px);
   }
 
   .hero-content {
@@ -1239,7 +1091,12 @@ onBeforeUnmount(() => {
 
   .hero-title {
     max-width: none;
-    font-size: clamp(2.4rem, 10vw, 3.35rem);
+    font-size: clamp(2.2rem, 9vw, 3.1rem);
+  }
+
+  .hero-subtitle {
+    font-size: 0.95rem;
+    line-height: 1.8;
   }
 
   .hero-rail {
@@ -1258,13 +1115,40 @@ onBeforeUnmount(() => {
     border-radius: calc(var(--radius-xl) + 0.1rem);
   }
 
-  .hero-suggestion-popover {
-    position: static;
-    margin-top: 0.7rem;
-  }
-
   .search-btn {
     width: 100%;
+  }
+
+  .hero-bamboo {
+    opacity: 0.24;
+  }
+
+  .hero-mist {
+    filter: blur(18px);
+  }
+
+  .hero-landscape {
+    width: 68rem;
+    left: 48%;
+    opacity: 0.58;
+  }
+
+  .hero-lantern-glow {
+    right: -2.25rem;
+    top: 4rem;
+    opacity: 0.74;
+  }
+
+  .hero-mist--front {
+    opacity: 0.38;
+  }
+
+  .hero-rail-card,
+  .hero-content,
+  .hero-value-card,
+  .hero-search-panel {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
   }
 }
 

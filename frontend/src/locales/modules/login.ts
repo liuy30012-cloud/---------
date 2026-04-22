@@ -45,6 +45,7 @@ export default {
         borrow: '借阅',
         academy: '书院',
       },
+      sealAriaLabel: '印章',
       passwordStrength: {
         weak: '偏弱',
         fair: '合格',
@@ -128,6 +129,7 @@ export default {
         borrow: 'LOAN',
         academy: 'HALL',
       },
+      sealAriaLabel: 'Seal',
       passwordStrength: {
         weak: 'Weak',
         fair: 'Acceptable',

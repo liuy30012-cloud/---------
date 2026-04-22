@@ -19,7 +19,7 @@
       <div v-if="isPanelOpen" class="quick-action-content">
         <div class="panel-header">
           <h3>{{ t('quickActions.title') }}</h3>
-          <button class="close-btn" @click="togglePanel">×</button>
+          <button class="close-btn" type="button" :aria-label="t('common.button.close')" @click="togglePanel">×</button>
         </div>
 
         <div class="panel-body">
@@ -289,7 +289,7 @@ const unregisterKeyboardShortcuts = () => {
   flex-direction: column;
   gap: 4px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
   font-weight: 500;
 
   &:hover:not(.active) {
@@ -394,7 +394,7 @@ const unregisterKeyboardShortcuts = () => {
   font-size: 14px;
   color: #333;
   font-weight: 500;
-  transition: all 0.2s ease;
+  transition: background 0.2s ease, color 0.2s ease;
 
   svg {
     width: 18px;
@@ -431,7 +431,7 @@ const unregisterKeyboardShortcuts = () => {
   cursor: pointer;
   font-size: 13px;
   color: #666;
-  transition: all 0.2s ease;
+  transition: background 0.2s ease, color 0.2s ease;
   text-align: left;
   white-space: nowrap;
   overflow: hidden;
@@ -471,12 +471,22 @@ const unregisterKeyboardShortcuts = () => {
 
 .slide-enter-active,
 .slide-leave-active {
-  transition: all 0.3s ease;
+  transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
 .slide-enter-from,
 .slide-leave-to {
   opacity: 0;
   transform: translateY(10px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .quick-action-panel {
+    animation: none !important;
+  }
+  .slide-enter-active,
+  .slide-leave-active {
+    transition: none !important;
+  }
 }
 </style>

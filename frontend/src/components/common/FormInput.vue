@@ -49,7 +49,7 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue', 'focus', 'blur', 'type'])
 
 const isFocused = ref(false)
-const invalidState = computed(() => (props.required && !props.modelValue && !isFocused.value ? 'false' : undefined))
+const invalidState = computed(() => (props.required && !props.modelValue && !isFocused.value ? 'true' : undefined))
 const resolvedInputmode = computed(() => props.inputmode || undefined)
 
 const onFocus = () => {

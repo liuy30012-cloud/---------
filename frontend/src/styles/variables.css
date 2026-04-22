@@ -52,6 +52,26 @@
   --home-highlight: rgba(255, 248, 236, 0.72);
   --home-gold-wash: rgba(204, 177, 128, 0.22);
   --home-focus: rgba(106, 138, 104, 0.54);
+
+  /* HeroSection Visual Variables */
+  --hero-rail-width: clamp(16rem, 22vw, 20rem);
+  --hero-stage-width: min(100%, 50rem);
+  --hero-panel-radius: 2rem;
+  --hero-panel-padding: clamp(1.25rem, 3vw, 1.75rem);
+  --hero-search-height: 4.75rem;
+  --hero-shell-gap: clamp(1.25rem, 2vw, 2.2rem);
+  --hero-surface: linear-gradient(180deg, rgba(250, 248, 242, 0.94) 0%, rgba(235, 241, 232, 0.86) 100%);
+  --hero-surface-strong: linear-gradient(180deg, rgba(252, 249, 243, 0.92) 0%, rgba(241, 236, 226, 0.82) 100%);
+  --hero-card-surface: linear-gradient(180deg, rgba(255, 251, 245, 0.76) 0%, rgba(242, 237, 228, 0.68) 100%);
+  --hero-card-border: rgba(103, 110, 93, 0.14);
+  --hero-border: rgba(103, 110, 93, 0.16);
+  --hero-border-focus: rgba(106, 138, 104, 0.38);
+  --hero-inner-border: rgba(255, 255, 255, 0.42);
+  --hero-icon: rgba(109, 89, 58, 0.72);
+  --hero-search-shadow: 0 22px 42px rgba(49, 59, 50, 0.12);
+  --hero-card-shadow: 0 16px 30px rgba(43, 52, 44, 0.08);
+  --hero-depth-opacity: 0.74;
+
   --motion-duration-fast: 0.24s;
   --motion-duration-medium: 0.46s;
   --motion-duration-slow: 0.76s;

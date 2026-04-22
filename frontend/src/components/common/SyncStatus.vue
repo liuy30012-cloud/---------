@@ -192,4 +192,5 @@ const description = computed(() => {
     transform: rotate(360deg);
   }
 }
+
 </style>

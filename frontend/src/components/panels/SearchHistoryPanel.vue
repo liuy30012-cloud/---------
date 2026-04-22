@@ -1,7 +1,7 @@
 <template>
   <div class="icon-btn-wrapper">
     <LibraryButton type="ghost" size="small" ref="historyBtnRef" @click="togglePanel">
-      <span class="material-symbols-outlined">history</span>
+      <span class="material-symbols-outlined" aria-hidden="true">history</span>
     </LibraryButton>
     <Transition name="popup">
       <div v-if="showPanel" ref="historyPanelRef" class="popup-panel history-panel">
@@ -200,7 +200,7 @@ onUnmounted(() => {
 
 .popup-enter-active,
 .popup-leave-active {
-  transition: all 0.2s ease;
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
 .popup-enter-from,

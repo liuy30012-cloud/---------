@@ -10,6 +10,7 @@
         :size="size"
         :disabled="disabled"
         :loading="isLoading && !loadingText"
+        :aria-label="ariaLabel || undefined"
         :class="[
           'library-button',
           `library-button--${type}`,
@@ -59,6 +60,7 @@ const props = withDefaults(defineProps<{
   errorText?: string
   state?: ButtonState
   block?: boolean
+  ariaLabel?: string
 }>(), {
   type: 'primary',
   size: 'default',
@@ -70,6 +72,7 @@ const props = withDefaults(defineProps<{
   errorText: '操作失败',
   state: 'idle',
   block: false,
+  ariaLabel: '',
 })
 
 const emit = defineEmits<{
@@ -220,5 +223,14 @@ function handleClick(event: MouseEvent) {
 .library-button__icon {
   display: inline-flex;
   font-size: 1.1em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .library-button--success {
+    animation: none !important;
+  }
+  .library-button--error {
+    animation: none !important;
+  }
 }
 </style>
