@@ -721,6 +721,33 @@ npm run build:win
 
 ## 📝 更新日志
 
+### v1.7.0 (2026-04-23)
+
+#### 🚀 新增功能
+
+- ✅ **HeroSection 视觉重设计** — 重构首页英雄区视觉与交互
+  - 全新 CSS 变量体系提取至 `variables.css`，支持响应式视觉参数
+  - 搜索交互改用 `focusout` 替代 `blur`，提升无障碍可访问性
+  - GSAP 动画引擎重构，引入移动端视差系数适配
+  - 价值卡片语义化重命名，结构更清晰
+- ✅ **登录页无障碍全面优化**
+  - 校徽图片添加 `width`/`height` 属性，消除布局偏移
+  - 复选框改用隐藏真实 `<input>` + 可视化自定义样式，支持键盘操作
+  - 印章元素改为语义化 `<button>`，添加 `aria-label` 支持屏幕阅读器
+- ✅ **新增 Hero 设计截图** — `hero-desktop.png` / `hero-mobile.png` / `hero-mobile-scrolled.png` 用于文档参考
+
+#### 🔧 优化改进
+
+- ✅ **全局组件样式同步** — 覆盖通用组件、面板、视图页面共 30+ 文件
+  - `BookGrid`, `RelatedVolumes`, `PageHeader`, `TopNav` 等首页相关组件
+  - `ConfirmDialog`, `FeedbackToast`, `FormInput`, `LibraryButton`, `LoadingOverlay`, `SyncStatus` 等通用组件
+  - `NotificationPanel`, `QuickActionPanel`, `QuickRenewModal`, `SearchHistoryPanel` 等面板组件
+  - `BookDetail`, `BookSearch`, `DamageReports`, `ForgotPassword`, `MyBookshelf`, `PurchaseSuggestions` 等视图页面
+- ✅ **本地化文案更新** — 同步更新 `hero.ts` / `login.ts` 双语语料
+- ✅ **全局样式增强** — `app.css` / `variables.css` / `pet.css` 视觉参数统一
+
+---
+
 ### v1.6.0 (2026-04-22)
 
 #### 🚀 新增功能
