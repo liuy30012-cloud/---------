@@ -1,211 +1,182 @@
-"""Excel 批量导出工具"""
+"""数据处理和转换模块"""
 import json
 import os
-from pathlib import Path
-from typing import List, Dict, Any
-import openpyxl
-from openpyxl.styles import Font, Alignment, PatternFill
-from openpyxl.utils import get_column_letter
+import re
+import logging
+from typing import Dict, List, Optional
+import pandas as pd
+from openpyxl import Workbook
+from openpyxl.styles import Font, Alignment
 import config
 
+# 确保日志目录存在
+os.makedirs(config.LOGS_DIR, exist_ok=True)
 
-class ExcelExporter:
-    """Excel 导出器"""
+# 配置日志
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler(f'{config.LOGS_DIR}/processor.log'),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger(__name__)
+
+
+class DataProcessor:
+    """数据处理器"""
 
     def __init__(self):
-        self.failed_records = []
-        self._ensure_directories()
+        self.processed_count = 0
+        self.failed_books = []
 
-    def _ensure_directories(self):
-        """确保必要的目录存在"""
-        os.makedirs(config.PROCESSED_DATA_DIR, exist_ok=True)
+    def _clean_text(self, text: str) -> str:
+        """清理文本"""
+        if not text:
+            return ""
+        # 移除 HTML 标签
+        text = re.sub(r'<[^>]+>', '', text)
+        # 移除多余空白
+        text = re.sub(r'\s+', ' ', text)
+        return text.strip()
 
-    def export_all(self):
-        """导出所有批次数据到 Excel"""
-        print("开始导出 Excel 文件...")
+    def _validate_isbn(self, isbn: str) -> bool:
+        """验证 ISBN 格式"""
+        if not isbn:
+            return False
+        # 移除连字符和空格
+        isbn = isbn.replace('-', '').replace(' ', '')
+        # ISBN-10 或 ISBN-13
+        return len(isbn) in [10, 13] and isbn.isdigit()
 
-        # 获取所有 batch_*.json 文件
-        raw_dir = Path(config.RAW_DATA_DIR)
-        batch_files = sorted(raw_dir.glob("batch_*.json"))
+    def _extract_year(self, pubdate: str) -> str:
+        """提取出版年份"""
+        if not pubdate:
+            return ""
+        # 提取年份（4位数字）
+        match = re.search(r'(\d{4})', pubdate)
+        return match.group(1) if match else ""
 
-        if not batch_files:
-            print(f"未找到批次文件在 {config.RAW_DATA_DIR}")
-            return
+    def _convert_book(self, book: Dict) -> Optional[Dict]:
+        """转换单本图书数据"""
+        try:
+            # 必填字段验证
+            title = book.get('title', '').strip()
+            author = book.get('author', [])
+            isbn = book.get('isbn13', '') or book.get('isbn10', '')
 
-        print(f"找到 {len(batch_files)} 个批次文件")
+            if not title or not author or not isbn:
+                logger.warning(f"Missing required fields: {book.get('id')}")
+                return None
 
-        # 读取所有图书数据
-        all_books = []
-        for batch_file in batch_files:
-            try:
-                with open(batch_file, 'r', encoding='utf-8') as f:
-                    batch_data = json.load(f)
-                    books = batch_data.get('books', [])
-                    all_books.extend(books)
-                    print(f"已加载 {batch_file.name}: {len(books)} 本图书")
-            except Exception as e:
-                print(f"读取 {batch_file.name} 失败: {e}")
+            if not self._validate_isbn(isbn):
+                logger.warning(f"Invalid ISBN: {isbn}")
+                return None
 
-        print(f"总共加载 {len(all_books)} 本图书")
+            # 转换作者（数组转字符串）
+            author_str = ', '.join(author) if isinstance(author, list) else str(author)
 
-        # 按批次大小分割并导出
-        total_files = (len(all_books) + config.EXCEL_BATCH_SIZE - 1) // config.EXCEL_BATCH_SIZE
+            # 提取分类（取第一个标签）
+            tags = book.get('tags', [])
+            category = tags[0].get('name', '') if tags else ''
 
-        for i in range(0, len(all_books), config.EXCEL_BATCH_SIZE):
-            batch_books = all_books[i:i + config.EXCEL_BATCH_SIZE]
-            file_num = i // config.EXCEL_BATCH_SIZE + 1
+            # 获取封面图片
+            images = book.get('images', {})
+            cover_url = images.get('large', '') or images.get('medium', '') or images.get('small', '')
 
-            output_file = os.path.join(
-                config.PROCESSED_DATA_DIR,
-                f"books_{file_num:03d}.xlsx"
-            )
+            return {
+                'title': self._clean_text(title),
+                'author': self._clean_text(author_str),
+                'isbn': isbn.replace('-', '').replace(' ', ''),
+                'location': config.DEFAULT_LOCATION,
+                'coverUrl': cover_url,
+                'status': config.DEFAULT_STATUS,
+                'year': self._extract_year(book.get('pubdate', '')),
+                'description': self._clean_text(book.get('summary', ''))[:500],
+                'languageCode': config.DEFAULT_LANGUAGE,
+                'availability': config.DEFAULT_AVAILABILITY,
+                'category': self._clean_text(category),
+                'circulationPolicy': config.DEFAULT_CIRCULATION_POLICY,
+                'totalCopies': config.DEFAULT_TOTAL_COPIES
+            }
 
-            print(f"正在导出 {output_file} ({len(batch_books)} 本图书)...")
-            self._export_batch(batch_books, output_file)
-            print(f"已完成 {file_num}/{total_files}")
+        except Exception as e:
+            logger.error(f"Error converting book: {e}")
+            return None
 
-        # 保存失败记录
-        if self.failed_records:
-            self._save_failed_records()
-            print(f"有 {len(self.failed_records)} 条记录处理失败，已保存到 {config.FAILED_FILE}")
+    def process_batch(self, batch_file: str) -> List[Dict]:
+        """处理单个批次文件"""
+        logger.info(f"Processing {batch_file}")
 
-        print("导出完成！")
+        with open(batch_file, 'r', encoding='utf-8') as f:
+            books = json.load(f)
 
-    def _export_batch(self, books: List[Dict[str, Any]], output_file: str):
-        """导出一批图书到 Excel"""
-        wb = openpyxl.Workbook()
-        ws = wb.active
-        ws.title = "图书数据"
-
-        # 定义表头
-        headers = [
-            "ISBN", "书名", "作者", "出版社", "出版日期", "价格",
-            "页数", "装帧", "分类", "简介", "封面URL", "豆瓣评分",
-            "位置", "状态", "可用性", "流通策略", "总副本数", "语言"
-        ]
-
-        # 写入表头
-        for col_num, header in enumerate(headers, 1):
-            cell = ws.cell(row=1, column=col_num, value=header)
-            cell.font = Font(bold=True, size=11)
-            cell.fill = PatternFill(start_color="CCE5FF", end_color="CCE5FF", fill_type="solid")
-            cell.alignment = Alignment(horizontal="center", vertical="center")
-
-        # 写入数据
-        for row_num, book in enumerate(books, 2):
-            try:
-                row_data = self._extract_book_data(book)
-                for col_num, value in enumerate(row_data, 1):
-                    cell = ws.cell(row=row_num, column=col_num, value=value)
-                    cell.alignment = Alignment(vertical="top", wrap_text=True)
-            except Exception as e:
-                print(f"处理图书数据失败: {e}")
-                self.failed_records.append({
-                    "book": book,
-                    "error": str(e)
+        processed_books = []
+        for book in books:
+            converted = self._convert_book(book)
+            if converted:
+                processed_books.append(converted)
+            else:
+                self.failed_books.append({
+                    'id': book.get('id'),
+                    'title': book.get('title'),
+                    'reason': 'Conversion failed'
                 })
 
-        # 调整列宽
-        column_widths = {
-            'A': 15,  # ISBN
-            'B': 30,  # 书名
-            'C': 20,  # 作者
-            'D': 20,  # 出版社
-            'E': 12,  # 出版日期
-            'F': 10,  # 价格
-            'G': 8,   # 页数
-            'H': 10,  # 装帧
-            'I': 15,  # 分类
-            'J': 50,  # 简介
-            'K': 40,  # 封面URL
-            'L': 10,  # 豆瓣评分
-            'M': 12,  # 位置
-            'N': 12,  # 状态
-            'O': 12,  # 可用性
-            'P': 12,  # 流通策略
-            'Q': 10,  # 总副本数
-            'R': 8    # 语言
-        }
+        return processed_books
 
-        for col, width in column_widths.items():
-            ws.column_dimensions[col].width = width
+    def create_excel(self, books: List[Dict], output_file: str):
+        """创建 Excel 文件"""
+        df = pd.DataFrame(books)
 
-        # 冻结首行
-        ws.freeze_panes = "A2"
+        # 确保列顺序
+        columns = ['title', 'author', 'isbn', 'location', 'coverUrl', 'status',
+                  'year', 'description', 'languageCode', 'availability',
+                  'category', 'circulationPolicy', 'totalCopies']
+        df = df[columns]
 
-        # 保存文件
-        wb.save(output_file)
+        # 保存为 Excel
+        os.makedirs(os.path.dirname(output_file), exist_ok=True)
+        df.to_excel(output_file, index=False, engine='openpyxl')
+        logger.info(f"Created Excel file: {output_file}")
 
-    def _extract_book_data(self, book: Dict[str, Any]) -> List[Any]:
-        """从图书对象中提取数据"""
-        # ISBN
-        isbn = book.get('isbn13', '') or book.get('isbn10', '')
+    def process_all_batches(self):
+        """处理所有批次文件"""
+        batch_files = sorted([
+            os.path.join(config.RAW_DATA_DIR, f)
+            for f in os.listdir(config.RAW_DATA_DIR)
+            if f.startswith('batch_') and f.endswith('.json')
+        ])
 
-        # 书名
-        title = book.get('title', '')
+        all_books = []
+        excel_num = 1
 
-        # 作者（合并为字符串）
-        authors = book.get('author', [])
-        author_str = ', '.join(authors) if isinstance(authors, list) else str(authors)
+        for batch_file in batch_files:
+            processed = self.process_batch(batch_file)
+            all_books.extend(processed)
 
-        # 出版社
-        publisher = book.get('publisher', '')
+            # 每 EXCEL_BATCH_SIZE 本生成一个 Excel
+            while len(all_books) >= config.EXCEL_BATCH_SIZE:
+                excel_books = all_books[:config.EXCEL_BATCH_SIZE]
+                output_file = f"{config.PROCESSED_DATA_DIR}/books_{excel_num:03d}.xlsx"
+                self.create_excel(excel_books, output_file)
+                all_books = all_books[config.EXCEL_BATCH_SIZE:]
+                excel_num += 1
 
-        # 出版日期
-        pubdate = book.get('pubdate', '')
+        # 处理剩余图书
+        if all_books:
+            output_file = f"{config.PROCESSED_DATA_DIR}/books_{excel_num:03d}.xlsx"
+            self.create_excel(all_books, output_file)
 
-        # 价格
-        price = book.get('price', '')
-
-        # 页数
-        pages = book.get('pages', '')
-
-        # 装帧
-        binding = book.get('binding', '')
-
-        # 分类（取第一个标签）
-        tags = book.get('tags', [])
-        category = tags[0].get('name', '') if tags else ''
-
-        # 简介
-        summary = book.get('summary', '')
-
-        # 封面URL
-        images = book.get('images', {})
-        cover_url = images.get('large', '') or images.get('medium', '') or images.get('small', '')
-
-        # 豆瓣评分
-        rating = book.get('rating', {})
-        rating_average = rating.get('average', '')
-
-        # 默认值
-        location = config.DEFAULT_LOCATION
-        status = config.DEFAULT_STATUS
-        availability = config.DEFAULT_AVAILABILITY
-        circulation_policy = config.DEFAULT_CIRCULATION_POLICY
-        total_copies = config.DEFAULT_TOTAL_COPIES
-        language = config.DEFAULT_LANGUAGE
-
-        return [
-            isbn, title, author_str, publisher, pubdate, price,
-            pages, binding, category, summary, cover_url, rating_average,
-            location, status, availability, circulation_policy, total_copies, language
-        ]
-
-    def _save_failed_records(self):
-        """保存失败的记录"""
-        try:
+        # 保存失败记录
+        if self.failed_books:
             with open(config.FAILED_FILE, 'w', encoding='utf-8') as f:
-                json.dump(self.failed_records, f, ensure_ascii=False, indent=2)
-        except Exception as e:
-            print(f"保存失败记录时出错: {e}")
+                json.dump(self.failed_books, f, ensure_ascii=False, indent=2)
 
-
-def main():
-    """主函数"""
-    exporter = ExcelExporter()
-    exporter.export_all()
+        logger.info(f"Processing completed. Failed: {len(self.failed_books)}")
 
 
 if __name__ == "__main__":
-    main()
+    processor = DataProcessor()
+    processor.process_all_batches()
