@@ -13,6 +13,7 @@ from fake_useragent import UserAgent
 import config
 
 # 配置日志
+os.makedirs(config.LOGS_DIR, exist_ok=True)
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -127,6 +128,7 @@ class DoubanCrawler:
             books: 图书数据列表
             batch_num: 批次号
         """
+        os.makedirs(config.RAW_DATA_DIR, exist_ok=True)
         filename = f"{config.RAW_DATA_DIR}/batch_{batch_num:03d}.json"
         with open(filename, 'w', encoding='utf-8') as f:
             json.dump(books, f, ensure_ascii=False, indent=2)
@@ -161,7 +163,7 @@ class DoubanCrawler:
         logger.info(f"开始爬取，当前进度: {crawled_count}/{total_books}")
 
         # 当前批次数据
-        current_batch = crawled_count // config.BATCH_SIZE
+        current_batch = crawled_count // config.BATCH_SIZE + 1
         books_in_current_batch = []
 
         try:
