@@ -79,7 +79,7 @@ class BatchImporter:
                 if data.get('code') == 200:
                     result_data = data.get('data', {})
                     success_count = result_data.get('successCount', 0)
-                    failure_count = result_data.get('failureCount', 0)
+                    failure_count = result_data.get('failedCount', 0)
 
                     logger.info(f"文件 {excel_file.name} 导入完成: 成功 {success_count}, 失败 {failure_count}")
                     return {
@@ -117,7 +117,7 @@ class BatchImporter:
             logger.error(f"目录不存在: {processed_dir}")
             return
 
-        excel_files = list(processed_dir.glob("*.xlsx"))
+        excel_files = list(processed_dir.glob("books_*.xlsx"))
         if not excel_files:
             logger.warning(f"未找到 Excel 文件: {processed_dir}")
             return
@@ -139,7 +139,7 @@ class BatchImporter:
 
                     if result['success']:
                         total_success += result.get('successCount', 0)
-                        total_failure += result.get('failureCount', 0)
+                        total_failure += result.get('failedCount', 0)
                     else:
                         failed_files.append(result)
 
