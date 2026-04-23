@@ -13,9 +13,9 @@ class GlobalExceptionHandlerTest {
     private final GlobalExceptionHandler handler = new GlobalExceptionHandler();
 
     @Test
-    void illegalArgumentExceptionSanitizesSensitiveMessage() {
+    void illegalArgumentExceptionSanitizesStackTraceLeak() {
         ResponseEntity<?> response = handler.handleIllegalArgumentException(
-            new IllegalArgumentException("SQL error at /tmp/file")
+            new IllegalArgumentException("at com.library.SomeClass.method(SomeClass.java:42)")
         );
 
         @SuppressWarnings("unchecked")
@@ -23,6 +23,19 @@ class GlobalExceptionHandlerTest {
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertEquals("操作失败，请稍后重试", body.get("message"));
+    }
+
+    @Test
+    void illegalArgumentExceptionPreservesNormalBusinessMessage() {
+        ResponseEntity<?> response = handler.handleIllegalArgumentException(
+            new IllegalArgumentException("图书不存在")
+        );
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> body = (Map<String, Object>) response.getBody();
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("图书不存在", body.get("message"));
     }
 
     @Test

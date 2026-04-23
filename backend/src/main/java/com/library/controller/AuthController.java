@@ -26,11 +26,13 @@ import java.util.Map;
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
+    private final JwtUtil jwtUtil;
 
-    @Autowired
-    private JwtUtil jwtUtil;
+    public AuthController(UserService userService, JwtUtil jwtUtil) {
+        this.userService = userService;
+        this.jwtUtil = jwtUtil;
+    }
 
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<Map<String, Object>>> register(@Valid @RequestBody RegisterRequest request) {
@@ -64,7 +66,7 @@ public class AuthController {
 
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<UserInfo>> getCurrentUser(HttpServletRequest request) {
-        String token = extractToken(request);
+        String token = jwtUtil.extractToken(request);
         if (token == null) {
             return ApiResponse.error(HttpStatus.UNAUTHORIZED, "缺少认证令牌。");
         }
@@ -137,18 +139,11 @@ public class AuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<Void>> logout(HttpServletRequest request) {
-        String token = extractToken(request);
+        String token = jwtUtil.extractToken(request);
         if (token != null) {
             jwtUtil.invalidateToken(token);
         }
         return ApiResponse.ok(null, "退出成功");
     }
 
-    private String extractToken(HttpServletRequest request) {
-        String bearerToken = request.getHeader("Authorization");
-        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7);
-        }
-        return null;
-    }
 }

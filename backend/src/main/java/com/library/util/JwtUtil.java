@@ -85,7 +85,7 @@ public class JwtUtil {
     public String generateToken(String studentId, String role, Long userId) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("role", role);
-        claims.put("userId", userId);
+        claims.put("userId", String.valueOf(userId));
         claims.put("type", "access");
         String token = createToken(claims, studentId, expiration);
 
@@ -96,7 +96,7 @@ public class JwtUtil {
     public String generateToken(String studentId, String role, Long userId, Long customExpiration) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("role", role);
-        claims.put("userId", userId);
+        claims.put("userId", String.valueOf(userId));
         claims.put("type", "access");
         String token = createToken(claims, studentId, customExpiration);
 
@@ -107,7 +107,7 @@ public class JwtUtil {
     public String generateRefreshToken(String studentId, Long userId, Long customExpiration) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("type", "refresh");
-        claims.put("userId", userId);
+        claims.put("userId", String.valueOf(userId));
         String token = createToken(claims, studentId, customExpiration);
 
         trackUserToken(userId, token);
@@ -140,20 +140,11 @@ public class JwtUtil {
         if (userId == null) {
             throw new IllegalArgumentException("令牌中缺少用户标识。");
         }
-        if (userId instanceof Integer) {
-            return ((Integer) userId).longValue();
+        try {
+            return Long.parseLong(userId.toString());
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("令牌中的用户标识格式无效。");
         }
-        if (userId instanceof Long) {
-            return (Long) userId;
-        }
-        if (userId instanceof String) {
-            try {
-                return Long.parseLong((String) userId);
-            } catch (NumberFormatException e) {
-                throw new IllegalArgumentException("令牌中的用户标识格式无效。");
-            }
-        }
-        throw new IllegalArgumentException("令牌中的用户标识类型无效: " + userId.getClass().getName());
     }
 
     public boolean validateToken(String token) {
@@ -245,6 +236,14 @@ public class JwtUtil {
             .build()
             .parseSignedClaims(token)
             .getPayload();
+    }
+
+    public String extractToken(jakarta.servlet.http.HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+        return null;
     }
 
     private boolean validateTokenByType(String token, String expectedType, boolean allowLegacyAccessToken) {

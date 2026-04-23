@@ -19,6 +19,15 @@ export interface Book {
   category?: string
 }
 
+const DEFAULT_BOOK_FALLBACKS = {
+  coverUrl: '',
+  status: 'Cataloged' as Book['status'],
+  year: 'N/A',
+  languageCode: 'Unknown',
+  availability: 'inLibrary' as Book['availability'],
+  category: 'Technology',
+}
+
 export const MOCK_BOOKS: Book[] = [
   {
     id: "1",
@@ -99,12 +108,12 @@ export function useBookSearch(emitPetEvent: (event: string, data?: any) => void,
 
     return rawBooks.map((b: any) => ({
       ...b,
-      coverUrl: b.coverUrl || '',
-      status: b.status || 'Cataloged',
-      year: b.year || 'N/A',
-      languageCode: b.languageCode || 'Unknown',
-      availability: b.availability || 'inLibrary',
-      category: b.category || 'Technology'
+      coverUrl: b.coverUrl || DEFAULT_BOOK_FALLBACKS.coverUrl,
+      status: b.status || DEFAULT_BOOK_FALLBACKS.status,
+      year: b.year || DEFAULT_BOOK_FALLBACKS.year,
+      languageCode: b.languageCode || DEFAULT_BOOK_FALLBACKS.languageCode,
+      availability: b.availability || DEFAULT_BOOK_FALLBACKS.availability,
+      category: b.category || DEFAULT_BOOK_FALLBACKS.category,
     }))
   }
 

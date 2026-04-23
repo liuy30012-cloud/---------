@@ -7,9 +7,6 @@ import com.library.model.Book;
 import com.library.model.BorrowRecord;
 import com.library.model.BorrowRecord.BorrowStatus;
 import com.library.model.ReservationRecord.ReservationStatus;
-import com.library.repository.BookRepository;
-import com.library.repository.BorrowRecordRepository;
-import com.library.repository.ReservationRecordRepository;
 import com.library.service.BookReviewService;
 import com.library.service.BookService;
 import com.library.service.BookSearchCacheService;
@@ -49,26 +46,17 @@ public class BookController {
     );
 
     private final BookService bookService;
-    private final BookRepository bookRepository;
     private final BookReviewService bookReviewService;
     private final BookSearchCacheService bookSearchCacheService;
-    private final BorrowRecordRepository borrowRecordRepository;
-    private final ReservationRecordRepository reservationRecordRepository;
 
     public BookController(
         BookService bookService,
-        BookRepository bookRepository,
         BookReviewService bookReviewService,
-        BookSearchCacheService bookSearchCacheService,
-        BorrowRecordRepository borrowRecordRepository,
-        ReservationRecordRepository reservationRecordRepository
+        BookSearchCacheService bookSearchCacheService
     ) {
         this.bookService = bookService;
-        this.bookRepository = bookRepository;
         this.bookReviewService = bookReviewService;
         this.bookSearchCacheService = bookSearchCacheService;
-        this.borrowRecordRepository = borrowRecordRepository;
-        this.reservationRecordRepository = reservationRecordRepository;
     }
 
     @GetMapping("/search")
@@ -192,10 +180,10 @@ public class BookController {
 
     private BookDetailResponse.BorrowHistorySummary buildBorrowHistorySummary(Long bookId) {
         BookDetailResponse.BorrowHistorySummary summary = new BookDetailResponse.BorrowHistorySummary();
-        summary.setTotalBorrows(borrowRecordRepository.countByBookId(bookId));
-        summary.setActiveBorrowCount(borrowRecordRepository.countByBookIdAndStatusIn(bookId, ACTIVE_BORROW_STATUSES));
+        summary.setTotalBorrows(bookService.countTotalBorrowsByBookId(bookId));
+        summary.setActiveBorrowCount(bookService.countActiveBorrowsByBookId(bookId, ACTIVE_BORROW_STATUSES));
 
-        List<BorrowRecord> recentRecords = borrowRecordRepository.findTop5ByBookIdOrderByCreatedAtDesc(bookId);
+        List<BorrowRecord> recentRecords = bookService.findRecentBorrowRecords(bookId, 5);
         if (!recentRecords.isEmpty()) {
             LocalDateTime lastBorrowedAt = recentRecords.stream()
                 .map(record -> record.getBorrowDate() != null ? record.getBorrowDate() : record.getCreatedAt())
@@ -221,11 +209,11 @@ public class BookController {
 
     private List<BookDetailResponse.RelatedBookSummary> buildRelatedBooks(Book book) {
         List<Book> candidates = StringUtils.hasText(book.getCategory())
-            ? bookRepository.findTop6ByCategoryAndIdNotOrderByBorrowedCountDesc(book.getCategory(), book.getId())
+            ? bookService.findTopBooksByCategoryExcluding(book.getCategory(), book.getId(), 6)
             : new ArrayList<>();
 
         if (candidates.isEmpty() && StringUtils.hasText(book.getAuthor())) {
-            candidates = bookRepository.findTop6ByAuthorAndIdNotOrderByBorrowedCountDesc(book.getAuthor(), book.getId());
+            candidates = bookService.findTopBooksByAuthorExcluding(book.getAuthor(), book.getId(), 6);
         }
 
         List<BookDetailResponse.RelatedBookSummary> relatedBooks = new ArrayList<>();
@@ -273,8 +261,8 @@ public class BookController {
 
     private BookDetailResponse.QueueContext buildQueueContext(Book book) {
         BookDetailResponse.QueueContext context = new BookDetailResponse.QueueContext();
-        long waitingCount = reservationRecordRepository.countWaitingReservationsByBookId(book.getId());
-        long availableReservationCount = reservationRecordRepository.countByBookIdAndStatus(book.getId(), ReservationStatus.AVAILABLE);
+        long waitingCount = bookService.countWaitingReservationsByBookId(book.getId());
+        long availableReservationCount = bookService.countAvailableReservationsByBookId(book.getId());
         int copies = Math.max(book.getTotalCopies() == null ? 1 : book.getTotalCopies(), 1);
         int estimatedWaitDays = waitingCount == 0 ? 0 : (int) Math.ceil((double) waitingCount * BorrowValidator.DEFAULT_BORROW_DAYS / copies);
 
@@ -351,7 +339,7 @@ public class BookController {
         book.setAvailableCopies(request.getTotalCopies());
         book.setBorrowedCount(0);
 
-        if (bookRepository.findByIsbn(request.getIsbn()).isPresent()) {
+        if (bookService.findByIsbn(request.getIsbn()).isPresent()) {
             return ApiResponse.error("ISBN '" + request.getIsbn() + "' 已存在", 409);
         }
 
@@ -371,8 +359,7 @@ public class BookController {
             return ApiResponse.notFound("图书不存在");
         }
 
-        java.util.Optional<Book> duplicateIsbn = bookRepository.findByIsbn(request.getIsbn());
-        if (duplicateIsbn.isPresent() && !duplicateIsbn.get().getId().equals(id)) {
+        if (bookService.isIsbnUsedByOther(request.getIsbn(), id)) {
             return ApiResponse.error("ISBN '" + request.getIsbn() + "' 已被其他图书使用", 409);
         }
 

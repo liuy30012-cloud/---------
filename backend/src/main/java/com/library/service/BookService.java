@@ -2,6 +2,7 @@ package com.library.service;
 
 import com.library.model.Book;
 import com.library.repository.BookRepository;
+import com.library.repository.BorrowRecordRepository;
 import com.library.repository.ReservationRecordRepository;
 import com.library.repository.BookReviewRepository;
 import com.library.repository.BookFavoriteRepository;
@@ -29,6 +30,7 @@ public class BookService {
 
     private final BookRepository bookRepository;
     private final ReservationRecordRepository reservationRecordRepository;
+    private final BorrowRecordRepository borrowRecordRepository;
     private final BookReviewRepository bookReviewRepository;
     private final BookFavoriteRepository bookFavoriteRepository;
     private final ReadingStatusRecordRepository readingStatusRecordRepository;
@@ -36,6 +38,24 @@ public class BookService {
     public Book getBookById(Long bookId) {
         return bookRepository.findById(bookId)
             .orElse(null);
+    }
+
+    public java.util.Optional<Book> findByIsbn(String isbn) {
+        return bookRepository.findByIsbn(isbn);
+    }
+
+    public boolean isIsbnUsedByOther(String isbn, Long excludeId) {
+        return bookRepository.findByIsbn(isbn)
+            .filter(book -> !book.getId().equals(excludeId))
+            .isPresent();
+    }
+
+    public List<Book> findTopBooksByCategoryExcluding(String category, Long excludeId, int limit) {
+        return bookRepository.findTop6ByCategoryAndIdNotOrderByBorrowedCountDesc(category, excludeId);
+    }
+
+    public List<Book> findTopBooksByAuthorExcluding(String author, Long excludeId, int limit) {
+        return bookRepository.findTop6ByAuthorAndIdNotOrderByBorrowedCountDesc(author, excludeId);
     }
 
     @Transactional(isolation = org.springframework.transaction.annotation.Isolation.SERIALIZABLE)
@@ -261,5 +281,26 @@ public class BookService {
 
         log.info("批量导入完成，成功 {} 本，失败 {} 本", successCount, failedCount);
         return new ImportResponse(successCount, failedCount, failures);
+    }
+
+    public long countTotalBorrowsByBookId(Long bookId) {
+        return borrowRecordRepository.countByBookId(bookId);
+    }
+
+    public long countActiveBorrowsByBookId(Long bookId, List<com.library.model.BorrowRecord.BorrowStatus> statuses) {
+        return borrowRecordRepository.countByBookIdAndStatusIn(bookId, statuses);
+    }
+
+    public List<com.library.model.BorrowRecord> findRecentBorrowRecords(Long bookId, int limit) {
+        return borrowRecordRepository.findTop5ByBookIdOrderByCreatedAtDesc(bookId);
+    }
+
+    public long countWaitingReservationsByBookId(Long bookId) {
+        return reservationRecordRepository.countWaitingReservationsByBookId(bookId);
+    }
+
+    public long countAvailableReservationsByBookId(Long bookId) {
+        return reservationRecordRepository.countByBookIdAndStatus(
+            bookId, com.library.model.ReservationRecord.ReservationStatus.AVAILABLE);
     }
 }

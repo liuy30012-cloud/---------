@@ -301,6 +301,7 @@ const emit = defineEmits<{
   (e: 'card-mouse-move', event: MouseEvent, element: HTMLDivElement | null): void
   (e: 'card-mouse-leave'): void
   (e: 'seal-click'): void
+  (e: 'update:remember-me', value: boolean): void
 }>()
 
 const { t } = useI18n()
@@ -309,7 +310,7 @@ const submitBtnRef = ref<InstanceType<typeof LibraryButton> | null>(null)
 const router = useRouter()
 
 function toggleRememberMe() {
-  props.formData.rememberMe = !props.formData.rememberMe
+  emit('update:remember-me', !props.formData.rememberMe)
 }
 
 function handleCardMouseMove(event: MouseEvent) {

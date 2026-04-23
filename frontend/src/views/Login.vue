@@ -1,5 +1,5 @@
 <template>
-  <div class="login-page" @mousemove="enhancedMouseMove" @click="onPageClick" @keydown="onGlobalKeydown">
+  <div class="login-page" @mousemove="enhancedMouseMove" @click="onPageClick">
     <LoginVisualLayer
       v-if="showVisualLayer"
       :mouse-particles="mouseParticles"
@@ -52,6 +52,7 @@
       @card-mouse-move="onCardMouseMove"
       @card-mouse-leave="onCardMouseLeave"
       @seal-click="onSealClick"
+      @update:remember-me="toggleRememberMe"
     />
   </div>
 </template>
@@ -117,12 +118,12 @@ function onSubmitMouseMove(event: MouseEvent, element: HTMLButtonElement | null)
   form.onSubmitMouseMove(event, element)
 }
 
-function handleSubmit() {
-  form.handleSubmit(particles.triggerCelebration)
+function toggleRememberMe(value: boolean) {
+  formData.rememberMe = value
 }
 
-function onGlobalKeydown(_event: KeyboardEvent) {
-  // Reserved for future keyboard shortcuts.
+function handleSubmit() {
+  form.handleSubmit(particles.triggerCelebration)
 }
 
 function onPageAnimationEnd(pageId: number) {

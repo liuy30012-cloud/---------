@@ -335,12 +335,6 @@ const querySummary = computed(() => {
 
 const resultMotionKey = computed(() => route.fullPath)
 
-const visiblePages = computed(() => {
-  const start = Math.max(pagination.page - 2, 0)
-  const end = Math.min(start + 5, pagination.totalPages)
-  return Array.from({ length: end - start }, (_, index) => start + index)
-})
-
 const autocompleteLoadingLabel = computed(() =>
   locale.value.startsWith('zh') ? '正在生成联想建议…' : 'Loading suggestions…',
 )

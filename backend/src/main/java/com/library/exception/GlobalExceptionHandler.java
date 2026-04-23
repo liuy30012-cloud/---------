@@ -50,8 +50,9 @@ public class GlobalExceptionHandler {
         if (message == null) {
             return "操作失败";
         }
-        if (message.contains("SQL") || message.contains("Exception")
-            || message.contains("at ") || message.contains("\\") || message.contains("/")) {
+        // 只过滤明显的堆栈跟踪泄露（多行或典型堆栈前缀）
+        if (message.contains("at com.") || message.contains("at java.")
+            || message.contains("Caused by:")) {
             return "操作失败，请稍后重试";
         }
         return message;

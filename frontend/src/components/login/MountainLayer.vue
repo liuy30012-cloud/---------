@@ -1,38 +1,6 @@
 <template>
   <!-- Layer: Ink-wash Mountain Landscape (水墨山水) -->
   <div class="landscape-root">
-    <!-- 残月半空 · 云掩半月 — Crescent moon veiled by drifting clouds -->
-    <div class="moon-wrapper">
-      <!-- Asymmetric crescent glow — shifted toward the lit side (left) -->
-      <div class="crescent-glow crescent-glow-near"></div>
-      <div class="crescent-glow crescent-glow-mid"></div>
-      <div class="crescent-glow crescent-glow-far"></div>
-
-      <!-- Crescent Moon (残月) — photorealistic image -->
-      <img class="moon-body" :src="crescentMoonImg" alt="crescent moon" draggable="false" />
-
-      <!-- Crescent bloom — offset to the lit side only -->
-      <div class="crescent-bloom"></div>
-
-      <!-- ===== Drifting Cloud Layers (云层) ===== -->
-      <!-- Cloud layer 1: thin wisp crossing upper part of moon -->
-      <div class="moon-cloud moon-cloud-1"></div>
-      <!-- Cloud layer 2: thicker band crossing middle -->
-      <div class="moon-cloud moon-cloud-2"></div>
-      <!-- Cloud layer 3: trailing wisp below -->
-      <div class="moon-cloud moon-cloud-3"></div>
-      <!-- Cloud layer 4: very faint high wisp -->
-      <div class="moon-cloud moon-cloud-4"></div>
-      <!-- Cloud layer 5: large atmospheric haze -->
-      <div class="moon-cloud moon-cloud-5"></div>
-
-      <!-- Sparse stars dimmed by cloud cover -->
-      <span class="moon-star" style="top: -20px; left: -30px; --delay: 0s; --dur: 5s;"></span>
-      <span class="moon-star" style="top: -25px; right: -25px; --delay: 2s; --dur: 6s;"></span>
-      <span class="moon-star" style="top: 60px; left: -20px; --delay: 3.5s; --dur: 4.5s;"></span>
-      <span class="moon-star" style="top: 50px; right: -35px; --delay: 1s; --dur: 5.5s;"></span>
-    </div>
-
     <!-- Mountain scene — overflow:hidden for mountain clipping only -->
     <div class="mountain-scene" ref="sceneRef">
 
@@ -203,27 +171,6 @@
         <div class="wave-strip wave-strip-8"></div>
       </div>
 
-      <!-- Moonlight Path (月光路) — wide tapered light corridor on water -->
-      <div class="moonlight-path">
-        <!-- Moon disc reflection at water surface -->
-        <div class="moon-disc-reflection"></div>
-        <!-- Central bright column -->
-        <div class="moonpath-center"></div>
-        <!-- Left glow wing -->
-        <div class="moonpath-wing moonpath-wing-left"></div>
-        <!-- Right glow wing -->
-        <div class="moonpath-wing moonpath-wing-right"></div>
-        <!-- Flickering bright spots within path -->
-        <span class="moonpath-sparkle" style="top:15%; left:45%; --d:0s; --s:3px;"></span>
-        <span class="moonpath-sparkle" style="top:30%; left:52%; --d:1.2s; --s:2px;"></span>
-        <span class="moonpath-sparkle" style="top:45%; left:42%; --d:2.5s; --s:4px;"></span>
-        <span class="moonpath-sparkle" style="top:55%; left:55%; --d:0.8s; --s:2.5px;"></span>
-        <span class="moonpath-sparkle" style="top:70%; left:48%; --d:3s; --s:3.5px;"></span>
-        <span class="moonpath-sparkle" style="top:25%; left:58%; --d:1.8s; --s:2px;"></span>
-        <span class="moonpath-sparkle" style="top:60%; left:38%; --d:4s; --s:3px;"></span>
-        <span class="moonpath-sparkle" style="top:85%; left:50%; --d:2s; --s:2.5px;"></span>
-      </div>
-
       <!-- Sparkle highlights on water -->
       <div class="water-sparkles">
         <span class="sparkle" v-for="i in 12" :key="i"
@@ -262,7 +209,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import { prefersReducedMotion } from '../../motion'
-import crescentMoonImg from '../../assets/crescent-moon.png'
 
 const sceneRef = ref<HTMLElement | null>(null)
 
@@ -329,294 +275,6 @@ onUnmounted(() => {
   right: 0;
   height: 100%;
   overflow: hidden;
-}
-
-/* ===== 残月半空 · 云掩半月 ===== */
-.moon-wrapper {
-  position: absolute;
-  top: 0%;
-  right: 18%;
-  z-index: 20;
-  width: 150px;
-  height: 150px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: visible;
-}
-
-/* Crescent Moon image — circular clip hides the square edges */
-.moon-body {
-  position: relative;
-  width: 150px;
-  height: 150px;
-  z-index: 3;
-  object-fit: contain;
-  user-select: none;
-  /* Circular clip to remove square corners — the dark interior blends with night sky */
-  clip-path: circle(48% at center);
-  animation: crescentGlow 8s ease-in-out infinite alternate;
-  will-change: filter, transform;
-  filter: drop-shadow(0 0 6px rgba(210, 205, 190, 0.3))
-          drop-shadow(0 0 15px rgba(200, 195, 180, 0.12));
-}
-
-/* ===== Asymmetric Crescent Glow ===== */
-/* All glow layers are offset LEFT toward the lit crescent side */
-.crescent-glow {
-  position: absolute;
-  pointer-events: none;
-  border-radius: 50%;
-}
-
-/* Near glow — tight, bright, hugging the crescent */
-.crescent-glow-near {
-  width: 80px;
-  height: 90px;
-  top: 50%;
-  left: 15%;
-  transform: translate(-50%, -50%);
-  z-index: 2;
-  background: radial-gradient(ellipse at 60% 50%,
-    rgba(210, 205, 192, 0.1) 0%,
-    rgba(200, 195, 182, 0.05) 40%,
-    transparent 75%);
-  animation: crescentGlowPulse 7s ease-in-out infinite alternate;
-}
-
-/* Mid glow — wider, softer, still offset left */
-.crescent-glow-mid {
-  width: 160px;
-  height: 140px;
-  top: 50%;
-  left: 25%;
-  transform: translate(-50%, -50%);
-  z-index: 1;
-  background: radial-gradient(ellipse at 65% 50%,
-    rgba(195, 190, 178, 0.05) 0%,
-    rgba(185, 180, 168, 0.025) 35%,
-    transparent 70%);
-  animation: crescentGlowPulse 10s ease-in-out infinite alternate;
-  animation-delay: -3s;
-}
-
-/* Far glow — very faint atmospheric wash */
-.crescent-glow-far {
-  width: 280px;
-  height: 220px;
-  top: 50%;
-  left: 30%;
-  transform: translate(-50%, -50%);
-  z-index: 0;
-  background: radial-gradient(ellipse at 60% 50%,
-    rgba(185, 180, 170, 0.025) 0%,
-    rgba(175, 170, 160, 0.01) 40%,
-    transparent 65%);
-  animation: crescentGlowPulse 14s ease-in-out infinite alternate;
-  animation-delay: -6s;
-}
-
-@keyframes crescentGlowPulse {
-  0% { opacity: 0.5; transform: translate(-50%, -50%) scale(0.95); }
-  100% { opacity: 0.85; transform: translate(-50%, -50%) scale(1.05); }
-}
-
-/* Crescent bloom — sits on the lit side only, NOT centered on disc */
-.crescent-bloom {
-  position: absolute;
-  top: 45%;
-  left: 20%;
-  width: 60px;
-  height: 70px;
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
-  z-index: 2;
-  background: radial-gradient(ellipse at 55% 50%,
-    rgba(220, 215, 200, 0.12) 0%,
-    rgba(210, 205, 190, 0.06) 35%,
-    rgba(200, 195, 180, 0.02) 65%,
-    transparent 100%);
-  animation: crescentBloomPulse 8s ease-in-out infinite alternate;
-}
-
-@keyframes crescentBloomPulse {
-  0% { opacity: 0.4; transform: translate(-50%, -50%) scale(0.92); }
-  100% { opacity: 0.75; transform: translate(-50%, -50%) scale(1.08); }
-}
-
-/* ===== Drifting Cloud Wisps (云层) ===== */
-.moon-cloud {
-  position: absolute;
-  z-index: 4;
-  pointer-events: none;
-  border-radius: 50%;
-  filter: blur(8px);
-  opacity: 0;
-  animation-fill-mode: both;
-}
-
-/* Cloud 1: thin wisp crossing upper moon area */
-.moon-cloud-1 {
-  width: 200px;
-  height: 22px;
-  top: 20%;
-  left: -60%;
-  background: linear-gradient(90deg,
-    transparent 0%,
-    rgba(80, 72, 65, 0.12) 15%,
-    rgba(100, 90, 80, 0.22) 35%,
-    rgba(110, 100, 88, 0.3) 50%,
-    rgba(100, 90, 80, 0.2) 65%,
-    rgba(80, 72, 65, 0.1) 85%,
-    transparent 100%);
-  border-radius: 40%;
-  filter: blur(6px);
-  animation: cloudDrift1 25s linear infinite;
-}
-
-/* Cloud 2: thicker middle band — main veil */
-.moon-cloud-2 {
-  width: 260px;
-  height: 35px;
-  top: 38%;
-  left: -80%;
-  background: linear-gradient(90deg,
-    transparent 0%,
-    rgba(70, 62, 55, 0.08) 10%,
-    rgba(90, 80, 70, 0.2) 25%,
-    rgba(105, 95, 82, 0.35) 45%,
-    rgba(110, 100, 88, 0.38) 55%,
-    rgba(100, 90, 78, 0.28) 70%,
-    rgba(85, 75, 65, 0.12) 88%,
-    transparent 100%);
-  border-radius: 35%;
-  filter: blur(10px);
-  animation: cloudDrift2 35s linear infinite;
-  animation-delay: -8s;
-}
-
-/* Cloud 3: trailing lower wisp */
-.moon-cloud-3 {
-  width: 180px;
-  height: 18px;
-  top: 62%;
-  left: -50%;
-  background: linear-gradient(90deg,
-    transparent 0%,
-    rgba(85, 76, 68, 0.1) 20%,
-    rgba(100, 90, 78, 0.2) 40%,
-    rgba(95, 85, 75, 0.25) 55%,
-    rgba(85, 76, 68, 0.15) 75%,
-    transparent 100%);
-  border-radius: 45%;
-  filter: blur(7px);
-  animation: cloudDrift3 30s linear infinite;
-  animation-delay: -15s;
-}
-
-/* Cloud 4: very faint high wisp */
-.moon-cloud-4 {
-  width: 150px;
-  height: 14px;
-  top: 8%;
-  left: -45%;
-  background: linear-gradient(90deg,
-    transparent 0%,
-    rgba(90, 82, 72, 0.06) 25%,
-    rgba(100, 90, 80, 0.12) 50%,
-    rgba(90, 82, 72, 0.06) 75%,
-    transparent 100%);
-  border-radius: 50%;
-  filter: blur(5px);
-  animation: cloudDrift4 20s linear infinite;
-  animation-delay: -5s;
-}
-
-/* Cloud 5: large atmospheric haze band */
-.moon-cloud-5 {
-  width: 320px;
-  height: 50px;
-  top: 25%;
-  left: -100%;
-  background: linear-gradient(90deg,
-    transparent 0%,
-    rgba(65, 58, 52, 0.04) 10%,
-    rgba(80, 72, 62, 0.1) 25%,
-    rgba(90, 82, 72, 0.16) 40%,
-    rgba(95, 85, 75, 0.18) 50%,
-    rgba(90, 82, 72, 0.14) 60%,
-    rgba(80, 72, 62, 0.08) 78%,
-    transparent 100%);
-  border-radius: 30%;
-  filter: blur(14px);
-  animation: cloudDrift5 45s linear infinite;
-  animation-delay: -20s;
-}
-
-/* Cloud drift animations — each layer at different speed/direction */
-@keyframes cloudDrift1 {
-  0%   { left: -70%; opacity: 0; }
-  8%   { opacity: 0.7; }
-  50%  { opacity: 0.9; }
-  92%  { opacity: 0.6; }
-  100% { left: 110%; opacity: 0; }
-}
-
-@keyframes cloudDrift2 {
-  0%   { left: -90%; opacity: 0; }
-  5%   { opacity: 0.5; }
-  30%  { opacity: 0.85; }
-  70%  { opacity: 0.8; }
-  95%  { opacity: 0.4; }
-  100% { left: 120%; opacity: 0; }
-}
-
-@keyframes cloudDrift3 {
-  0%   { left: 120%; opacity: 0; }
-  8%   { opacity: 0.6; }
-  50%  { opacity: 0.8; }
-  92%  { opacity: 0.5; }
-  100% { left: -60%; opacity: 0; }
-}
-
-@keyframes cloudDrift4 {
-  0%   { left: -50%; opacity: 0; }
-  10%  { opacity: 0.4; }
-  50%  { opacity: 0.6; }
-  90%  { opacity: 0.3; }
-  100% { left: 100%; opacity: 0; }
-}
-
-@keyframes cloudDrift5 {
-  0%   { left: -110%; opacity: 0; }
-  5%   { opacity: 0.3; }
-  25%  { opacity: 0.65; }
-  75%  { opacity: 0.6; }
-  95%  { opacity: 0.25; }
-  100% { left: 130%; opacity: 0; }
-}
-
-/* Stars — dimmer due to cloud cover */
-.moon-star {
-  position: absolute;
-  width: 1.5px;
-  height: 1.5px;
-  border-radius: 50%;
-  background: rgba(220, 215, 200, 0.4);
-  box-shadow: 0 0 2px rgba(210, 205, 190, 0.25);
-  animation: starTwinkle var(--dur, 5s) ease-in-out infinite alternate;
-  animation-delay: var(--delay, 0s);
-}
-
-@keyframes starTwinkle {
-  0% { opacity: 0.08; transform: scale(0.4); }
-  50% { opacity: 0.5; transform: scale(1.1); }
-  100% { opacity: 0.1; transform: scale(0.5); }
-}
-
-@keyframes crescentGlow {
-  0% { opacity: 0.8; filter: drop-shadow(0 0 3px rgba(210,205,190,0.2)) drop-shadow(0 0 10px rgba(200,195,180,0.06)); }
-  100% { opacity: 0.95; filter: drop-shadow(0 0 5px rgba(210,205,190,0.3)) drop-shadow(0 0 14px rgba(200,195,180,0.1)); }
 }
 
 /* ===== Mountain SVGs ===== */
@@ -855,155 +513,6 @@ onUnmounted(() => {
   }
 }
 
-/* ===== Moonlight Path (月光路) ===== */
-.moonlight-path {
-  position: absolute;
-  top: 0;
-  right: 15%;
-  width: 120px;
-  height: 100%;
-  z-index: 5;
-  pointer-events: none;
-}
-
-/* Moon disc reflection at water surface — round bright spot */
-.moon-disc-reflection {
-  position: absolute;
-  top: -8px;
-  left: 50%;
-  width: 28px;
-  height: 16px;
-  transform: translateX(-50%);
-  border-radius: 50%;
-  background: radial-gradient(ellipse,
-    rgba(255, 252, 240, 0.4) 0%,
-    rgba(255, 248, 225, 0.25) 35%,
-    rgba(245, 238, 210, 0.1) 65%,
-    transparent 100%);
-  filter: blur(2px);
-  animation: discReflWave 5s ease-in-out infinite;
-}
-
-@keyframes discReflWave {
-  0%, 100% {
-    transform: translateX(-50%) scaleX(0.8) scaleY(0.9);
-    opacity: 0.5;
-  }
-  30% {
-    transform: translateX(-50%) scaleX(1.4) scaleY(1.1);
-    opacity: 0.9;
-  }
-  60% {
-    transform: translateX(-50%) scaleX(1.1) scaleY(0.95);
-    opacity: 0.7;
-  }
-}
-
-/* Central bright column — narrow bright core */
-.moonpath-center {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  width: 6px;
-  height: 100%;
-  transform: translateX(-50%);
-  background: linear-gradient(180deg,
-    rgba(255, 252, 240, 0.2) 0%,
-    rgba(255, 248, 225, 0.15) 15%,
-    rgba(245, 238, 210, 0.1) 35%,
-    rgba(240, 232, 200, 0.06) 55%,
-    rgba(235, 228, 196, 0.03) 75%,
-    transparent 100%);
-  filter: blur(3px);
-  animation: centerColumnWave 6s ease-in-out infinite;
-}
-
-@keyframes centerColumnWave {
-  0%, 100% {
-    transform: translateX(-50%) scaleX(1);
-    opacity: 0.6;
-  }
-  25% {
-    transform: translateX(-50%) scaleX(2.5);
-    opacity: 0.85;
-  }
-  50% {
-    transform: translateX(-50%) scaleX(1.5);
-    opacity: 0.5;
-  }
-  75% {
-    transform: translateX(-50%) scaleX(3);
-    opacity: 0.75;
-  }
-}
-
-/* Glow wings — flanking the center, creating the V-shape */
-.moonpath-wing {
-  position: absolute;
-  top: 5%;
-  width: 50%;
-  height: 95%;
-}
-
-.moonpath-wing-left {
-  left: 0;
-  background: linear-gradient(180deg,
-    rgba(255, 248, 225, 0.08) 0%,
-    rgba(245, 238, 210, 0.06) 20%,
-    rgba(235, 228, 200, 0.04) 45%,
-    rgba(225, 218, 190, 0.02) 70%,
-    transparent 100%);
-  mask-image: linear-gradient(to right, transparent 0%, rgba(255,255,255,0.4) 60%, rgba(255,255,255,0.8) 100%);
-  -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(255,255,255,0.4) 60%, rgba(255,255,255,0.8) 100%);
-  filter: blur(4px);
-  animation: wingWaveLeft 8s ease-in-out infinite;
-}
-
-.moonpath-wing-right {
-  right: 0;
-  background: linear-gradient(180deg,
-    rgba(255, 248, 225, 0.08) 0%,
-    rgba(245, 238, 210, 0.06) 20%,
-    rgba(235, 228, 200, 0.04) 45%,
-    rgba(225, 218, 190, 0.02) 70%,
-    transparent 100%);
-  mask-image: linear-gradient(to left, transparent 0%, rgba(255,255,255,0.4) 60%, rgba(255,255,255,0.8) 100%);
-  -webkit-mask-image: linear-gradient(to left, transparent 0%, rgba(255,255,255,0.4) 60%, rgba(255,255,255,0.8) 100%);
-  filter: blur(4px);
-  animation: wingWaveRight 8s ease-in-out infinite;
-}
-
-@keyframes wingWaveLeft {
-  0%, 100% { opacity: 0.3; transform: skewX(0deg); }
-  30% { opacity: 0.6; transform: skewX(-2deg); }
-  70% { opacity: 0.5; transform: skewX(1deg); }
-}
-
-@keyframes wingWaveRight {
-  0%, 100% { opacity: 0.3; transform: skewX(0deg); }
-  30% { opacity: 0.5; transform: skewX(2deg); }
-  70% { opacity: 0.6; transform: skewX(-1deg); }
-}
-
-/* Sparkle spots within the moonlight path */
-.moonpath-sparkle {
-  position: absolute;
-  width: var(--s, 3px);
-  height: var(--s, 3px);
-  border-radius: 50%;
-  background: rgba(255, 252, 240, 0.7);
-  box-shadow: 0 0 6px rgba(255, 248, 220, 0.4);
-  animation: moonpathGlint 3.5s ease-in-out infinite alternate;
-  animation-delay: var(--d, 0s);
-}
-
-@keyframes moonpathGlint {
-  0% { opacity: 0; transform: scale(0.3); }
-  40% { opacity: 0.9; transform: scale(1.2); }
-  70% { opacity: 0.4; transform: scale(0.8); }
-  100% { opacity: 0; transform: scale(0.2); }
-}
-
 /* ===== Water Sparkles ===== */
 .water-sparkles {
   position: absolute;
@@ -1157,26 +666,8 @@ onUnmounted(() => {
   .flying-birds {
     display: none;
   }
-  .moon-wrapper {
-    right: 10%;
-    top: 5%;
-    width: 36px;
-    height: 36px;
-  }
-  .moon-body {
-    width: 36px;
-    height: 36px;
-  }
-  .moon-scatter,
-  .moon-halo-3,
-  .moonlight-cone {
-    display: none;
-  }
   .wisp {
     display: none;
-  }
-  .moonlight-path {
-    width: 60px;
   }
 }
 
@@ -1185,17 +676,8 @@ onUnmounted(() => {
     height: 35vh;
   }
 }
-.moon-wrapper,
-.moonlight-path {
-  display: none !important;
-}
 
 @media (prefers-reduced-motion: reduce) {
-  .moon-body,
-  .crescent-glow,
-  .crescent-bloom,
-  .moon-cloud,
-  .moon-star,
   .mountain-far,
   .mountain-mid,
   .mountain-near,
@@ -1204,10 +686,6 @@ onUnmounted(() => {
   .water-surface,
   .waterline-glow,
   .wave-strip,
-  .moon-disc-reflection,
-  .moonpath-center,
-  .moonpath-wing,
-  .moonpath-sparkle,
   .sparkle,
   .wisp,
   .flying-birds,
