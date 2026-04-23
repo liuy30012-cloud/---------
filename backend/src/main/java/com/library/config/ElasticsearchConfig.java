@@ -35,7 +35,12 @@ public class ElasticsearchConfig extends ElasticsearchConfiguration {
             .withSocketTimeout(5000);
 
         if (StringUtils.hasText(username)) {
-            return builder.withBasicAuth(username, password == null ? "" : password).build();
+            if (!StringUtils.hasText(password)) {
+                throw new IllegalStateException(
+                    "spring.elasticsearch.password is required when spring.elasticsearch.username is configured"
+                );
+            }
+            return builder.withBasicAuth(username, password).build();
         }
 
         return builder.build();

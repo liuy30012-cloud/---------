@@ -126,7 +126,7 @@ class BorrowServiceTest {
         when(bookService.getBookById(1L)).thenReturn(testBook);
         when(borrowRecordRepository.countCurrentBorrowsByUserId(
             eq(1L),
-            eq(Arrays.asList(BorrowStatus.PENDING, BorrowStatus.APPROVED, BorrowStatus.BORROWED, BorrowStatus.OVERDUE))
+            eq(BorrowRecord.ACTIVE_STATUSES)
         )).thenReturn(5L);
         doThrow(new IllegalArgumentException("limit"))
             .when(borrowValidator).validateCanBorrow(5L);
@@ -193,6 +193,8 @@ class BorrowServiceTest {
         BorrowResponse response = new BorrowResponse();
         response.setId(1L);
         response.setStatus("APPROVED");
+        response.setApprovedAt(BASE_TIME);
+        response.setPickupDeadline(BASE_TIME.plusDays(3));
 
         when(userService.getUserById(1L)).thenReturn(testUser);
         when(bookService.getBookById(1L)).thenReturn(testBook);
@@ -204,6 +206,8 @@ class BorrowServiceTest {
         when(borrowRecordRepository.save(any(BorrowRecord.class))).thenAnswer(invocation -> {
             BorrowRecord saved = invocation.getArgument(0);
             saved.setId(1L);
+            assertEquals(BASE_TIME, saved.getApprovedAt());
+            assertEquals(BASE_TIME.plusDays(3), saved.getPickupDeadline());
             return saved;
         });
         when(borrowConverter.toResponse(any(BorrowRecord.class))).thenReturn(response);
@@ -212,6 +216,8 @@ class BorrowServiceTest {
 
         assertNotNull(result);
         assertEquals(1L, result.getId());
+        assertEquals(BASE_TIME, result.getApprovedAt());
+        assertEquals(BASE_TIME.plusDays(3), result.getPickupDeadline());
         verify(bookService).decreaseAvailableCopies(1L);
         verify(borrowNotificationHelper).sendApprovalNotification(eq(testUser), any(BorrowRecord.class));
     }

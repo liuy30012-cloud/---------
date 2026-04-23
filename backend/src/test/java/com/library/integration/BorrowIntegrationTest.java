@@ -96,6 +96,7 @@ class BorrowIntegrationTest {
         assertNull(applyResponse.getDueDate());
         assertNotNull(applyResponse.getApprovedAt());
         assertNotNull(applyResponse.getPickupDeadline());
+        assertEquals(applyResponse.getApprovedAt().plusDays(3), applyResponse.getPickupDeadline());
 
         Long recordId = applyResponse.getId();
 
@@ -140,12 +141,7 @@ class BorrowIntegrationTest {
             5L,
             borrowRecordRepository.countCurrentBorrowsByUserId(
                 userId,
-                List.of(
-                    com.library.model.BorrowRecord.BorrowStatus.PENDING,
-                    com.library.model.BorrowRecord.BorrowStatus.APPROVED,
-                    com.library.model.BorrowRecord.BorrowStatus.BORROWED,
-                    com.library.model.BorrowRecord.BorrowStatus.OVERDUE
-                )
+                BorrowRecord.ACTIVE_STATUSES
             )
         );
     }
@@ -168,12 +164,7 @@ class BorrowIntegrationTest {
             1L,
             borrowRecordRepository.countCurrentBorrowsByUserId(
                 userId,
-                List.of(
-                    com.library.model.BorrowRecord.BorrowStatus.PENDING,
-                    com.library.model.BorrowRecord.BorrowStatus.APPROVED,
-                    com.library.model.BorrowRecord.BorrowStatus.BORROWED,
-                    com.library.model.BorrowRecord.BorrowStatus.OVERDUE
-                )
+                BorrowRecord.ACTIVE_STATUSES
             )
         );
     }

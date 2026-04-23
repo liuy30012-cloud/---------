@@ -62,20 +62,13 @@ public class BorrowService {
             throw new IllegalArgumentException("该图书仅供馆内阅览，不能借阅。");
         }
 
-        List<BorrowStatus> activeStatuses = Arrays.asList(
-            BorrowStatus.PENDING,
-            BorrowStatus.APPROVED,
-            BorrowStatus.BORROWED,
-            BorrowStatus.OVERDUE
-        );
-
-        long currentBorrowCount = borrowRecordRepository.countCurrentBorrowsByUserId(userId, activeStatuses);
+        long currentBorrowCount = borrowRecordRepository.countCurrentBorrowsByUserId(userId, BorrowRecord.ACTIVE_STATUSES);
         validator.validateCanBorrow(currentBorrowCount);
 
         boolean alreadyBorrowed = borrowRecordRepository.existsByUserIdAndBookIdAndStatusIn(
             userId,
             request.getBookId(),
-            activeStatuses
+            BorrowRecord.ACTIVE_STATUSES
         );
         if (alreadyBorrowed) {
             throw new IllegalArgumentException("你已存在该书的借阅、待取或待审核记录。");
@@ -103,8 +96,9 @@ public class BorrowService {
         bookService.decreaseAvailableCopies(book.getId());
         record.setStatus(BorrowStatus.APPROVED);
         record.setApprovedBy("SYSTEM");
-        record.setApprovedAt(now());
-        record.setPickupDeadline(now().plusDays(PICKUP_WINDOW_DAYS));
+        LocalDateTime approvalTime = now();
+        record.setApprovedAt(approvalTime);
+        record.setPickupDeadline(approvalTime.plusDays(PICKUP_WINDOW_DAYS));
 
         BorrowRecord saved = borrowRecordRepository.save(record);
         notificationHelper.sendApprovalNotification(user, saved);
@@ -126,7 +120,7 @@ public class BorrowService {
         if (approved) {
             long currentBorrowCount = borrowRecordRepository.countCurrentBorrowsByUserId(
                 record.getUserId(),
-                Arrays.asList(BorrowStatus.BORROWED, BorrowStatus.OVERDUE)
+                BorrowRecord.CHECKED_OUT_STATUSES
             );
             if (currentBorrowCount >= MAX_BORROW_COUNT) {
                 record.setStatus(BorrowStatus.REJECTED);
@@ -147,8 +141,9 @@ public class BorrowService {
             bookService.decreaseAvailableCopies(record.getBookId());
             record.setStatus(BorrowStatus.APPROVED);
             record.setApprovedBy(approver);
-            record.setApprovedAt(now());
-            record.setPickupDeadline(now().plusDays(PICKUP_WINDOW_DAYS));
+            LocalDateTime approvalTime = now();
+            record.setApprovedAt(approvalTime);
+            record.setPickupDeadline(approvalTime.plusDays(PICKUP_WINDOW_DAYS));
         } else {
             record.setStatus(BorrowStatus.REJECTED);
             record.setRejectReason((rejectReason == null || rejectReason.isBlank())
@@ -239,13 +234,7 @@ public class BorrowService {
     }
 
     public List<BorrowResponse> getUserCurrentBorrows(Long userId) {
-        List<BorrowStatus> activeStatuses = Arrays.asList(
-            BorrowStatus.PENDING,
-            BorrowStatus.APPROVED,
-            BorrowStatus.BORROWED,
-            BorrowStatus.OVERDUE
-        );
-        return borrowRecordRepository.findByUserIdAndStatusIn(userId, activeStatuses).stream()
+        return borrowRecordRepository.findByUserIdAndStatusIn(userId, BorrowRecord.ACTIVE_STATUSES).stream()
             .map(converter::toResponse)
             .collect(Collectors.toList());
     }

@@ -28,14 +28,12 @@ public class AntiCrawlerRequestInspector {
         "absbot", "ahrefsbot", "semrushbot", "dotbot"
     );
 
-    private static final String DEFAULT_SIGNATURE_SECRET = "library-anti-crawler-shared-secret-2026";
-
     private final SecurityStateStore stateStore;
 
     @Value("${anti-crawler.signature.enabled:false}")
     private boolean signatureEnabled;
 
-    @Value("${anti-crawler.signature.secret:library-anti-crawler-shared-secret-2026}")
+    @Value("${anti-crawler.signature.secret}")
     private String signatureSecret;
 
     @Value("${anti-crawler.signature.time-window:60}")
@@ -56,10 +54,9 @@ public class AntiCrawlerRequestInspector {
 
         if (signatureSecret == null
             || signatureSecret.isBlank()
-            || signatureSecret.length() < 32
-            || DEFAULT_SIGNATURE_SECRET.equals(signatureSecret)) {
+            || signatureSecret.length() < 32) {
             throw new IllegalStateException(
-                "anti-crawler.signature.enabled=true requires a custom anti-crawler.signature.secret with at least 32 characters"
+                "anti-crawler.signature.enabled=true requires anti-crawler.signature.secret with at least 32 characters"
             );
         }
     }

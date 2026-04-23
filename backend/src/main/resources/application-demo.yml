@@ -23,7 +23,7 @@ spring:
   elasticsearch:
     uris: ${ES_URIS:http://localhost:9200}
     username: ${ES_USERNAME:}
-    password: ${ES_PASSWORD:}
+    password: ${ES_PASSWORD}
 
 app:
   demo-books:

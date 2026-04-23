@@ -31,12 +31,6 @@ import static com.library.service.borrow.BorrowValidator.DEFAULT_BORROW_DAYS;
 public class ReservationService {
 
     private static final int RESERVATION_EXPIRE_DAYS = 3;
-    private static final List<BorrowStatus> ACTIVE_BORROW_STATUSES = List.of(
-        BorrowStatus.PENDING,
-        BorrowStatus.APPROVED,
-        BorrowStatus.BORROWED,
-        BorrowStatus.OVERDUE
-    );
 
     private final ReservationRecordRepository reservationRecordRepository;
     private final BookRepository bookRepository;
@@ -86,7 +80,7 @@ public class ReservationService {
             throw new IllegalArgumentException("你已预约过这本书。");
         }
 
-        if (borrowRecordRepository.existsByUserIdAndBookIdAndStatusIn(userId, book.getId(), ACTIVE_BORROW_STATUSES)) {
+        if (borrowRecordRepository.existsByUserIdAndBookIdAndStatusIn(userId, book.getId(), BorrowRecord.ACTIVE_STATUSES)) {
             throw new IllegalArgumentException("你已存在该书的借阅或借阅申请记录。");
         }
 
@@ -214,7 +208,7 @@ public class ReservationService {
             throw new IllegalArgumentException("预约图书当前已无法领取。");
         }
 
-        if (borrowRecordRepository.existsByUserIdAndBookIdAndStatusIn(userId, reservation.getBookId(), ACTIVE_BORROW_STATUSES)) {
+        if (borrowRecordRepository.existsByUserIdAndBookIdAndStatusIn(userId, reservation.getBookId(), BorrowRecord.ACTIVE_STATUSES)) {
             throw new IllegalArgumentException("你已存在该书的借阅或借阅申请记录。");
         }
 

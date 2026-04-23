@@ -1,5 +1,7 @@
 package com.library.filter;
 
+import com.library.util.ClientIpResolver;
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -9,8 +11,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.library.util.ClientIpResolver;
-
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
@@ -19,7 +19,7 @@ import java.util.Base64;
 
 /**
  * 响应数据水印过滤器
- * 
+ *
  * 在每个API响应中嵌入隐形追踪标识：
  * 1. X-Trace-Id 响应头 — 唯一标识每次请求，可用于追踪数据来源
  * 2. X-Response-Signature — 响应完整性签名，防止中间人篡改
@@ -29,8 +29,17 @@ import java.util.Base64;
 @Component
 public class ResponseWatermarkFilter extends OncePerRequestFilter {
 
-    @Value("${anti-crawler.watermark.secret:watermark-trace-secret-library-2026}")
+    @Value("${anti-crawler.watermark.secret}")
     private String watermarkSecret;
+
+    @PostConstruct
+    void validateWatermarkSecret() {
+        if (watermarkSecret == null || watermarkSecret.isBlank() || watermarkSecret.length() < 32) {
+            throw new IllegalStateException(
+                "anti-crawler.watermark.secret must contain at least 32 characters"
+            );
+        }
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -44,7 +53,7 @@ public class ResponseWatermarkFilter extends OncePerRequestFilter {
 
         // 追踪ID = Base64(HMAC(IP + timestamp + path))
         String traceId = generateTraceId(clientIp, timestamp, path);
-        
+
         // 简短水印 = 时间戳后6位 + IP哈希前4位
         String watermark = generateWatermark(clientIp, timestamp);
 
@@ -69,7 +78,6 @@ public class ResponseWatermarkFilter extends OncePerRequestFilter {
                     watermarkSecret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
             mac.init(spec);
             byte[] hash = mac.doFinal(data.getBytes(StandardCharsets.UTF_8));
-            // 取前12字节编码为Base64，更短的追踪ID
             byte[] shortHash = new byte[12];
             System.arraycopy(hash, 0, shortHash, 0, 12);
             return Base64.getUrlEncoder().withoutPadding().encodeToString(shortHash);
@@ -86,7 +94,6 @@ public class ResponseWatermarkFilter extends OncePerRequestFilter {
         String timeHex = Long.toHexString(timestamp);
         String timePart = timeHex.substring(Math.max(0, timeHex.length() - 6));
 
-        // H-BUG-1 修复: Math.abs(Integer.MIN_VALUE) 返回负数，使用位运算避免
         int ipHash = ip.hashCode() & 0x7FFFFFFF;
         String ipHex = Integer.toHexString(ipHash);
         String ipPart = ipHex.substring(0, Math.min(4, ipHex.length()));
@@ -94,9 +101,6 @@ public class ResponseWatermarkFilter extends OncePerRequestFilter {
         return timePart + ipPart;
     }
 
-    /**
-     * 获取客户端IP（委托给统一的 ClientIpResolver）
-     */
     private String getClientIp(HttpServletRequest request) {
         return ClientIpResolver.resolve(request);
     }
