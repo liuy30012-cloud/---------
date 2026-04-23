@@ -106,4 +106,18 @@ public class BorrowRecord {
         OVERDUE,    // 已逾期
         REJECTED    // 已拒绝
     }
+
+    // 共享状态组：活跃/开放借阅生命周期状态
+    public static final java.util.List<BorrowStatus> ACTIVE_STATUSES = java.util.List.of(
+        BorrowStatus.PENDING,
+        BorrowStatus.APPROVED,
+        BorrowStatus.BORROWED,
+        BorrowStatus.OVERDUE
+    );
+
+    // 共享状态组：已取书状态
+    public static final java.util.List<BorrowStatus> CHECKED_OUT_STATUSES = java.util.List.of(
+        BorrowStatus.BORROWED,
+        BorrowStatus.OVERDUE
+    );
 }

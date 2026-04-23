@@ -41,13 +41,6 @@ import java.util.List;
 @RequestMapping("/api/books")
 public class BookController {
 
-    private static final List<BorrowStatus> ACTIVE_BORROW_STATUSES = List.of(
-        BorrowStatus.PENDING,
-        BorrowStatus.APPROVED,
-        BorrowStatus.BORROWED,
-        BorrowStatus.OVERDUE
-    );
-
     private final BookService bookService;
     private final BookRepository bookRepository;
     private final BookReviewService bookReviewService;
@@ -193,7 +186,7 @@ public class BookController {
     private BookDetailResponse.BorrowHistorySummary buildBorrowHistorySummary(Long bookId) {
         BookDetailResponse.BorrowHistorySummary summary = new BookDetailResponse.BorrowHistorySummary();
         summary.setTotalBorrows(borrowRecordRepository.countByBookId(bookId));
-        summary.setActiveBorrowCount(borrowRecordRepository.countByBookIdAndStatusIn(bookId, ACTIVE_BORROW_STATUSES));
+        summary.setActiveBorrowCount(borrowRecordRepository.countByBookIdAndStatusIn(bookId, BorrowRecord.ACTIVE_STATUSES));
 
         List<BorrowRecord> recentRecords = borrowRecordRepository.findTop5ByBookIdOrderByCreatedAtDesc(bookId);
         if (!recentRecords.isEmpty()) {

@@ -76,12 +76,12 @@ spring:
   elasticsearch:
     uris: ${ES_URIS:http://localhost:9200}
     username: ${ES_USERNAME:elastic}
-    password: ${ES_PASSWORD:changeme}
+    password: ${ES_PASSWORD}
     connection-timeout: 3s
     socket-timeout: 5s
 
 jwt:
-  secret: ${JWT_SECRET:your-256-bit-secret-key-change-this-in-production-environment-please-use-strong-key}
+  secret: ${JWT_SECRET}
   expiration: ${JWT_EXPIRATION:86400000}
   refresh-expiration: ${JWT_REFRESH_EXPIRATION:604800000}
 
@@ -112,7 +112,7 @@ anti-crawler:
     ban-duration: 900
   signature:
     enabled: ${ANTI_CRAWLER_SIGNATURE_ENABLED:false}
-    secret: ${ANTI_CRAWLER_SECRET:library-anti-crawler-shared-secret-2026}
+    secret: ${ANTI_CRAWLER_SECRET}
     time-window: 60
   ua-check:
     enabled: true
@@ -125,7 +125,7 @@ anti-crawler:
     pass-token-ttl: 600
     bind-user-agent: true
   watermark:
-    secret: ${WATERMARK_SECRET:watermark-trace-secret-library-2026}
+    secret: ${WATERMARK_SECRET}
 
 # Elasticsearch 功能开关
 library:
