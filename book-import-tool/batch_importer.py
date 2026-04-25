@@ -28,13 +28,17 @@ class BatchImporter:
     def __init__(self):
         self.token = None
         self.session = requests.Session()
+        # 设置浏览器 User-Agent 以绕过反爬虫检测
+        self.session.headers.update({
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        })
 
     def _login(self) -> bool:
         """登录后端 API，获取 JWT token"""
         try:
             url = f"{config.BACKEND_API_BASE}/auth/login"
             payload = {
-                "username": config.ADMIN_USERNAME,
+                "studentId": config.ADMIN_USERNAME,
                 "password": config.ADMIN_PASSWORD
             }
 
@@ -43,7 +47,7 @@ class BatchImporter:
             response.raise_for_status()
 
             data = response.json()
-            if data.get('code') == 200 and data.get('data', {}).get('token'):
+            if data.get('success') and data.get('data', {}).get('token'):
                 self.token = data['data']['token']
                 logger.info("登录成功")
                 return True
@@ -76,7 +80,7 @@ class BatchImporter:
                 response.raise_for_status()
 
                 data = response.json()
-                if data.get('code') == 200:
+                if data.get('success'):
                     result_data = data.get('data', {})
                     success_count = result_data.get('successCount', 0)
                     failure_count = result_data.get('failedCount', 0)

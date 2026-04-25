@@ -4,6 +4,12 @@
 
 set -e
 
+if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
+    echo "Usage: firewall-setup.sh"
+    echo "Apply the baseline firewall rules for the DDoS defense stack."
+    exit 0
+fi
+
 # 颜色输出
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -31,9 +37,9 @@ iptables -t nat -X
 iptables -t mangle -F
 iptables -t mangle -X
 
-# 设置默认策略
-iptables -P INPUT DROP
-iptables -P FORWARD DROP
+# 在构建新规则前先保持默认放行，避免脚本失败时把自己锁在门外
+iptables -P INPUT ACCEPT
+iptables -P FORWARD ACCEPT
 iptables -P OUTPUT ACCEPT
 
 # 允许本地回环
@@ -112,6 +118,11 @@ iptables -A INPUT -p tcp --dport 22 -j ACCEPT
 echo -e "${YELLOW}允许 HTTP/HTTPS 连接...${NC}"
 iptables -A INPUT -p tcp --dport 80 -j ACCEPT
 iptables -A INPUT -p tcp --dport 443 -j ACCEPT
+
+# 所有必要放行规则就位后再切换到默认拒绝
+iptables -P INPUT DROP
+iptables -P FORWARD DROP
+iptables -P OUTPUT ACCEPT
 
 # DNS (如果运行 DNS 服务器)
 # iptables -A INPUT -p udp --dport 53 -j ACCEPT

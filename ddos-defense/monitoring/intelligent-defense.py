@@ -150,14 +150,20 @@ class IntelligentDefense:
         return result.returncode == 0
 
     def _ban(self, ip: str, score: int) -> None:
-        expiry = time.time() + int(self.config["ban_duration"])
-        self.banned_until[ip] = expiry
+        now = time.time()
+        current_expiry = self.banned_until.get(ip)
+        if current_expiry and current_expiry > now:
+            return
+
+        expiry = now + int(self.config["ban_duration"])
 
         if not self.config["auto_ban"]:
+            self.banned_until[ip] = expiry
             self.log(f"Observe-only hit: ip={ip} score={score}", "WARNING")
             return
 
         if self._iptables("-I", ip):
+            self.banned_until[ip] = expiry
             self.log(f"Banned ip={ip} score={score}", "WARNING")
         else:
             self.log(f"Failed to ban ip={ip} score={score}", "ERROR")

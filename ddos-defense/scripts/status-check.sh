@@ -1,6 +1,12 @@
 #!/bin/bash
 set -u
 
+if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
+    echo "Usage: status-check.sh"
+    echo "Print the current DDoS defense and network status summary."
+    exit 0
+fi
+
 echo "=== DDoS Defense Status Check ==="
 echo
 

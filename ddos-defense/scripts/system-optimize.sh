@@ -4,6 +4,12 @@
 
 set -e
 
+if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
+    echo "Usage: system-optimize.sh"
+    echo "Apply the recommended Linux kernel tuning for DDoS defense."
+    exit 0
+fi
+
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'

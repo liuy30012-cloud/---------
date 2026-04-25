@@ -1,38 +1,28 @@
-"""配置文件"""
+"""Backwards-compatible settings exports for legacy scripts."""
 
-# 豆瓣 API 配置
-DOUBAN_API_BASE = "https://api.douban.com/v2/book"
-REQUEST_INTERVAL_MIN = 2  # 最小请求间隔（秒）
-REQUEST_INTERVAL_MAX = 5  # 最大请求间隔（秒）
-MAX_RETRIES = 3           # 最大重试次数
+from book_import_tool.config import settings
 
-# 数据抓取配置
-BATCH_SIZE = 1000         # 每批抓取数量
-TOTAL_BOOKS = 100000      # 总目标数量
-
-# 数据处理配置
-EXCEL_BATCH_SIZE = 5000   # 每个 Excel 文件包含的图书数量
-
-# 后端 API 配置
-BACKEND_API_BASE = "http://localhost:8080/api"
-ADMIN_USERNAME = "admin"
-ADMIN_PASSWORD = "admin123"
-
-# 导入配置
-MAX_CONCURRENT_IMPORTS = 3  # 最大并发导入数
-
-# 默认值配置
-DEFAULT_LOCATION = "待分配"
-DEFAULT_STATUS = "available"
-DEFAULT_LANGUAGE = "zh"
-DEFAULT_AVAILABILITY = "available"
-DEFAULT_CIRCULATION_POLICY = "AUTO"
-DEFAULT_TOTAL_COPIES = 3
-
-# 目录配置
-DATA_DIR = "data"
-RAW_DATA_DIR = "data/raw"
-PROCESSED_DATA_DIR = "data/processed"
-LOGS_DIR = "logs"
-PROGRESS_FILE = "data/progress.json"
-FAILED_FILE = "data/failed.json"
+DOUBAN_API_BASE = settings.douban_api_base
+REQUEST_INTERVAL_MIN = settings.request_interval_min
+REQUEST_INTERVAL_MAX = settings.request_interval_max
+MAX_RETRIES = settings.max_retries
+BATCH_SIZE = settings.batch_size
+TOTAL_BOOKS = settings.total_books
+EXCEL_BATCH_SIZE = settings.excel_batch_size
+BACKEND_API_BASE = settings.backend_api_base
+ADMIN_USERNAME = settings.admin_username
+ADMIN_PASSWORD = settings.admin_password
+MAX_CONCURRENT_IMPORTS = settings.max_concurrent_imports
+DEFAULT_LOCATION = settings.default_location
+DEFAULT_STATUS = settings.default_status
+DEFAULT_LANGUAGE = settings.default_language
+DEFAULT_AVAILABILITY = settings.default_availability
+DEFAULT_CIRCULATION_POLICY = settings.default_circulation_policy
+DEFAULT_TOTAL_COPIES = settings.default_total_copies
+BASE_DIR = str(settings.base_dir)
+DATA_DIR = str(settings.data_dir)
+RAW_DATA_DIR = str(settings.raw_data_dir)
+PROCESSED_DATA_DIR = str(settings.processed_data_dir)
+LOGS_DIR = str(settings.logs_dir)
+PROGRESS_FILE = str(settings.progress_file)
+FAILED_FILE = str(settings.failed_file)

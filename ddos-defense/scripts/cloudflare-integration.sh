@@ -3,6 +3,12 @@
 
 set -e
 
+if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
+    echo "Usage: cloudflare-integration.sh"
+    echo "Create or update the Cloudflare integration files for DDoS defense."
+    exit 0
+fi
+
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 RED='\033[0;31m'
@@ -12,6 +18,8 @@ echo -e "${GREEN}=== CloudFlare 集成配置 ===${NC}"
 
 # 配置文件
 CONFIG_FILE="/etc/ddos/cloudflare.conf"
+
+mkdir -p /etc/ddos
 
 # 创建配置文件
 cat > "$CONFIG_FILE" << 'EOF'
@@ -37,7 +45,7 @@ cat > /usr/local/bin/cf-firewall << 'EOFSCRIPT'
 # CloudFlare 防火墙管理脚本
 
 CONFIG_FILE="/etc/ddos/cloudflare.conf"
-BLACKLIST_FILE="/etc/ddos/blacklist.txt"
+CONFIRMED_BLACKLIST_FILE="/etc/ddos/confirmed-blacklist.txt"
 LOG_FILE="/var/log/cf-firewall.log"
 
 # 加载配置
@@ -123,7 +131,7 @@ unban_ip() {
 sync_blacklist() {
     log "开始同步黑名单到 CloudFlare..."
 
-    if [ ! -f "$BLACKLIST_FILE" ]; then
+    if [ ! -f "$CONFIRMED_BLACKLIST_FILE" ]; then
         log "黑名单文件不存在"
         return 1
     fi
@@ -143,7 +151,7 @@ sync_blacklist() {
             ((count++))
             sleep 1  # 避免 API 速率限制
         fi
-    done < "$BLACKLIST_FILE"
+    done < "$CONFIRMED_BLACKLIST_FILE"
 
     log "同步完成，共处理 $count 个 IP"
 }

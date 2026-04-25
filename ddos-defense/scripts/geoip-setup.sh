@@ -3,6 +3,12 @@
 
 set -e
 
+if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
+    echo "Usage: geoip-setup.sh"
+    echo "Install and configure the GeoIP-based blocking rules."
+    exit 0
+fi
+
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 RED='\033[0;31m'
@@ -15,6 +21,8 @@ if [ "$EUID" -ne 0 ]; then
     echo -e "${RED}请使用 root 权限运行${NC}"
     exit 1
 fi
+
+mkdir -p /etc/ddos
 
 # 检测操作系统
 if [ -f /etc/os-release ]; then
@@ -116,7 +124,7 @@ apply_rules() {
 
     # 将链添加到 INPUT
     iptables -D INPUT -j $CHAIN_NAME 2>/dev/null
-    iptables -I INPUT -j $CHAIN_NAME
+    iptables -A INPUT -j $CHAIN_NAME
 
     echo "GeoIP 规则已应用"
 }
