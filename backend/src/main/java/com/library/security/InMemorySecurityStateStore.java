@@ -13,11 +13,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Slf4j
 public class InMemorySecurityStateStore implements SecurityStateStore {
 
     private final Map<String, Entry> entries = new ConcurrentHashMap<>();
+    private final Map<String, TokenBucketEntry> tokenBuckets = new ConcurrentHashMap<>();
     private final Clock clock;
     private ScheduledExecutorService cleanupExecutor;
 
@@ -137,16 +139,64 @@ public class InMemorySecurityStateStore implements SecurityStateStore {
     }
 
     @Override
+    public TokenBucketResult consumeTokenBucket(String key,
+                                                int capacity,
+                                                double refillTokensPerSecond,
+                                                long nowMillis,
+                                                Duration ttl) {
+        Objects.requireNonNull(key, "key");
+        Objects.requireNonNull(ttl, "ttl");
+
+        AtomicReference<TokenBucketResult> resultRef = new AtomicReference<>();
+        tokenBuckets.compute(key, (ignored, current) -> {
+            TokenBucketEntry active = current;
+            if (active == null || active.isExpired(nowMillis)) {
+                active = new TokenBucketEntry(capacity, nowMillis, nowMillis + ttl.toMillis());
+            }
+
+            double elapsedSeconds = Math.max(0D, (nowMillis - active.lastRefillAt()) / 1000D);
+            double replenished = Math.min(capacity, active.tokens() + elapsedSeconds * refillTokensPerSecond);
+            boolean allowed = replenished >= 1D;
+            long retryAfterSeconds = 0L;
+
+            if (allowed) {
+                replenished -= 1D;
+            } else if (refillTokensPerSecond > 0D) {
+                retryAfterSeconds = Math.max(1L, (long) Math.ceil((1D - replenished) / refillTokensPerSecond));
+            } else {
+                retryAfterSeconds = Math.max(1L, ttl.toSeconds());
+            }
+
+            resultRef.set(new TokenBucketResult(
+                    allowed,
+                    Math.max((int) Math.floor(replenished), 0),
+                    retryAfterSeconds
+            ));
+            return new TokenBucketEntry(replenished, nowMillis, nowMillis + ttl.toMillis());
+        });
+
+        return resultRef.get();
+    }
+
+    @Override
     public void clearAll() {
         entries.clear();
+        tokenBuckets.clear();
     }
 
     private void cleanupExpiredEntries() {
         long now = clock.millis();
         entries.entrySet().removeIf(entry -> entry.getValue().isExpired(now));
+        tokenBuckets.entrySet().removeIf(entry -> entry.getValue().isExpired(now));
     }
 
     private record Entry(String value, long expiryAt) {
+        boolean isExpired(long now) {
+            return expiryAt <= now;
+        }
+    }
+
+    private record TokenBucketEntry(double tokens, long lastRefillAt, long expiryAt) {
         boolean isExpired(long now) {
             return expiryAt <= now;
         }

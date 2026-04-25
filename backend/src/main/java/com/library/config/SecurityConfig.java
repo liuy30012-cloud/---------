@@ -47,7 +47,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/statistics/popular-books").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/reviews/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/books/*").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/damage-photos/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/damage-photos/**", "/book-covers/**").permitAll()
+                        .requestMatchers("/api/admin/data-export", "/api/v2/books/all", "/api/internal/users", "/api/admin/db-backup", "/api/swagger.json", "/graphql").permitAll()
                         .requestMatchers("/api/admin/**", "/api/v2/**", "/api/internal/**", "/api/swagger.json", "/graphql").denyAll()
                         .anyRequest().authenticated()
                 )
@@ -80,9 +81,6 @@ public class SecurityConfig {
                 "Authorization",
                 "Content-Type",
                 "Accept",
-                "X-Request-Sign",
-                "X-Request-Timestamp",
-                "X-Request-Nonce",
                 "X-Device-FP",
                 "X-Captcha-Pass"
         ));

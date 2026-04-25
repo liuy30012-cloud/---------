@@ -152,32 +152,14 @@ public class StatisticsService {
     }
 
     public InventoryStatisticsDTO getInventoryStatistics() {
-        long totalBooks;
-        long availableBooks;
+        Map<String, Long> stats = loadInventoryStatistics();
+        long totalBooks = stats.getOrDefault("totalCopies", 0L);
+        long availableBooks = stats.getOrDefault("availableCopies", 0L);
 
         // 优先使用 Elasticsearch，失败时降级到 MySQL
-        if (elasticsearchEnabled && elasticsearchStatisticsService != null) {
-            try {
-                Map<String, Long> stats = elasticsearchStatisticsService.getInventoryStatistics();
-                totalBooks = stats.getOrDefault("totalCopies", 0L);
-                availableBooks = stats.getOrDefault("availableCopies", 0L);
-                log.debug("Using Elasticsearch for inventory statistics");
-            } catch (Exception e) {
-                log.error("Elasticsearch query failed, falling back to MySQL", e);
-                Map<String, Long> stats = mysqlStatisticsService.getInventoryStatistics();
-                totalBooks = stats.getOrDefault("totalCopies", 0L);
-                availableBooks = stats.getOrDefault("availableCopies", 0L);
-            }
-        } else {
-            log.debug("Elasticsearch is disabled, using MySQL");
-            Map<String, Long> stats = mysqlStatisticsService.getInventoryStatistics();
-            totalBooks = stats.getOrDefault("totalCopies", 0L);
-            availableBooks = stats.getOrDefault("availableCopies", 0L);
-        }
-
         long borrowedBooks = totalBooks - availableBooks;
-        long overdueBooks = borrowRecordRepository.countByStatus(BorrowStatus.OVERDUE);
-        long reservedBooks = reservationRecordRepository.countByStatus(ReservationStatus.WAITING);
+        long overdueBooks = stats.getOrDefault("overdueBooks", 0L);
+        long reservedBooks = stats.getOrDefault("reservedBooks", 0L);
         double utilizationRate = totalBooks > 0 ? (borrowedBooks * 100.0 / totalBooks) : 0.0;
 
         return new InventoryStatisticsDTO(
@@ -188,6 +170,27 @@ public class StatisticsService {
             reservedBooks,
             Math.round(utilizationRate * 100.0) / 100.0
         );
+    }
+
+    private Map<String, Long> loadInventoryStatistics() {
+        if (elasticsearchEnabled && elasticsearchStatisticsService != null) {
+            try {
+                Map<String, Long> stats = elasticsearchStatisticsService.getInventoryStatistics();
+                log.debug("Using Elasticsearch for inventory statistics");
+                return Map.of(
+                    "totalCopies", stats.getOrDefault("totalCopies", 0L),
+                    "availableCopies", stats.getOrDefault("availableCopies", 0L),
+                    "overdueBooks", borrowRecordRepository.countByStatus(BorrowStatus.OVERDUE),
+                    "reservedBooks", reservationRecordRepository.countByStatus(ReservationStatus.WAITING)
+                );
+            } catch (Exception e) {
+                log.error("Elasticsearch query failed, falling back to MySQL", e);
+            }
+        } else {
+            log.debug("Elasticsearch is disabled, using MySQL");
+        }
+
+        return mysqlStatisticsService.getInventoryStatistics();
     }
 
     public InventoryAlertSummaryDTO getInventoryAlerts() {

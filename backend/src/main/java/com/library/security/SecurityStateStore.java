@@ -18,5 +18,14 @@ public interface SecurityStateStore {
 
     long countByPrefix(String prefix);
 
+    TokenBucketResult consumeTokenBucket(String key,
+                                         int capacity,
+                                         double refillTokensPerSecond,
+                                         long nowMillis,
+                                         Duration ttl);
+
     void clearAll();
+
+    record TokenBucketResult(boolean allowed, int remainingTokens, long retryAfterSeconds) {
+    }
 }

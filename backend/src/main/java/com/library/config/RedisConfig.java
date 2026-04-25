@@ -1,6 +1,8 @@
 package com.library.config;
 
+import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -59,5 +61,21 @@ public class RedisConfig {
                     .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
                     .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer())))
             .build();
+    }
+
+    @Bean
+    public ApplicationRunner cacheManagerVerifier(CacheManager cacheManager) {
+        return args -> {
+            requireCache(cacheManager, "book_search");
+            requireCache(cacheManager, "book_categories");
+            requireCache(cacheManager, "book_languages");
+            requireCache(cacheManager, "popular_books");
+        };
+    }
+
+    private void requireCache(CacheManager cacheManager, String cacheName) {
+        if (cacheManager.getCache(cacheName) == null) {
+            throw new IllegalStateException("Missing required Redis cache: " + cacheName);
+        }
     }
 }

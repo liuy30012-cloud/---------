@@ -1,6 +1,9 @@
 package com.library.service.fallback;
 
+import com.library.model.BorrowRecord.BorrowStatus;
+import com.library.model.ReservationRecord.ReservationStatus;
 import com.library.repository.BookRepository;
+import com.library.repository.BookRepository.InventoryStatisticsAggregate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -49,16 +52,38 @@ public class MysqlStatisticsService {
      */
     public Map<String, Long> getInventoryStatistics() {
         try {
-            Long totalCopies = bookRepository.sumTotalCopies();
-            Long availableCopies = bookRepository.sumAvailableCopies();
+            InventoryStatisticsAggregate aggregate = bookRepository.getInventoryStatisticsAggregate(
+                BorrowStatus.OVERDUE.name(),
+                ReservationStatus.WAITING.name()
+            );
+
+            if (aggregate == null) {
+                return Map.of(
+                    "totalCopies", 0L,
+                    "availableCopies", 0L,
+                    "overdueBooks", 0L,
+                    "reservedBooks", 0L
+                );
+            }
 
             return Map.of(
-                "totalCopies", totalCopies != null ? totalCopies : 0L,
-                "availableCopies", availableCopies != null ? availableCopies : 0L
+                "totalCopies", toLong(aggregate.getTotalCopies()),
+                "availableCopies", toLong(aggregate.getAvailableCopies()),
+                "overdueBooks", toLong(aggregate.getOverdueBooks()),
+                "reservedBooks", toLong(aggregate.getReservedBooks())
             );
         } catch (Exception e) {
             log.error("Failed to get inventory statistics from MySQL", e);
-            return Map.of("totalCopies", 0L, "availableCopies", 0L);
+            return Map.of(
+                "totalCopies", 0L,
+                "availableCopies", 0L,
+                "overdueBooks", 0L,
+                "reservedBooks", 0L
+            );
         }
+    }
+
+    private long toLong(Number value) {
+        return value == null ? 0L : value.longValue();
     }
 }

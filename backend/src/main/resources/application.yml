@@ -105,9 +105,13 @@ anti-crawler:
   store:
     type: ${ANTI_CRAWLER_STORE_TYPE:memory}
   rate-limit:
-    global-rpm: 60
-    search-rpm: 20
-    burst-size: 10
+    public-search-per-minute-ip: 30
+    public-search-per-minute-fingerprint: 30
+    public-search-per-minute-user: 60
+    public-detail-per-minute-ip: 60
+    metadata-per-minute-ip: 30
+    captcha-generate-per-minute-ip: 5
+    captcha-verify-per-10m-ip: 10
     ban-threshold: 3
     ban-duration: 900
   signature:
@@ -122,8 +126,12 @@ anti-crawler:
     delay-ms: 3000
     ban-duration: 3600
   challenge:
-    pass-token-ttl: 600
+    pass-token-ttl: 120
+    pass-token-uses: 10
     bind-user-agent: true
+    suspicion-threshold: 70
+    cooldown-base-seconds: 30
+    cooldown-max-seconds: 120
   watermark:
     secret: ${WATERMARK_SECRET}
 

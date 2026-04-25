@@ -18,6 +18,13 @@ import java.util.Optional;
 @Repository
 public interface BookRepository extends JpaRepository<Book, Long> {
 
+    interface InventoryStatisticsAggregate {
+        Number getTotalCopies();
+        Number getAvailableCopies();
+        Number getOverdueBooks();
+        Number getReservedBooks();
+    }
+
     Optional<Book> findByIsbn(String isbn);
 
     Optional<Book> findByTitleContaining(String title);
@@ -85,4 +92,17 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 
     @Query("SELECT SUM(b.availableCopies) FROM Book b")
     Long sumAvailableCopies();
+
+    @Query(value = """
+        SELECT
+            COALESCE(SUM(b.total_copies), 0) AS totalCopies,
+            COALESCE(SUM(b.available_copies), 0) AS availableCopies,
+            (SELECT COUNT(*) FROM borrow_records br WHERE br.status = :overdueStatus) AS overdueBooks,
+            (SELECT COUNT(*) FROM reservation_records rr WHERE rr.status = :waitingStatus) AS reservedBooks
+        FROM books b
+        """, nativeQuery = true)
+    InventoryStatisticsAggregate getInventoryStatisticsAggregate(
+        @Param("overdueStatus") String overdueStatus,
+        @Param("waitingStatus") String waitingStatus
+    );
 }
