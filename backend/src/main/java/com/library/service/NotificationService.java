@@ -7,6 +7,8 @@ import com.library.model.User;
 import com.library.repository.NotificationRecordRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -25,6 +27,10 @@ public class NotificationService {
 
     public List<NotificationRecord> getUserNotifications(Long userId) {
         return notificationRecordRepository.findByUserIdOrderByCreatedAtDesc(userId);
+    }
+
+    public Page<NotificationRecord> getUserNotifications(Long userId, Pageable pageable) {
+        return notificationRecordRepository.findByUserIdOrderByCreatedAtDesc(userId, pageable);
     }
 
     @Transactional

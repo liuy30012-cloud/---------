@@ -1,6 +1,8 @@
 package com.library.repository;
 
 import com.library.model.SearchHistoryRecord;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -19,4 +21,6 @@ public interface SearchHistoryRecordRepository extends JpaRepository<SearchHisto
     Optional<SearchHistoryRecord> findByUserIdAndKeywordAndSavedFalse(Long userId, String keyword);
 
     void deleteByUserId(Long userId);
+
+    Page<SearchHistoryRecord> findByUserIdOrderByTimestampDesc(Long userId, Pageable pageable);
 }

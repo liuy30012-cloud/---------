@@ -2,6 +2,8 @@ package com.library.repository;
 
 import com.library.model.BorrowRecord;
 import com.library.model.BorrowRecord.BorrowStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -64,4 +66,14 @@ public interface BorrowRecordRepository extends JpaRepository<BorrowRecord, Long
     List<Object[]> countReturnsByDate(@Param("startDate") LocalDateTime startDate);
 
     long countByStatus(BorrowStatus status);
+
+    Page<BorrowRecord> findByUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable);
+
+    Page<BorrowRecord> findByUserIdAndStatusInOrderByCreatedAtDesc(
+        Long userId,
+        List<BorrowStatus> statuses,
+        Pageable pageable
+    );
+
+    Page<BorrowRecord> findByStatusOrderByCreatedAtAsc(BorrowStatus status, Pageable pageable);
 }

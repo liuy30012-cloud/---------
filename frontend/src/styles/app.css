@@ -67,7 +67,8 @@ input, button, select {
   min-width: 0;
   display: flex;
   align-items: center;
-  gap: 2rem;
+  gap: 1rem;
+  overflow: hidden;
 }
 .brand-link {
   min-width: 0;
@@ -147,6 +148,7 @@ input, button, select {
   flex: 1 1 auto;
   gap: var(--space-2);
   min-width: 0;
+  max-width: 100%;
   overflow-x: auto;
   overflow-y: hidden;
   padding-block: 0.35rem;

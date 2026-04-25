@@ -2,6 +2,8 @@ package com.library.repository;
 
 import com.library.model.ReadingStatus;
 import com.library.model.ReadingStatusRecord;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -22,4 +24,12 @@ public interface ReadingStatusRecordRepository extends JpaRepository<ReadingStat
     long countByUserId(Long userId);
 
     void deleteByUserIdAndBookId(Long userId, Long bookId);
+
+    Page<ReadingStatusRecord> findByUserIdOrderByUpdatedAtDesc(Long userId, Pageable pageable);
+
+    Page<ReadingStatusRecord> findByUserIdAndStatusOrderByUpdatedAtDesc(
+        Long userId,
+        ReadingStatus status,
+        Pageable pageable
+    );
 }

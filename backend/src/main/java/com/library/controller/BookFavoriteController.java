@@ -5,8 +5,11 @@ import com.library.dto.FavoriteRequest;
 import com.library.dto.FavoriteResponse;
 import com.library.service.BookFavoriteService;
 import com.library.util.JwtUtil;
+import com.library.util.PageableHelper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -43,10 +46,14 @@ public class BookFavoriteController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<FavoriteResponse>>> getUserFavorites(
-            Authentication authentication) {
+    public ResponseEntity<ApiResponse<Page<FavoriteResponse>>> getUserFavorites(
+            Authentication authentication,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "createdAt,desc") String[] sort) {
         Long userId = getUserIdFromAuth(authentication);
-        List<FavoriteResponse> favorites = bookFavoriteService.getUserFavorites(userId);
+        Pageable pageable = PageableHelper.createPageable(page, size, 20, sort);
+        Page<FavoriteResponse> favorites = bookFavoriteService.getUserFavorites(userId, pageable);
         return ResponseEntity.ok(ApiResponse.success(favorites, "获取收藏列表成功"));
     }
 

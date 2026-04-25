@@ -4,6 +4,8 @@ import com.library.dto.SearchHistoryRequest;
 import com.library.model.SearchHistoryRecord;
 import com.library.repository.SearchHistoryRecordRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -22,6 +24,10 @@ public class SearchHistoryService {
 
     public List<SearchHistoryRecord> getHistory(Long userId) {
         return searchHistoryRecordRepository.findByUserIdOrderBySavedDescTimestampDesc(userId);
+    }
+
+    public Page<SearchHistoryRecord> getHistory(Long userId, Pageable pageable) {
+        return searchHistoryRecordRepository.findByUserIdOrderByTimestampDesc(userId, pageable);
     }
 
     @Transactional
