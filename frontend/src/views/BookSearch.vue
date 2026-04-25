@@ -206,7 +206,7 @@
             @click="goToBookDetail(book.id)"
           >
             <div class="result-cover">
-              <img v-if="book.coverUrl" :src="book.coverUrl" :alt="book.title" width="120" height="160" loading="lazy" />
+              <img v-if="displayCoverUrl(book)" :src="displayCoverUrl(book)" :alt="book.title" width="120" height="160" loading="lazy" />
               <div v-else class="result-cover-placeholder">
                 <span class="material-symbols-outlined" aria-hidden="true">menu_book</span>
               </div>
@@ -260,7 +260,8 @@
 import { computed, inject, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { bookApi, type Book, type BookSearchParams, type SmartSearchResponse } from '../api/bookApi'
+import { bookApi } from '../api/bookApi'
+import type { Book, BookSearchParams, SmartSearchResponse } from '../types/book'
 import { favoriteApi } from '../api/favoriteApi'
 import FeedbackToast from '../components/common/FeedbackToast.vue'
 import LibraryButton from '../components/common/LibraryButton.vue'
@@ -271,6 +272,8 @@ import { useToast } from '../composables/useToast'
 import { useSearchAutocomplete } from '../composables/useSearchAutocomplete'
 import { useOffline } from '../composables/useOffline'
 import { toggleFavoriteOfflineAware } from '../composables/useFavoriteOffline'
+import { findOnlineBookCover } from '../utils/coverLookup'
+import { resolveCoverUrl } from '../utils/coverUrl'
 
 const { t, locale } = useI18n()
 
@@ -323,6 +326,7 @@ const pagination = reactive({
 const { toast, showToast } = useToast()
 
 const favoritedBookIds = ref<Set<number>>(new Set())
+const onlineCoverUrls = ref<Record<number, string>>({})
 const smartDidYouMean = ref('')
 const smartSuggestions = ref<string[]>([])
 const smartInterpretation = ref('')
@@ -395,6 +399,20 @@ const showSearchAssistance = computed(() =>
   (Boolean(smartDidYouMean.value) || Boolean(smartInterpretation.value) || filteredSmartSuggestions.value.length > 0) &&
   (books.value.length === 0 || totalResults.value < 3),
 )
+
+function displayCoverUrl(book: Book) {
+  return resolveCoverUrl(book.coverUrl || onlineCoverUrls.value[book.id])
+}
+
+async function enrichOnlineCovers() {
+  const targets = books.value.filter(book => !book.coverUrl && !onlineCoverUrls.value[book.id]).slice(0, 12)
+  await Promise.all(targets.map(async (book) => {
+    const coverUrl = await findOnlineBookCover(book.title, book.author)
+    if (coverUrl) {
+      onlineCoverUrls.value = { ...onlineCoverUrls.value, [book.id]: coverUrl }
+    }
+  }))
+}
 
 onMounted(async () => {
   document.addEventListener('mousedown', handleDocumentPointerDown)
@@ -546,6 +564,7 @@ async function fetchResults() {
 
       syncSmartAssistance(smartResponse, assistiveQuery)
       books.value = smartResponse?.books || []
+      void enrichOnlineCovers()
       totalResults.value = smartResponse?.total || books.value.length
       pagination.page = smartResponse?.page || 0
       pagination.totalPages = smartResponse?.totalPages || 0
@@ -553,6 +572,7 @@ async function fetchResults() {
       resetSmartAssistance()
       const response = await bookApi.searchBooks(params)
       books.value = response.data.data || []
+      void enrichOnlineCovers()
       totalResults.value = response.data.total || books.value.length
       pagination.page = response.data.page || 0
       pagination.totalPages = response.data.totalPages || 0

@@ -1,5 +1,5 @@
 import httpClient from './httpClient'
-import type { PaginatedApiResponse } from './bookApi'
+import type { PaginatedApiResponse } from '../types/api'
 
 export interface DamageReport {
   id: number

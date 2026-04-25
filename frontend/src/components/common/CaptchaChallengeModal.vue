@@ -18,18 +18,18 @@
 
         <div v-if="session" class="captcha-stage">
           <div class="captcha-artboard" :style="artboardStyle">
-            <span
-              v-for="(piece, index) in session.puzzlePieces"
-              :key="`${piece.x}-${piece.y}-${index}`"
-              class="puzzle-piece"
-              :style="{ left: `${piece.x}px`, top: `${piece.y}px` }"
+            <img class="captcha-background" :src="session.bgImage" alt="" draggable="false" />
+            <img
+              class="captcha-piece"
+              :src="session.pieceImage"
+              alt=""
+              draggable="false"
+              :style="{ transform: `translateX(${sliderX}px)` }"
             />
-            <span class="target-slot" :style="{ left: `${session.targetX}px`, top: `${session.targetY}px` }" />
-            <span class="target-guide" :style="{ left: `${session.targetX + session.sliderWidth / 2}px` }" />
           </div>
 
           <div ref="trackRef" class="slider-track">
-            <div class="slider-progress" :style="{ width: `${sliderX + session.sliderWidth / 2}px` }" />
+            <div class="slider-progress" :style="{ width: `${Math.min(sliderX + session.sliderWidth, session.trackWidth + session.sliderWidth)}px` }" />
             <div class="slider-label">{{ t('captcha.sliderLabel') }}</div>
             <button
               class="slider-handle"
@@ -68,7 +68,7 @@
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import baseHttp from '../../api/baseHttp'
-import { setCaptchaPassToken } from '../../api/antiCrawler'
+import { injectSecurityHeaders, setCaptchaPassToken } from '../../api/antiCrawler'
 import {
   cancelCaptchaChallenge,
   resolveCaptchaChallenge,
@@ -77,19 +77,15 @@ import {
   useSecurityChallengeState,
 } from '../../state/securityChallenge'
 
-interface PuzzlePiece {
-  x: number
-  y: number
-}
-
 interface CaptchaSessionResponse {
   sessionId: string
   backgroundWidth: number
   backgroundHeight: number
   sliderWidth: number
-  targetX: number
-  targetY: number
-  puzzlePieces: PuzzlePiece[]
+  trackWidth: number
+  pieceStartOffset: number
+  bgImage: string
+  pieceImage: string
 }
 
 interface CaptchaVerifyResponse {
@@ -99,6 +95,7 @@ interface CaptchaVerifyResponse {
     verified?: boolean
     passToken?: string
     expiresIn?: number
+    remainingUses?: number
   }
 }
 
@@ -152,7 +149,9 @@ async function loadChallenge(clearError: boolean = true) {
   setCaptchaChallengeLoading(true)
 
   try {
-    const response = await baseHttp.get<{ success: boolean; data: CaptchaSessionResponse }>('/api/captcha/generate')
+    const response = await baseHttp.get<{ success: boolean; data: CaptchaSessionResponse }>('/api/captcha/generate', {
+      headers: injectSecurityHeaders(),
+    })
     session.value = response.data.data
   } catch {
     cancelCaptchaChallenge(t('captcha.errors.loadFailed'))
@@ -189,7 +188,7 @@ function handlePointerMove(event: PointerEvent) {
   }
 
   const rect = trackRef.value.getBoundingClientRect()
-  const maxX = rect.width - session.value.sliderWidth
+  const maxX = Math.min(session.value.trackWidth, rect.width - session.value.sliderWidth)
   const nextX = clamp(event.clientX - rect.left - session.value.sliderWidth / 2, 0, maxX)
   sliderX.value = nextX
   appendTrail(event)
@@ -240,7 +239,9 @@ async function submitCaptcha() {
       dragTrail,
     }
 
-    const { data } = await baseHttp.post<CaptchaVerifyResponse>('/api/captcha/verify', payload)
+    const { data } = await baseHttp.post<CaptchaVerifyResponse>('/api/captcha/verify', payload, {
+      headers: injectSecurityHeaders(),
+    })
     if (!data.success || !data.data?.verified || !data.data?.passToken) {
       const message = data.message || t('captcha.errors.verifyFailed')
       await loadChallenge(false)
@@ -248,7 +249,7 @@ async function submitCaptcha() {
       return
     }
 
-    setCaptchaPassToken(data.data.passToken, data.data.expiresIn ?? 600)
+    setCaptchaPassToken(data.data.passToken, data.data.expiresIn ?? 120, data.data.remainingUses ?? 10)
     resolveCaptchaChallenge(data.data.passToken)
   } catch {
     await loadChallenge(false)
@@ -341,6 +342,25 @@ function clamp(value: number, min: number, max: number): number {
       rgba(255, 255, 255, 0.22) 14px,
       rgba(255, 255, 255, 0.22) 28px
     );
+}
+
+.captcha-background,
+.captcha-piece {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.captcha-background {
+  object-fit: cover;
+}
+
+.captcha-piece {
+  pointer-events: none;
+  will-change: transform;
 }
 
 .puzzle-piece,

@@ -20,7 +20,7 @@
 
       <section v-reveal="{ preset: 'section', once: true }" class="book-main surface-card">
         <div class="book-cover-panel">
-          <img v-if="book.coverUrl" :src="book.coverUrl" :alt="book.title" class="book-cover-large" width="200" height="280" @error="onImgError" />
+          <img v-if="displayBookCoverUrl" :src="displayBookCoverUrl" :alt="book.title" class="book-cover-large" width="200" height="280" @error="onImgError" />
           <div v-else class="book-cover-placeholder-large">
             <span class="material-symbols-outlined" aria-hidden="true">menu_book</span>
           </div>
@@ -237,7 +237,7 @@
             :aria-label="t('bookDetail.related.ariaLabel', { title: related.title })"
             @click="goToBook(related.id)"
           >
-            <img v-if="related.coverUrl" :src="related.coverUrl" :alt="related.title" width="120" height="160" loading="lazy" @error="onImgError" />
+            <img v-if="displayRelatedCoverUrl(related)" :src="displayRelatedCoverUrl(related)" :alt="related.title" width="120" height="160" loading="lazy" @error="onImgError" />
             <div v-else class="related-placeholder">
               <span class="material-symbols-outlined" aria-hidden="true">menu_book</span>
             </div>
@@ -280,7 +280,8 @@
 import { onMounted, reactive, ref, watch, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { bookApi, type BookDetail } from '../api/bookApi'
+import { bookApi } from '../api/bookApi'
+import type { BookDetail } from '../types/book'
 import { borrowApi, reservationApi } from '../api/borrowApi'
 import { favoriteApi, readingStatusApi, type ReadingStatusEnum } from '../api/favoriteApi'
 import ConfirmDialog from '../components/common/ConfirmDialog.vue'
@@ -297,6 +298,8 @@ import { useConfirmDialog } from '../composables/useConfirmDialog'
 import { useOffline } from '../composables/useOffline'
 import { toggleFavoriteOfflineAware } from '../composables/useFavoriteOffline'
 import { applyBorrowOfflineAware, reserveBookOfflineAware } from '../composables/useBorrowOffline'
+import { findOnlineBookCover } from '../utils/coverLookup'
+import { resolveCoverUrl } from '../utils/coverUrl'
 
 const route = useRoute()
 const router = useRouter()
@@ -317,6 +320,8 @@ const { dialog, openDialog, closeDialog: closeDialogBase } = useConfirmDialog()
 const { toast, showToast } = useToast()
 
 const isFavorited = ref(false)
+const onlineCoverUrl = ref('')
+const onlineRelatedCoverUrls = ref<Record<number, string>>({})
 const currentReadingStatus = ref<ReadingStatusEnum | ''>('')
 const readingNotes = ref('')
 const savedReadingNotes = ref('')
@@ -328,6 +333,12 @@ const borrowButtonText = computed(() => {
   if (book.value.circulationPolicy === 'MANUAL') return t('bookDetail.borrowButton.manualApproval')
   return t('bookDetail.borrowButton.autoApproval')
 })
+
+const displayBookCoverUrl = computed(() => resolveCoverUrl(book.value?.coverUrl || onlineCoverUrl.value))
+
+function displayRelatedCoverUrl(related: BookDetail['relatedBooks'][number]) {
+  return resolveCoverUrl(related.coverUrl || onlineRelatedCoverUrls.value[related.id])
+}
 
 const onImgError = (event: Event) => handleImageError(event, '/logo-photo.jpg')
 
@@ -350,6 +361,21 @@ function resetPersonalBookState() {
   savedReadingNotes.value = ''
 }
 
+async function enrichDetailCovers() {
+  if (!book.value) return
+  if (!book.value.coverUrl) {
+    onlineCoverUrl.value = await findOnlineBookCover(book.value.title, book.value.author) || ''
+  }
+
+  await Promise.all(book.value.relatedBooks.slice(0, 6).map(async (related) => {
+    if (related.coverUrl || onlineRelatedCoverUrls.value[related.id]) return
+    const coverUrl = await findOnlineBookCover(related.title, related.author)
+    if (coverUrl) {
+      onlineRelatedCoverUrls.value = { ...onlineRelatedCoverUrls.value, [related.id]: coverUrl }
+    }
+  }))
+}
+
 async function loadBookDetail() {
   const requestId = ++latestBookDetailRequestId
   const requestedBookId = Number(route.params.id)
@@ -360,6 +386,9 @@ async function loadBookDetail() {
     if (requestId !== latestBookDetailRequestId || requestedBookId !== Number(route.params.id)) return
 
     book.value = response.data.success ? response.data.data : null
+    onlineCoverUrl.value = ''
+    onlineRelatedCoverUrls.value = {}
+    void enrichDetailCovers()
 
     if (userStore.isLoggedIn && book.value) {
       const [favRes, statusRes] = await Promise.allSettled([

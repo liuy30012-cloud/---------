@@ -1,5 +1,6 @@
 import type { ErrorType, ErrorLog, ErrorContext, RetryOptions, ErrorHandler } from '@/types/error'
 import { ERROR_MESSAGES } from '@/types/error'
+import { safeGetJSON, safeSetJSON } from '@/utils/storageHelpers'
 import { feedbackManager } from './FeedbackManager'
 
 class ErrorCenter {
@@ -185,21 +186,13 @@ class ErrorCenter {
   }
 
   private saveLogs(): void {
-    try {
-      localStorage.setItem('error-logs', JSON.stringify(this.logs))
-    } catch (e) {
-      console.error('Failed to save error logs:', e)
-    }
+    safeSetJSON('error-logs', this.logs)
   }
 
   private loadLogs(): void {
-    try {
-      const saved = localStorage.getItem('error-logs')
-      if (saved) {
-        this.logs = JSON.parse(saved)
-      }
-    } catch (e) {
-      console.error('Failed to load error logs:', e)
+    const saved = safeGetJSON<ErrorLog[]>('error-logs')
+    if (saved) {
+      this.logs = saved
     }
   }
 }

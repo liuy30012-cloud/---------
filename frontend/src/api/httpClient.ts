@@ -10,10 +10,6 @@ import { errorCenter } from '../services/ErrorCenter'
 import { getErrorMessage } from '../utils/errorHelpers'
 import { safeGetItem } from '../utils/storageHelpers'
 
-interface InternalAxiosConfig {
-  skipErrorHandling?: boolean
-}
-
 export const httpClient = axios.create({
   baseURL: API_CONFIG.baseURL,
   timeout: API_CONFIG.timeout,
@@ -51,8 +47,7 @@ httpClient.interceptors.response.use(
   async (error: AxiosError) => {
     const config = error.config
     // Skip global error handling for requests that opt out
-    const internalConfig = config as InternalAxiosConfig | undefined
-    if (internalConfig?.skipErrorHandling) {
+    if (config?.skipErrorHandling) {
       return Promise.reject(error)
     }
     if (!config || config.skipCaptchaChallenge || config._captchaRetried || !isCaptchaRequiredResponse(error.response)) {

@@ -1,12 +1,15 @@
 import { AxiosHeaders, type AxiosResponse } from 'axios'
 
 const DEVICE_FP_KEY = 'deviceFingerprint'
-const CAPTCHA_PASS_KEY = 'captchaPassToken'
+const LEGACY_CAPTCHA_PASS_KEY = 'captchaPassToken'
 
 interface CaptchaPassRecord {
   token: string
   expiresAt: number
+  remainingUses: number
 }
+
+let captchaPassRecord: CaptchaPassRecord | null = null
 
 function hasWindow(): boolean {
   return typeof window !== 'undefined' && typeof window.localStorage !== 'undefined'
@@ -48,44 +51,35 @@ export function getDeviceFingerprint(): string | null {
   }
 }
 
-export function setCaptchaPassToken(token: string, expiresInSeconds: number) {
-  if (!hasWindow()) {
-    return
-  }
-
-  const record: CaptchaPassRecord = {
+export function setCaptchaPassToken(token: string, expiresInSeconds: number, remainingUses: number = 10) {
+  captchaPassRecord = {
     token,
     expiresAt: Date.now() + Math.max(expiresInSeconds, 1) * 1000,
+    remainingUses: Math.max(remainingUses, 1),
   }
-  window.localStorage.setItem(CAPTCHA_PASS_KEY, JSON.stringify(record))
+
+  if (hasWindow()) {
+    window.localStorage.removeItem(LEGACY_CAPTCHA_PASS_KEY)
+  }
 }
 
 export function getCaptchaPassToken(): string | null {
-  if (!hasWindow()) {
+  if (!captchaPassRecord) {
     return null
   }
 
-  const raw = window.localStorage.getItem(CAPTCHA_PASS_KEY)
-  if (!raw) {
-    return null
-  }
-
-  try {
-    const record = JSON.parse(raw) as CaptchaPassRecord
-    if (!record.token || record.expiresAt <= Date.now()) {
-      clearCaptchaPassToken()
-      return null
-    }
-    return record.token
-  } catch {
+  if (!captchaPassRecord.token || captchaPassRecord.expiresAt <= Date.now() || captchaPassRecord.remainingUses <= 0) {
     clearCaptchaPassToken()
     return null
   }
+
+  return captchaPassRecord.token
 }
 
 export function clearCaptchaPassToken() {
+  captchaPassRecord = null
   if (hasWindow()) {
-    window.localStorage.removeItem(CAPTCHA_PASS_KEY)
+    window.localStorage.removeItem(LEGACY_CAPTCHA_PASS_KEY)
   }
 }
 

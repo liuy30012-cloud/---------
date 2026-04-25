@@ -57,6 +57,20 @@ const hostState: {
   api: null,
 }
 
+const mountedWrappers: Array<ReturnType<typeof mount>> = []
+
+const restoreNavigatorProperty = (
+  property: 'onLine' | 'serviceWorker',
+  descriptor?: PropertyDescriptor,
+) => {
+  if (descriptor) {
+    Object.defineProperty(window.navigator, property, descriptor)
+    return
+  }
+
+  Reflect.deleteProperty(window.navigator, property)
+}
+
 const mountComposable = async () => {
   const module = await import('@/composables/useNetworkStatus')
   const Host = defineComponent({
@@ -66,17 +80,23 @@ const mountComposable = async () => {
     },
   })
 
-  return mount(Host)
+  const wrapper = mount(Host)
+  mountedWrappers.push(wrapper)
+  return wrapper
 }
 
 describe('useNetworkStatus', () => {
   let unsubscribe: ReturnType<typeof vi.fn>
   let onlineValue = true
+  let originalOnLineDescriptor: PropertyDescriptor | undefined
+  let originalServiceWorkerDescriptor: PropertyDescriptor | undefined
 
   beforeEach(() => {
     hostState.api = null
     unsubscribe = vi.fn()
     onlineValue = true
+    originalOnLineDescriptor = Object.getOwnPropertyDescriptor(window.navigator, 'onLine')
+    originalServiceWorkerDescriptor = Object.getOwnPropertyDescriptor(window.navigator, 'serviceWorker')
 
     vi.clearAllMocks()
 
@@ -119,6 +139,11 @@ describe('useNetworkStatus', () => {
   })
 
   afterEach(() => {
+    while (mountedWrappers.length) {
+      mountedWrappers.pop()?.unmount()
+    }
+    restoreNavigatorProperty('onLine', originalOnLineDescriptor)
+    restoreNavigatorProperty('serviceWorker', originalServiceWorkerDescriptor)
     hostState.api = null
   })
 
@@ -135,6 +160,7 @@ describe('useNetworkStatus', () => {
     )
 
     wrapper.unmount()
+    mountedWrappers.splice(mountedWrappers.indexOf(wrapper), 1)
     expect(unsubscribe).toHaveBeenCalledTimes(1)
   })
 

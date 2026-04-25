@@ -70,7 +70,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Book } from '../../composables/useBookSearch'
+import type { Book } from '../../types/book'
 import { handleImageError } from '../../utils/imageHelpers'
 import LibraryButton from '@/components/common/LibraryButton.vue'
 
