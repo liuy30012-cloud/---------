@@ -82,6 +82,7 @@ env/
 *.sqlite3
 
 # AI-generated reports / session artifacts
+.superpowers/
 *_SUMMARY.md
 *_REPORT.md
 *_CHECKLIST.md
