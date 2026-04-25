@@ -5,6 +5,7 @@ import com.library.controller.CaptchaController;
 import com.library.service.IpBanService;
 import com.library.service.RateLimitService;
 import com.library.service.RequestPatternAnalyzer;
+import com.library.service.SecurityMetricsService;
 import com.library.util.ClientIpResolver;
 import com.library.util.JwtUtil;
 import jakarta.servlet.FilterChain;
@@ -30,6 +31,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
     private final RateLimitService rateLimitService;
     private final IpBanService ipBanService;
     private final CaptchaController captchaController;
+    private final SecurityMetricsService securityMetricsService;
     private final JwtUtil jwtUtil;
     private final ObjectMapper objectMapper;
 
@@ -37,12 +39,14 @@ public class RateLimitFilter extends OncePerRequestFilter {
                            RateLimitService rateLimitService,
                            IpBanService ipBanService,
                            CaptchaController captchaController,
+                           SecurityMetricsService securityMetricsService,
                            JwtUtil jwtUtil,
                            ObjectMapper objectMapper) {
         this.patternAnalyzer = patternAnalyzer;
         this.rateLimitService = rateLimitService;
         this.ipBanService = ipBanService;
         this.captchaController = captchaController;
+        this.securityMetricsService = securityMetricsService;
         this.jwtUtil = jwtUtil;
         this.objectMapper = objectMapper;
     }
@@ -59,54 +63,99 @@ public class RateLimitFilter extends OncePerRequestFilter {
 
         String clientIp = ClientIpResolver.resolve(request);
         Long userId = resolveAuthenticatedUserId();
+        String fingerprint = request.getHeader("X-Device-FP");
+        String userAgent = request.getHeader("User-Agent");
 
         if (ipBanService.isIpBanned(clientIp)) {
-            sendRateLimitResponse(response, "当前 IP 已被临时封禁。", ipBanService.getRemainingBanTime(clientIp), true);
+            sendRateLimitResponse(
+                response,
+                "Current IP is temporarily banned.",
+                "IP_BANNED",
+                "ip-ban",
+                ipBanService.getRemainingBanTime(clientIp),
+                true,
+                0
+            );
             return;
         }
 
-        if (rateLimitService.checkBurstLimit(clientIp, userId)) {
-            if (ipBanService.registerRateLimitViolation(clientIp)) {
-                sendRateLimitResponse(response, "当前 IP 已被临时封禁。", ipBanService.getRemainingBanTime(clientIp), true);
+        RateLimitService.LimitDecision decision = rateLimitService.checkRequestLimit(path, clientIp, fingerprint, userId);
+        if (decision != null) {
+            if (decision.countAsViolation() && ipBanService.registerRateLimitViolation(clientIp, "app")) {
+                sendRateLimitResponse(
+                    response,
+                    "Current IP is temporarily banned.",
+                    "IP_BANNED",
+                    "ip-ban",
+                    ipBanService.getRemainingBanTime(clientIp),
+                    true,
+                    0
+                );
                 return;
             }
-            sendRateLimitResponse(response, "请求过于频繁，请完成验证码后继续。", 1, true);
+
+            sendRateLimitResponse(
+                response,
+                "Too many requests. Please try again later.",
+                decision.code(),
+                decision.routeGroup(),
+                (int) decision.retryAfterSeconds(),
+                decision.captchaRequired(),
+                decision.remainingTokens()
+            );
             return;
         }
 
-        if (rateLimitService.checkGlobalLimit(clientIp, userId)) {
-            if (ipBanService.registerRateLimitViolation(clientIp)) {
-                sendRateLimitResponse(response, "当前 IP 已被临时封禁。", ipBanService.getRemainingBanTime(clientIp), true);
-                return;
-            }
-            sendRateLimitResponse(response, "请求过于频繁，请稍后再试。", 60, true);
-            return;
-        }
-
-        if (isSearchEndpoint(path) && rateLimitService.checkSearchLimit(clientIp, userId)) {
-            sendRateLimitResponse(response, "搜索过于频繁，请稍后再试。", 60, true);
-            return;
-        }
-
-        String passToken = request.getHeader("X-Captcha-Pass");
-        boolean hasValidPassToken = captchaController.isPassTokenValid(
-            passToken,
+        boolean hasValidPassToken = captchaController.consumePassToken(
+            request.getHeader("X-Captcha-Pass"),
             clientIp,
-            request.getHeader("User-Agent")
+            userAgent,
+            fingerprint
         );
 
-        String fingerprint = request.getHeader("X-Device-FP");
-        int suspicionScore = patternAnalyzer.recordAndAnalyze(clientIp, path, fingerprint);
-        suspicionScore += patternAnalyzer.analyzeFingerprint(clientIp, fingerprint);
-        int progressiveDelay = patternAnalyzer.getProgressiveDelay(clientIp);
+        if (isCatalogRequest(path)) {
+            int suspicionScore = patternAnalyzer.recordAndAnalyze(clientIp, path, fingerprint);
+            if (!hasValidPassToken && patternAnalyzer.hasActiveCooldown(clientIp)) {
+                securityMetricsService.recordBotCooldown();
+                sendRateLimitResponse(
+                    response,
+                    "Human verification is required for this request.",
+                    "COOLDOWN_ACTIVE",
+                    "bot-cooldown",
+                    Math.max(patternAnalyzer.getCooldownRemainingSeconds(clientIp), 1),
+                    true,
+                    0
+                );
+                return;
+            }
 
-        if (!hasValidPassToken && (progressiveDelay > 0 || suspicionScore >= CAPTCHA_SCORE_THRESHOLD)) {
-            int retryAfter = progressiveDelay > 0 ? Math.max(progressiveDelay / 1000, 1) : 1;
-            sendRateLimitResponse(response, "当前请求需要完成验证码校验。", retryAfter, true);
-            return;
+            if (!hasValidPassToken && suspicionScore >= CAPTCHA_SCORE_THRESHOLD) {
+                sendRateLimitResponse(
+                    response,
+                    "Human verification is required for this request.",
+                    "BOT_CHALLENGE",
+                    "bot-challenge",
+                    1,
+                    true,
+                    0
+                );
+                return;
+            }
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private boolean isCatalogRequest(String path) {
+        return isSearchEndpoint(path)
+            || isBookDetailEndpoint(path)
+            || "/api/books/categories".equals(path)
+            || "/api/books/languages".equals(path)
+            || "/api/statistics/popular-books".equals(path);
+    }
+
+    private boolean isBookDetailEndpoint(String path) {
+        return path != null && path.matches("^/api/books/\\d+$");
     }
 
     private boolean isSearchEndpoint(String path) {
@@ -114,9 +163,10 @@ public class RateLimitFilter extends OncePerRequestFilter {
     }
 
     private boolean isExemptPath(String path) {
-        return path.startsWith("/api/captcha/")
-            || path.startsWith("/api/health")
-            || path.startsWith("/actuator/health");
+        return path.startsWith("/api/health")
+            || path.startsWith("/actuator/health")
+            || path.startsWith("/damage-photos/")
+            || path.startsWith("/book-covers/");
     }
 
     private Long resolveAuthenticatedUserId() {
@@ -134,20 +184,26 @@ public class RateLimitFilter extends OncePerRequestFilter {
 
     private void sendRateLimitResponse(HttpServletResponse response,
                                        String message,
+                                       String code,
+                                       String route,
                                        int retryAfter,
-                                       boolean requireCaptcha) throws IOException {
+                                       boolean requireCaptcha,
+                                       int remainingTokens) throws IOException {
+        securityMetricsService.recordRateLimitBlocked(route, code);
+
         response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
         response.setContentType("application/json;charset=UTF-8");
         response.setHeader("Retry-After", String.valueOf(Math.max(retryAfter, 1)));
-        if (requireCaptcha) {
-            response.setHeader("X-Captcha-Required", "true");
-        }
+        response.setHeader("X-RateLimit-Remaining", String.valueOf(Math.max(remainingTokens, 0)));
+        response.setHeader("X-Captcha-Required", requireCaptcha ? "true" : "false");
 
         Map<String, Object> body = new HashMap<>();
         body.put("success", false);
         body.put("message", message);
+        body.put("code", code);
         body.put("retryAfter", Math.max(retryAfter, 1));
         body.put("captchaRequired", requireCaptcha);
+        body.put("remaining", Math.max(remainingTokens, 0));
         response.getWriter().write(objectMapper.writeValueAsString(body));
     }
 }

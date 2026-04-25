@@ -14,6 +14,7 @@ public class IpBanService {
     private static final String VIOLATION_PREFIX = "security:ipban:violations:";
 
     private final SecurityStateStore stateStore;
+    private final SecurityMetricsService securityMetricsService;
 
     @Value("${anti-crawler.rate-limit.ban-threshold:3}")
     private int banThreshold;
@@ -21,8 +22,9 @@ public class IpBanService {
     @Value("${anti-crawler.rate-limit.ban-duration:900}")
     private int banDuration;
 
-    public IpBanService(SecurityStateStore stateStore) {
+    public IpBanService(SecurityStateStore stateStore, SecurityMetricsService securityMetricsService) {
         this.stateStore = stateStore;
+        this.securityMetricsService = securityMetricsService;
     }
 
     public boolean isIpBanned(String clientIp) {
@@ -34,9 +36,13 @@ public class IpBanService {
     }
 
     public boolean registerRateLimitViolation(String clientIp) {
+        return registerRateLimitViolation(clientIp, "app");
+    }
+
+    public boolean registerRateLimitViolation(String clientIp, String source) {
         long count = stateStore.increment(violationKey(clientIp), VIOLATION_TTL);
         if (count >= banThreshold) {
-            banIp(clientIp, banDuration);
+            banIp(clientIp, banDuration, source);
             stateStore.delete(violationKey(clientIp));
             return true;
         }
@@ -44,7 +50,15 @@ public class IpBanService {
     }
 
     public void banIp(String ip, int durationSeconds) {
-        stateStore.set(banKey(ip), "1", Duration.ofSeconds(Math.max(durationSeconds, 1)));
+        banIp(ip, durationSeconds, "app");
+    }
+
+    public void banIp(String ip, int durationSeconds, String source) {
+        boolean alreadyBanned = isIpBanned(ip);
+        stateStore.set(banKey(ip), source, Duration.ofSeconds(Math.max(durationSeconds, 1)));
+        if (!alreadyBanned) {
+            securityMetricsService.recordIpBan(source);
+        }
     }
 
     public void unbanIp(String ip) {
@@ -71,6 +85,10 @@ public class IpBanService {
 
     public int getTrackedViolationCount() {
         return (int) stateStore.countByPrefix(VIOLATION_PREFIX);
+    }
+
+    public String getBanSource(String clientIp) {
+        return stateStore.get(banKey(clientIp));
     }
 
     private String banKey(String ip) {

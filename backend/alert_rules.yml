@@ -8,20 +8,58 @@ groups:
         labels:
           severity: critical
         annotations:
-          summary: "图书馆后端服务宕机"
-          description: "服务已宕机超过1分钟"
+          summary: "Library backend is down"
+          description: "The library backend has been unreachable for more than 1 minute."
 
-      - alert: HighErrorRate
+      - alert: HighHttp5xxRate
         expr: |
-          sum(rate(library_api_calls_total{status=~"5.."}[5m]))
+          sum(rate(http_server_requests_seconds_count{job="library-backend",status=~"5.."}[5m]))
           /
-          sum(rate(library_api_calls_total[5m])) > 0.05
+          clamp_min(sum(rate(http_server_requests_seconds_count{job="library-backend"}[5m])), 1)
+          > 0.05
         for: 5m
         labels:
           severity: warning
         annotations:
-          summary: "API错误率过高"
-          description: "5xx错误率超过5%"
+          summary: "High 5xx error rate"
+          description: "More than 5% of backend requests have returned 5xx during the last 5 minutes."
+
+      - alert: SecurityRateLimitSpike
+        expr: sum(rate(library_security_rate_limit_blocked_total[5m])) > 5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Application rate-limit blocks are spiking"
+          description: "The backend is blocking more than 5 requests per second on average over 5 minutes."
+
+      - alert: BotCooldownSpike
+        expr: sum(rate(library_security_bot_cooldown_total[5m])) > 0.2
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Bot cooldowns are being activated frequently"
+          description: "The anti-bot cooldown counter has stayed elevated for 10 minutes."
+
+      - alert: HoneypotTriggered
+        expr: increase(library_security_honeypot_total[10m]) > 0
+        for: 0m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Honeypot endpoint was triggered"
+          description: "A protected decoy endpoint was accessed in the last 10 minutes."
+
+      - alert: CaptchaFailureSpike
+        expr: |
+          sum(rate(library_security_captcha_total{stage="verify",result=~"wrong-offset|invalid-trail|expired|context-mismatch"}[5m])) > 3
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Captcha verification failures are elevated"
+          description: "Captcha verification failures have exceeded 3 per second on average over 5 minutes."
 
       - alert: HighMemoryUsage
         expr: |
@@ -32,5 +70,5 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "JVM堆内存使用率过高"
-          description: "堆内存使用率超过85%"
+          summary: "High JVM heap usage"
+          description: "The JVM heap usage has remained above 85% for at least 5 minutes."

@@ -19,6 +19,10 @@ import java.util.Set;
 @Service
 public class AntiCrawlerRequestInspector {
 
+    private static final Set<String> DISALLOWED_SIGNATURE_SECRETS = Set.of(
+        "library-anti-crawler-shared-secret-2026"
+    );
+
     private static final Set<String> CRAWLER_UA_KEYWORDS = Set.of(
         "curl", "wget", "scrapy", "python-requests", "python-urllib",
         "httpclient", "java/", "go-http-client", "node-fetch",
@@ -57,6 +61,12 @@ public class AntiCrawlerRequestInspector {
             || signatureSecret.length() < 32) {
             throw new IllegalStateException(
                 "anti-crawler.signature.enabled=true requires anti-crawler.signature.secret with at least 32 characters"
+            );
+        }
+
+        if (DISALLOWED_SIGNATURE_SECRETS.contains(signatureSecret)) {
+            throw new IllegalStateException(
+                "anti-crawler.signature.enabled=true requires a non-default anti-crawler signature secret"
             );
         }
     }
@@ -148,11 +158,29 @@ public class AntiCrawlerRequestInspector {
         return path.startsWith("/api/auth/")
             || path.startsWith("/api/captcha/")
             || path.startsWith("/api/health")
-            || path.startsWith("/actuator/health");
+            || path.startsWith("/actuator/health")
+            || isHoneypotPath(path)
+            || isPublicAssetPath(path);
     }
 
     private boolean isExemptPath(String path) {
-        return path.startsWith("/api/health") || path.startsWith("/actuator/health");
+        return path.startsWith("/api/health")
+            || path.startsWith("/actuator/health")
+            || isHoneypotPath(path)
+            || isPublicAssetPath(path);
+    }
+
+    private boolean isPublicAssetPath(String path) {
+        return path.startsWith("/damage-photos/") || path.startsWith("/book-covers/");
+    }
+
+    private boolean isHoneypotPath(String path) {
+        return "/api/admin/data-export".equals(path)
+            || "/api/v2/books/all".equals(path)
+            || "/api/internal/users".equals(path)
+            || "/api/admin/db-backup".equals(path)
+            || "/api/swagger.json".equals(path)
+            || "/graphql".equals(path);
     }
 
     public record Decision(boolean allowed, String message, String code) {

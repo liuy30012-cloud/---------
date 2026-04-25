@@ -1,6 +1,7 @@
 package com.library.controller;
 
 import com.library.service.IpBanService;
+import com.library.service.SecurityMetricsService;
 import com.library.util.ClientIpResolver;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +23,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class HoneypotController {
 
     private final IpBanService ipBanService;
+    private final SecurityMetricsService securityMetricsService;
 
     @Value("${anti-crawler.honeypot.enabled:true}")
     private boolean honeypotEnabled;
@@ -32,8 +34,9 @@ public class HoneypotController {
     @Value("${anti-crawler.honeypot.dry-run:false}")
     private boolean honeypotDryRun;
 
-    public HoneypotController(IpBanService ipBanService) {
+    public HoneypotController(IpBanService ipBanService, SecurityMetricsService securityMetricsService) {
         this.ipBanService = ipBanService;
+        this.securityMetricsService = securityMetricsService;
     }
 
     @GetMapping("/api/admin/data-export")
@@ -83,9 +86,10 @@ public class HoneypotController {
                 trackedViolations,
                 bannedIps
         );
+        securityMetricsService.recordHoneypot(endpoint);
 
         if (honeypotEnabled && !honeypotDryRun) {
-            ipBanService.banIp(clientIp, banDuration);
+            ipBanService.banIp(clientIp, banDuration, "honeypot");
             log.warn("Honeypot banned client ip={} durationSeconds={}", clientIp, banDuration);
         } else if (honeypotEnabled) {
             log.info("Honeypot dry-run enabled, skip banning ip={}", clientIp);
