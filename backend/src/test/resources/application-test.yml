@@ -2,6 +2,11 @@ app:
   scheduling:
     enabled: false
 
+library:
+  search:
+    elasticsearch:
+      enabled: false
+
 elasticsearch:
   enabled: false
 

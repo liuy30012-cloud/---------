@@ -10,8 +10,9 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 class RateLimitServiceTest {
 
@@ -22,32 +23,46 @@ class RateLimitServiceTest {
     void setUp() {
         clock = new MutableClock(Instant.parse("2026-01-01T00:00:00Z"), ZoneOffset.UTC);
         rateLimitService = new RateLimitService(new InMemorySecurityStateStore(clock), clock);
-        ReflectionTestUtils.setField(rateLimitService, "burstSize", 2);
-        ReflectionTestUtils.setField(rateLimitService, "globalRpm", 2);
-        ReflectionTestUtils.setField(rateLimitService, "searchRpm", 1);
+        ReflectionTestUtils.setField(rateLimitService, "publicSearchPerMinuteIp", 2);
+        ReflectionTestUtils.setField(rateLimitService, "publicSearchPerMinuteFingerprint", 10);
+        ReflectionTestUtils.setField(rateLimitService, "publicSearchPerMinuteUser", 2);
+        ReflectionTestUtils.setField(rateLimitService, "publicDetailPerMinuteIp", 10);
+        ReflectionTestUtils.setField(rateLimitService, "metadataPerMinuteIp", 1);
+        ReflectionTestUtils.setField(rateLimitService, "captchaGeneratePerMinuteIp", 1);
+        ReflectionTestUtils.setField(rateLimitService, "captchaVerifyPerTenMinutesIp", 2);
     }
 
     @Test
-    void burstLimitResetsOnNewSecondBucket() {
-        assertFalse(rateLimitService.checkBurstLimit("1.1.1.1"));
-        assertFalse(rateLimitService.checkBurstLimit("1.1.1.1"));
-        assertTrue(rateLimitService.checkBurstLimit("1.1.1.1"));
+    void searchIpLimitRefillsGraduallyInsteadOfResettingOnBucketBoundary() {
+        assertNull(rateLimitService.checkRequestLimit("/api/books/search", "1.1.1.1", null, null));
+        assertNull(rateLimitService.checkRequestLimit("/api/books/search", "1.1.1.1", null, null));
 
-        clock.advance(Duration.ofSeconds(1));
+        RateLimitService.LimitDecision blocked = rateLimitService.checkRequestLimit("/api/books/search", "1.1.1.1", null, null);
+        assertNotNull(blocked);
+        assertEquals("search", blocked.routeGroup());
 
-        assertFalse(rateLimitService.checkBurstLimit("1.1.1.1"));
+        clock.advance(Duration.ofSeconds(30));
+        assertNull(rateLimitService.checkRequestLimit("/api/books/search", "1.1.1.1", null, null));
     }
 
     @Test
-    void userScopedGlobalLimitAppliesAcrossDifferentIps() {
-        assertFalse(rateLimitService.checkGlobalLimit("1.1.1.1", 42L));
-        assertFalse(rateLimitService.checkGlobalLimit("2.2.2.2", 42L));
-        assertTrue(rateLimitService.checkGlobalLimit("3.3.3.3", 42L));
+    void searchUserLimitAppliesAcrossDifferentIps() {
+        assertNull(rateLimitService.checkRequestLimit("/api/books/search", "1.1.1.1", null, 42L));
+        assertNull(rateLimitService.checkRequestLimit("/api/books/search", "2.2.2.2", null, 42L));
+
+        RateLimitService.LimitDecision blocked = rateLimitService.checkRequestLimit("/api/books/search", "3.3.3.3", null, 42L);
+        assertNotNull(blocked);
+        assertEquals("user", blocked.scope());
     }
 
     @Test
-    void searchLimitUsesIndependentBucket() {
-        assertFalse(rateLimitService.checkSearchLimit("1.1.1.1"));
-        assertTrue(rateLimitService.checkSearchLimit("1.1.1.1"));
+    void metadataAndCaptchaEndpointsUseIndependentPolicies() {
+        assertNull(rateLimitService.checkRequestLimit("/api/books/categories", "5.5.5.5", null, null));
+        assertNotNull(rateLimitService.checkRequestLimit("/api/books/categories", "5.5.5.5", null, null));
+
+        assertNull(rateLimitService.checkRequestLimit("/api/captcha/generate", "6.6.6.6", null, null));
+        RateLimitService.LimitDecision captchaBlocked = rateLimitService.checkRequestLimit("/api/captcha/generate", "6.6.6.6", null, null);
+        assertNotNull(captchaBlocked);
+        assertEquals("captcha-generate", captchaBlocked.routeGroup());
     }
 }

@@ -5,6 +5,7 @@ import com.library.dto.LoginRequest;
 import com.library.dto.RegisterRequest;
 import com.library.dto.ReservationRequest;
 import com.library.model.Book;
+import com.library.model.BorrowRecord;
 import com.library.model.ReservationRecord;
 import com.library.repository.BookRepository;
 import com.library.repository.BorrowRecordRepository;

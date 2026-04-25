@@ -1,6 +1,7 @@
 package com.library.controller;
 
 import com.library.service.IpBanService;
+import com.library.service.SecurityMetricsService;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -15,7 +16,8 @@ class HoneypotControllerTest {
     @Test
     void dryRunDoesNotBanClient() {
         IpBanService ipBanService = mock(IpBanService.class);
-        HoneypotController controller = new HoneypotController(ipBanService);
+        SecurityMetricsService securityMetricsService = mock(SecurityMetricsService.class);
+        HoneypotController controller = new HoneypotController(ipBanService, securityMetricsService);
         ReflectionTestUtils.setField(controller, "honeypotEnabled", true);
         ReflectionTestUtils.setField(controller, "honeypotDryRun", true);
         ReflectionTestUtils.setField(controller, "banDuration", 300);
