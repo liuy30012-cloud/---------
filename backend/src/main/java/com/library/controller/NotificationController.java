@@ -29,7 +29,7 @@ public class NotificationController {
     private final JwtUtil jwtUtil;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<Page<NotificationRecord>>> getAllNotifications(
+    public ResponseEntity<ApiResponse<List<NotificationRecord>>> getAllNotifications(
         Authentication authentication,
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "20") int size,
@@ -38,7 +38,13 @@ public class NotificationController {
         Long userId = getUserIdFromAuth(authentication);
         Pageable pageable = PageableHelper.createPageable(page, size, 20, sort);
         Page<NotificationRecord> notifications = notificationService.getUserNotifications(userId, pageable);
-        return ApiResponse.ok(notifications);
+        return ApiResponse.okWithPagination(
+            notifications.getContent(),
+            (int) notifications.getTotalElements(),
+            notifications.getNumber(),
+            notifications.getSize(),
+            notifications.getTotalPages()
+        );
     }
 
     @PutMapping("/{id}/read")

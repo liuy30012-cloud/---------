@@ -42,6 +42,16 @@ python data_processor.py
 python batch_importer.py
 ```
 
+### 辅助工具
+
+```bash
+# 检查 DouBanSpider 数据列
+python tools/check_douban_data.py
+
+# 转换 DouBanSpider Excel 数据
+python tools/convert_douban_data.py
+```
+
 ## 配置
 
 编辑 `config.py` 修改配置：
@@ -55,6 +65,14 @@ python batch_importer.py
 
 ```
 book-import-tool/
+├── book_import_tool/     # 可测试的工具包代码
+├── tools/                # 辅助转换/检查脚本
+├── scripts/              # 封面导入与补全脚本
+├── docs/                 # Excel 导出说明、项目总结等文档
+├── tests/                # pytest 单元测试
+├── main.py               # 主入口脚本
+├── config.py             # 兼容旧脚本的配置导出
+├── requirements.txt      # Python 依赖列表
 ├── data/
 │   ├── raw/              # 原始 JSON 数据
 │   ├── processed/        # 处理后的 Excel 文件

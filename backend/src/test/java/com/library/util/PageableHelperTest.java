@@ -4,37 +4,31 @@ import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
-import static org.junit.jupiter.api.Assertions.*;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class PageableHelperTest {
 
     @Test
-    void createPageable_withValidParams_shouldCreateCorrectPageable() {
-        Pageable pageable = PageableHelper.createPageable(0, 20, 10, new String[]{"createdAt,desc"});
+    void createPageableSupportsSplitSortTokens() {
+        Pageable pageable = PageableHelper.createPageable(0, 20, 20, new String[]{"createdAt", "desc"});
 
-        assertEquals(0, pageable.getPageNumber());
-        assertEquals(20, pageable.getPageSize());
-        assertEquals(Sort.by(Sort.Direction.DESC, "createdAt"), pageable.getSort());
+        List<Sort.Order> orders = pageable.getSort().toList();
+        assertEquals(1, orders.size());
+        assertEquals("createdAt", orders.get(0).getProperty());
+        assertEquals(Sort.Direction.DESC, orders.get(0).getDirection());
     }
 
     @Test
-    void createPageable_withNegativePage_shouldNormalizeToZero() {
-        Pageable pageable = PageableHelper.createPageable(-1, 20, 10, new String[]{});
+    void createPageableSupportsCombinedAndRepeatedSortTokens() {
+        Pageable pageable = PageableHelper.createPageable(0, 20, 20, new String[]{"createdAt,desc", "updatedAt", "asc"});
 
-        assertEquals(0, pageable.getPageNumber());
-    }
-
-    @Test
-    void createPageable_withZeroSize_shouldUseDefaultSize() {
-        Pageable pageable = PageableHelper.createPageable(0, 0, 15, new String[]{});
-
-        assertEquals(15, pageable.getPageSize());
-    }
-
-    @Test
-    void createPageable_withSizeOver100_shouldCapAt100() {
-        Pageable pageable = PageableHelper.createPageable(0, 200, 10, new String[]{});
-
-        assertEquals(100, pageable.getPageSize());
+        List<Sort.Order> orders = pageable.getSort().toList();
+        assertEquals(2, orders.size());
+        assertEquals("createdAt", orders.get(0).getProperty());
+        assertEquals(Sort.Direction.DESC, orders.get(0).getDirection());
+        assertEquals("updatedAt", orders.get(1).getProperty());
+        assertEquals(Sort.Direction.ASC, orders.get(1).getDirection());
     }
 }

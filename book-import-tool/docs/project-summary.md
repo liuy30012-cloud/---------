@@ -70,16 +70,23 @@
 
 ```
 book-import-tool/
-├── config.py              # 配置文件（API 端点、默认值、路径）
+├── book_import_tool/      # 可测试的工具包代码
+├── docs/
+│   ├── EXCEL_EXPORT_README.md # Excel 导出功能文档
+│   └── project-summary.md     # 项目总结（本文件）
+├── scripts/               # 封面导入与补全脚本
+├── tests/                 # pytest 单元测试
+├── tools/                 # 辅助转换/检查脚本
+│   ├── check_douban_data.py
+│   └── convert_douban_data.py
+├── config.py              # 兼容旧脚本的配置导出
 ├── requirements.txt       # Python 依赖列表
-├── .gitignore            # Git 忽略规则
-├── douban_crawler.py     # 豆瓣爬虫模块（264 行）
-├── data_processor.py     # 数据处理模块（180 行）
-├── batch_importer.py     # 批量导入模块（160 行）
-├── main.py               # 主入口脚本（52 行）
-├── README.md             # 用户文档
-├── EXCEL_EXPORT_README.md # Excel 导出功能文档
-└── PROJECT_SUMMARY.md    # 项目总结（本文件）
+├── .gitignore             # Git 忽略规则
+├── douban_crawler.py      # 豆瓣爬虫模块（264 行）
+├── data_processor.py      # 数据处理模块（180 行）
+├── batch_importer.py      # 批量导入模块（160 行）
+├── main.py                # 主入口脚本
+└── README.md              # 用户文档
 
 运行时生成：
 ├── data/

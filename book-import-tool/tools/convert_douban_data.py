@@ -5,8 +5,9 @@ import glob
 from pathlib import Path
 import sys
 
-# 添加当前目录到路径
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+# 添加导书工具根目录到路径，便于从 tools/ 子目录运行
+PROJECT_DIR = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(PROJECT_DIR))
 import config
 
 def convert_douban_excel_to_system_format(input_file, output_file, isbn_start_offset=0):

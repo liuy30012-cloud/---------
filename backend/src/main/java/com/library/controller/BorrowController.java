@@ -64,7 +64,7 @@ public class BorrowController {
     }
 
     @GetMapping("/history")
-    public ResponseEntity<ApiResponse<Page<BorrowResponse>>> getBorrowHistory(
+    public ResponseEntity<ApiResponse<List<BorrowResponse>>> getBorrowHistory(
         Authentication authentication,
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "15") int size,
@@ -73,11 +73,17 @@ public class BorrowController {
         Long userId = getUserIdFromAuth(authentication);
         Pageable pageable = PageableHelper.createPageable(page, size, 15, sort);
         Page<BorrowResponse> history = borrowService.getUserBorrowHistory(userId, pageable);
-        return ApiResponse.ok(history);
+        return ApiResponse.okWithPagination(
+            history.getContent(),
+            (int) history.getTotalElements(),
+            history.getNumber(),
+            history.getSize(),
+            history.getTotalPages()
+        );
     }
 
     @GetMapping("/current")
-    public ResponseEntity<ApiResponse<Page<BorrowResponse>>> getCurrentBorrows(
+    public ResponseEntity<ApiResponse<List<BorrowResponse>>> getCurrentBorrows(
         Authentication authentication,
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "10") int size,
@@ -86,18 +92,31 @@ public class BorrowController {
         Long userId = getUserIdFromAuth(authentication);
         Pageable pageable = PageableHelper.createPageable(page, size, 10, sort);
         Page<BorrowResponse> borrows = borrowService.getUserCurrentBorrows(userId, pageable);
-        return ApiResponse.ok(borrows);
+        return ApiResponse.okWithPagination(
+            borrows.getContent(),
+            (int) borrows.getTotalElements(),
+            borrows.getNumber(),
+            borrows.getSize(),
+            borrows.getTotalPages()
+        );
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/admin/pending")
-    public ResponseEntity<ApiResponse<Page<BorrowResponse>>> getPendingBorrows(
+    public ResponseEntity<ApiResponse<List<BorrowResponse>>> getPendingBorrows(
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "20") int size,
         @RequestParam(defaultValue = "createdAt,asc") String[] sort
     ) {
         Pageable pageable = PageableHelper.createPageable(page, size, 20, sort);
-        return ApiResponse.ok(borrowService.getPendingBorrows(pageable));
+        Page<BorrowResponse> pendingBorrows = borrowService.getPendingBorrows(pageable);
+        return ApiResponse.okWithPagination(
+            pendingBorrows.getContent(),
+            (int) pendingBorrows.getTotalElements(),
+            pendingBorrows.getNumber(),
+            pendingBorrows.getSize(),
+            pendingBorrows.getTotalPages()
+        );
     }
 
     @PreAuthorize("hasRole('ADMIN')")

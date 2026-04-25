@@ -66,38 +66,56 @@ public class BookReviewController {
      * 获取书籍的所有评价（分页）
      */
     @GetMapping("/book/{bookId}")
-    public ResponseEntity<ApiResponse<Page<BookReviewResponse>>> getBookReviews(
+    public ResponseEntity<ApiResponse<List<BookReviewResponse>>> getBookReviews(
             @PathVariable Long bookId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy) {
         Page<BookReviewResponse> reviews = bookReviewService.getBookReviews(bookId, page, size, sortBy);
-        return ResponseEntity.ok(ApiResponse.success(reviews, "Reviews retrieved successfully"));
+        return ApiResponse.okWithPagination(
+            reviews.getContent(),
+            (int) reviews.getTotalElements(),
+            reviews.getNumber(),
+            reviews.getSize(),
+            reviews.getTotalPages()
+        );
     }
 
     /**
      * 获取用户的所有评价（分页）
      */
     @GetMapping("/user/{userId}")
-    public ResponseEntity<ApiResponse<Page<BookReviewResponse>>> getUserReviews(
+    public ResponseEntity<ApiResponse<List<BookReviewResponse>>> getUserReviews(
             @PathVariable Long userId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         Page<BookReviewResponse> reviews = bookReviewService.getUserReviews(userId, page, size);
-        return ResponseEntity.ok(ApiResponse.success(reviews, "User reviews retrieved successfully"));
+        return ApiResponse.okWithPagination(
+            reviews.getContent(),
+            (int) reviews.getTotalElements(),
+            reviews.getNumber(),
+            reviews.getSize(),
+            reviews.getTotalPages()
+        );
     }
 
     /**
      * 获取当前用户的所有评价（分页）
      */
     @GetMapping("/my-reviews")
-    public ResponseEntity<ApiResponse<Page<BookReviewResponse>>> getMyReviews(
+    public ResponseEntity<ApiResponse<List<BookReviewResponse>>> getMyReviews(
             Authentication authentication,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         Long userId = getUserIdFromAuth(authentication);
         Page<BookReviewResponse> reviews = bookReviewService.getUserReviews(userId, page, size);
-        return ResponseEntity.ok(ApiResponse.success(reviews, "Your reviews retrieved successfully"));
+        return ApiResponse.okWithPagination(
+            reviews.getContent(),
+            (int) reviews.getTotalElements(),
+            reviews.getNumber(),
+            reviews.getSize(),
+            reviews.getTotalPages()
+        );
     }
 
     /**

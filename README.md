@@ -384,18 +384,32 @@ npm run electron:dev
 │   ├── monitoring/                 #   监控告警
 │   └── docs/                       #   防御方案文档
 │
+├── book-import-tool/               # 图书批量导入工具
+│   ├── book_import_tool/           #   可测试的工具包代码
+│   ├── tools/                      #   辅助转换/检查脚本
+│   ├── scripts/                    #   封面导入与补全脚本
+│   ├── docs/                       #   导书工具说明文档
+│   └── tests/                      #   pytest 单元测试
+│
 ├── docs/                           # 项目文档集
 │   ├── ARCHITECTURE_ANALYSIS.md    #   架构深度分析
 │   ├── DEVELOPMENT_GUIDE.md        #   开发指南
+│   ├── api/                        #   API 文档
+│   │   ├── book-management-api.md  #   图书管理 API
+│   │   └── pagination-api.md       #   分页 API
 │   ├── elasticsearch-setup.md      #   Elasticsearch 部署指南
 │   ├── elasticsearch-integration-checklist.md # ES 集成验收清单
 │   ├── elasticsearch-bugfix-report.md # ES 集成 bug 修复报告
-│   ├── 快速启动指南.md              #   5 分钟上手
-│   ├── 借阅管理系统详细计划.md      #   借阅模块设计
-│   ├── 数据分析模块详细计划.md      #   分析模块设计
+│   ├── 离线功能使用说明.md          #   离线模式功能说明
+│   ├── 离线功能测试指南.md          #   离线功能测试指南
+│   ├── 项目路线图.md                #   项目路线图
 │   └── ...                         #   更多总结与报告
 │
-└── test-api.bat / test-api.sh      # API 测试脚本
+├── scripts/                        # 根级检查和测试脚本
+│   ├── check-all.ps1 / check-all.sh # 质量检查脚本
+│   └── test-api.bat / test-api.sh  # API 测试脚本
+│
+└── start-*.bat / start-frontend.sh # 常用本地启动入口
 ```
 
 ---
@@ -553,7 +567,7 @@ npm run test:coverage
 
 ## 📊 API 接口文档
 
-> 💡 **分页支持**：以下标注 📄 的接口支持分页查询，通过 `page`（页码，从0开始）、`size`（每页数量）、`sort`（排序字段）参数控制。详见 [PAGINATION_API.md](./PAGINATION_API.md)
+> 💡 **分页支持**：以下标注 📄 的接口支持分页查询，通过 `page`（页码，从0开始）、`size`（每页数量）、`sort`（排序字段）参数控制。详见 [pagination-api.md](./docs/api/pagination-api.md)
 
 ### 认证接口 `/api/auth`
 
@@ -707,15 +721,15 @@ npm run build:win
 | [elasticsearch-integration-checklist.md](./docs/elasticsearch-integration-checklist.md) | Elasticsearch 集成验收清单 |
 | [elasticsearch-bugfix-report.md](./docs/elasticsearch-bugfix-report.md) | Elasticsearch Bug 修复报告 |
 | [book-management-api.md](./docs/api/book-management-api.md) | 图书管理 API 文档 |
-| [快速启动指南.md](./docs/快速启动指南.md) | 5 分钟快速上手 |
-| [借阅管理系统详细计划.md](./docs/借阅管理系统详细计划.md) | 借阅模块完整设计方案 |
-| [数据分析模块详细计划.md](./docs/数据分析模块详细计划.md) | 数据分析引擎设计方案 |
-| [开发完成总结.md](./docs/开发完成总结.md) | 项目核心业务总结 |
+| [pagination-api.md](./docs/api/pagination-api.md) | 分页 API 完整文档 |
+| [QUICK-START.md](./backend/QUICK-START.md) | 后端快速启动指南 |
 | [离线功能使用说明.md](./docs/离线功能使用说明.md) | 离线模式功能说明 |
+| [离线功能测试指南.md](./docs/离线功能测试指南.md) | 离线功能测试指南 |
 | [SECURITY_CONFIGURATION_NOTES.md](./docs/SECURITY_CONFIGURATION_NOTES.md) | 安全配置说明 |
 | [DEMO_DATASET.md](./backend/DEMO_DATASET.md) | 演示数据集说明与使用指南 |
+| [导书工具文档](./book-import-tool/docs/project-summary.md) | 图书批量导入工具结构与总结 |
 | [DDoS 防御方案](./ddos-defense/README.md) | DDoS 防御体系文档 |
-| [test-api.bat](./test-api.bat) / [test-api.sh](./test-api.sh) | API 接口测试脚本 |
+| [test-api.bat](./scripts/test-api.bat) / [test-api.sh](./scripts/test-api.sh) | API 接口测试脚本 |
 
 ---
 
@@ -924,7 +938,7 @@ npm run build:win
 
 #### 📚 文档更新
 
-- ✅ 新增 [PAGINATION_API.md](./PAGINATION_API.md) — 分页 API 完整文档
+- ✅ 新增 [pagination-api.md](./docs/api/pagination-api.md) — 分页 API 完整文档
 - ✅ 新增 BUG_FIX_SUMMARY.md — Bug 修复总结文档
 
 ### v1.4.0 (2026-04-19)

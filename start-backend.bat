@@ -1,14 +1,6 @@
 @echo off
 setlocal EnableExtensions
 chcp 65001 >nul 2>&1
-title Library Backend Server (port 8080)
-
-echo ============================================
-echo   Library Location System - Backend
-echo   Port: 8080
-echo   Close this window to stop the server
-echo ============================================
-echo.
 
 cd /d "%~dp0backend"
 if errorlevel 1 (
@@ -21,23 +13,40 @@ if exist ".env" (
     call :load_env_file ".env"
 )
 
-netstat -ano | findstr ":8080.*LISTENING" >nul 2>&1
-if %errorlevel%==0 (
-    echo [WARN] Port 8080 is in use, releasing...
-    for /f "tokens=5" %%a in ('netstat -ano ^| findstr ":8080.*LISTENING"') do (
+if "%SERVER_PORT%"=="" set "SERVER_PORT=8080"
+
+title Library Backend Server (port %SERVER_PORT%)
+
+echo ============================================
+echo   Library Location System - Backend
+echo   Port: %SERVER_PORT%
+echo   Close this window to stop the server
+echo ============================================
+echo.
+
+if not exist ".\mvnw.cmd" (
+    echo [ERROR] Maven Wrapper not found: backend\mvnw.cmd
+    pause
+    exit /b 1
+)
+
+java -version >nul 2>&1
+if errorlevel 1 (
+    echo [ERROR] Java not found, please install JDK and set JAVA_HOME.
+    pause
+    exit /b 1
+)
+
+netstat -ano | findstr ":%SERVER_PORT%.*LISTENING" >nul 2>&1
+if not errorlevel 1 (
+    echo [WARN] Port %SERVER_PORT% is in use, releasing...
+    for /f "tokens=5" %%a in ('netstat -ano ^| findstr ":%SERVER_PORT%.*LISTENING"') do (
         echo   Killing PID %%a
         taskkill /PID %%a /F >nul 2>&1
     )
     timeout /t 2 /nobreak >nul
     echo   Port released.
     echo.
-)
-
-java -version >nul 2>&1
-if %errorlevel% neq 0 (
-    echo [ERROR] Java not found, please install JDK and set JAVA_HOME.
-    pause
-    exit /b 1
 )
 
 echo Starting backend server, please wait...
@@ -72,16 +81,8 @@ exit /b %APP_EXIT_CODE%
 
 :load_env_file
 for /f "usebackq tokens=1,* delims== eol=#" %%A in ("%~1") do (
-    call :set_if_undefined "%%A" "%%B"
+    if not defined %%A set "%%A=%%B"
 )
-exit /b 0
-
-:set_if_undefined
-if "%~1"=="" exit /b 0
-call set "_existing_value=%%%~1%%"
-if defined _existing_value exit /b 0
-set "%~1=%~2"
-set "_existing_value="
 exit /b 0
 
 :infer_db_driver

@@ -46,7 +46,7 @@ public class ReadingStatusController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<Page<ReadingStatusResponse>>> getUserReadingStatuses(
+    public ResponseEntity<ApiResponse<List<ReadingStatusResponse>>> getUserReadingStatuses(
             Authentication authentication,
             @RequestParam(required = false) ReadingStatus status,
             @RequestParam(defaultValue = "0") int page,
@@ -56,7 +56,13 @@ public class ReadingStatusController {
         Pageable pageable = PageableHelper.createPageable(page, size, 20, sort);
         Page<ReadingStatusResponse> statuses = readingStatusService
                 .getUserReadingStatuses(userId, status, pageable);
-        return ResponseEntity.ok(ApiResponse.success(statuses, "获取阅读状态列表成功"));
+        return ApiResponse.okWithPagination(
+            statuses.getContent(),
+            (int) statuses.getTotalElements(),
+            statuses.getNumber(),
+            statuses.getSize(),
+            statuses.getTotalPages()
+        );
     }
 
     @GetMapping("/{bookId}")

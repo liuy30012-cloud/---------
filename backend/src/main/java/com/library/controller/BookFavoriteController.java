@@ -46,7 +46,7 @@ public class BookFavoriteController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<Page<FavoriteResponse>>> getUserFavorites(
+    public ResponseEntity<ApiResponse<List<FavoriteResponse>>> getUserFavorites(
             Authentication authentication,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
@@ -54,7 +54,13 @@ public class BookFavoriteController {
         Long userId = getUserIdFromAuth(authentication);
         Pageable pageable = PageableHelper.createPageable(page, size, 20, sort);
         Page<FavoriteResponse> favorites = bookFavoriteService.getUserFavorites(userId, pageable);
-        return ResponseEntity.ok(ApiResponse.success(favorites, "获取收藏列表成功"));
+        return ApiResponse.okWithPagination(
+            favorites.getContent(),
+            (int) favorites.getTotalElements(),
+            favorites.getNumber(),
+            favorites.getSize(),
+            favorites.getTotalPages()
+        );
     }
 
     @GetMapping("/check")

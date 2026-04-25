@@ -31,7 +31,7 @@ public class SearchHistoryController {
     private final JwtUtil jwtUtil;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<Page<SearchHistoryRecord>>> getHistory(
+    public ResponseEntity<ApiResponse<List<SearchHistoryRecord>>> getHistory(
         Authentication authentication,
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "30") int size,
@@ -40,7 +40,13 @@ public class SearchHistoryController {
         Long userId = getUserIdFromAuth(authentication);
         Pageable pageable = PageableHelper.createPageable(page, size, 30, sort);
         Page<SearchHistoryRecord> history = searchHistoryService.getHistory(userId, pageable);
-        return ApiResponse.ok(history);
+        return ApiResponse.okWithPagination(
+            history.getContent(),
+            (int) history.getTotalElements(),
+            history.getNumber(),
+            history.getSize(),
+            history.getTotalPages()
+        );
     }
 
     @PostMapping

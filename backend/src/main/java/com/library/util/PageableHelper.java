@@ -26,18 +26,44 @@ public class PageableHelper {
         }
 
         List<Sort.Order> orders = new ArrayList<>();
-        for (String sortParam : sort) {
-            String[] parts = sortParam.split(",");
-            if (parts.length >= 1) {
-                String field = parts[0].trim();
-                Sort.Direction direction = parts.length > 1 &&
-                    "asc".equalsIgnoreCase(parts[1].trim())
-                    ? Sort.Direction.ASC
-                    : Sort.Direction.DESC;
-                orders.add(new Sort.Order(direction, field));
+        for (int i = 0; i < sort.length; i++) {
+            String sortParam = sort[i];
+            if (sortParam == null) {
+                continue;
             }
+
+            String[] parts = sortParam.split(",");
+            if (parts.length == 0) {
+                continue;
+            }
+
+            String field = parts[0].trim();
+            if (field.isEmpty()) {
+                continue;
+            }
+
+            String directionToken = null;
+            if (parts.length > 1) {
+                directionToken = parts[1].trim();
+            } else if (i + 1 < sort.length && isDirectionToken(sort[i + 1])) {
+                directionToken = sort[++i].trim();
+            }
+
+            Sort.Direction direction = "asc".equalsIgnoreCase(directionToken)
+                ? Sort.Direction.ASC
+                : Sort.Direction.DESC;
+            orders.add(new Sort.Order(direction, field));
         }
 
         return orders.isEmpty() ? Sort.unsorted() : Sort.by(orders);
+    }
+
+    private static boolean isDirectionToken(String value) {
+        if (value == null) {
+            return false;
+        }
+
+        String normalized = value.trim();
+        return "asc".equalsIgnoreCase(normalized) || "desc".equalsIgnoreCase(normalized);
     }
 }
