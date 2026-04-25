@@ -721,6 +721,83 @@ npm run build:win
 
 ## 📝 更新日志
 
+### v1.8.0 (2026-04-25)
+
+#### 🏗️ 架构重构
+
+- ✅ **后端架构全面重构** — 引入 Facade 模式和细粒度限流
+  - 新增 `BookDetailFacade` 服务，封装图书详情聚合逻辑
+  - 新增 `SecurityMetricsService` 用于安全指标收集
+  - 重构 `BookController` 使用 Facade 模式简化控制器逻辑
+  - 重构 `RateLimitService` 实现细粒度限流策略
+    - 支持按 IP、指纹、用户维度的多层限流
+    - 针对不同端点（搜索、详情、验证码等）设置差异化限流规则
+  - 扩展 `SecurityStateStore` 接口支持更多安全状态管理
+
+#### 🔒 安全增强
+
+- ✅ **反爬虫和安全防护能力全面升级**
+  - 增强 `AntiCrawlerRequestInspector` 的请求检测能力
+  - 重构 `RequestPatternAnalyzer` 实现更精准的模式识别
+  - 改进 `IpBanService` 的 IP 封禁策略
+  - 更新 `RateLimitFilter` 集成新的限流服务
+  - 优化 `CaptchaController` 验证码生成和验证逻辑
+  - 完善 Prometheus 告警规则配置
+
+#### 🎨 前端重构
+
+- ✅ **API 层重构和代码清理**
+  - 新增类型定义模块（`types/api.ts`、`types/book.ts`）
+  - 从 `bookApi.ts` 提取类型定义到独立模块
+  - 删除 `poemLibrary.ts`（10,016 行未使用的诗词数据）
+  - 删除 `bookApiWithCache.ts`（已由缓存服务替代）
+  - 删除 `useBookSearch.ts`（逻辑已整合到组件）
+  - 优化 `CaptchaChallengeModal` 验证码交互
+  - 增强 `ErrorCenter` 错误处理能力
+  - 新增前端工具模块（`coverLookup.ts`、`coverUrl.ts`）
+  - 添加 `.prettierrc.json` 统一代码格式
+
+#### 🛠️ 工具更新
+
+- ✅ **图书导入工具优化**
+  - 修复 API 字段名适配后端变更（`username` → `studentId`）
+  - 修复 API 响应格式适配（`code` → `success`）
+  - 添加浏览器 User-Agent 绕过反爬虫检测
+  - 重构配置模块支持新的项目结构
+  - 新增数据检查和转换脚本
+  - 完善批量导入和测试模块
+
+- ✅ **DDoS 防护配置更新**
+  - 增强 Nginx DDoS 防护规则
+  - 优化 Fail2ban 配置
+  - 改进智能防御监控脚本
+  - 完善防火墙和 GeoIP 设置
+  - 更新 Cloudflare 集成脚本
+  - 新增黑名单管理脚本
+
+#### 🧪 测试完善
+
+- ✅ **测试覆盖全面更新**
+  - 新增 `RateLimitFilterTest` 测试限流过滤器
+  - 更新所有测试以适配架构重构
+  - 完善测试配置文件 `application-test.yml`
+  - 新增前端 API 测试（`antiCrawler.spec.ts`、`httpClient.spec.ts`）
+
+#### 📦 资源管理
+
+- ✅ **图书封面资源管理**
+  - 添加 8,838 张图书封面图片（566MB）
+  - 包含豆瓣图书封面和本地上传封面
+
+#### 🔧 其他改进
+
+- ✅ 添加 `.editorconfig` 统一编码风格
+- ✅ 新增 GitHub Actions 工作流配置
+- ✅ 优化启动脚本 `start-backend.bat`
+- ✅ 新增通用工具脚本目录
+
+---
+
 ### v1.7.1 (2026-04-23)
 
 #### 🔒 安全加固
